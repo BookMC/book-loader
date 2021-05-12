@@ -25,6 +25,7 @@ public class BookMCLoader implements ITweaker {
 
     @Override
     public void injectIntoClassLoader(LaunchClassLoader classLoader) {
+        classLoader.addTransformerExclusion("org.bookmc.loader."); // Disallow transformation of mod loading
         classLoader.registerTransformer("org.bookmc.services.TransformationService");
     }
 
