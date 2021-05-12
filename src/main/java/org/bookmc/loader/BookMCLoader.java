@@ -3,6 +3,7 @@ package org.bookmc.loader;
 import net.minecraft.launchwrapper.ITweaker;
 import net.minecraft.launchwrapper.LaunchClassLoader;
 import org.spongepowered.asm.launch.MixinBootstrap;
+import org.spongepowered.asm.mixin.MixinEnvironment;
 import org.spongepowered.asm.mixin.Mixins;
 
 import java.io.File;
@@ -37,6 +38,8 @@ public class BookMCLoader implements ITweaker {
         classLoader.addTransformerExclusion("org.bookmc.loader."); // Disallow transformation of mod loading
 
         MixinBootstrap.init();
+
+        MixinEnvironment.getDefaultEnvironment().setSide(MixinEnvironment.Side.CLIENT);
         Mixins.addConfiguration("bookmc-client.mixins.json");
 
         classLoader.registerTransformer("org.bookmc.services.TransformationService");
