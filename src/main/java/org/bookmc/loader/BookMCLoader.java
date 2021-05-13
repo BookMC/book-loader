@@ -62,7 +62,18 @@ public class BookMCLoader implements ITweaker {
 
         Mixins.addConfiguration("bookmc-client.mixins.json");
 
-        classLoader.registerTransformer("org.bookmc.services.TransformationService");
+        boolean isTransformationServiceAvailable = false;
+
+        try {
+            Class.forName("org.bookmc.services.TransformationService");
+            isTransformationServiceAvailable = true;
+        } catch (ClassNotFoundException ignored) {
+
+        }
+
+        if (isTransformationServiceAvailable) {
+            classLoader.registerTransformer("org.bookmc.services.TransformationService");
+        }
     }
 
     @Override
