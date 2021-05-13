@@ -17,8 +17,6 @@ import java.util.List;
 public class BookMCLoader implements ITweaker {
     private final List<String> args = new ArrayList<>();
 
-    private boolean isClient = true;
-
     @Override
     public void acceptOptions(List<String> args, File gameDir, File assetsDir, String profile) {
         this.args.addAll(args);
@@ -62,13 +60,12 @@ public class BookMCLoader implements ITweaker {
 
         if (ClassUtils.isResourceAvailable("bookmc-client.mixins.json")) {
             Mixins.addConfiguration("bookmc-client.mixins.json");
-            MixinEnvironment.getDefaultEnvironment().setSide(MixinEnvironment.Side.CLIENT);
+            MixinEnvironment.getCurrentEnvironment().setSide(MixinEnvironment.Side.CLIENT);
         }
 
         if (ClassUtils.isResourceAvailable("bookmc-server.mixins.json")) {
-            isClient = false;
             Mixins.addConfiguration("bookmc-server.mixins.json");
-            MixinEnvironment.getDefaultEnvironment().setSide(MixinEnvironment.Side.SERVER);
+            MixinEnvironment.getCurrentEnvironment().setSide(MixinEnvironment.Side.SERVER);
         }
 
         // Load our transformation service only if it's available.
@@ -79,7 +76,7 @@ public class BookMCLoader implements ITweaker {
 
     @Override
     public String getLaunchTarget() {
-        return MixinEnvironment.getDefaultEnvironment().getSide() == MixinEnvironment.Side.CLIENT ? "net.minecraft.client.main.Main" : "net.minecraft.server.MinecraftServer";
+        return ClassUtils.isResourceAvailable("bookmc-server.mixins.json") ? "net.minecraft.server.MinecraftServer" : "net.minecraft.client.main.Main";
     }
 
     @Override
