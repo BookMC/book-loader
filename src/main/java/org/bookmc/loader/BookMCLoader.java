@@ -44,8 +44,16 @@ public class BookMCLoader implements ITweaker {
 
         MixinEnvironment.getDefaultEnvironment().setSide(MixinEnvironment.Side.CLIENT);
 
+        File modsDirectory = new File(Launch.minecraftHome, "mods");
+
+        if (!modsDirectory.exists()) {
+            if (!modsDirectory.mkdir()) {
+                System.err.println("Failed to create mods directory");
+            }
+        }
+
         for (MinecraftModDiscoverer discoverer : Loader.getModDiscoverers()) {
-            File[] files = new File(Launch.minecraftHome, "mods").listFiles();
+            File[] files = modsDirectory.listFiles();
 
             if (files != null || discoverer instanceof DevelopmentModDiscoverer) {
                 discoverer.discover(files);
