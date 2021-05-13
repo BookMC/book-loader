@@ -3,7 +3,8 @@ package org.bookmc.loader;
 import net.minecraft.launchwrapper.ITweaker;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.launchwrapper.LaunchClassLoader;
-import org.bookmc.loader.book.DevelopmentModDiscoverer;
+import org.bookmc.loader.utils.ClassUtils;
+import org.bookmc.loader.utils.DiscoveryUtils;
 import org.bookmc.loader.vessel.ModVessel;
 import org.spongepowered.asm.launch.MixinBootstrap;
 import org.spongepowered.asm.mixin.MixinEnvironment;
@@ -16,23 +17,22 @@ import java.util.List;
 public class BookMCLoader implements ITweaker {
     private final List<String> args = new ArrayList<>();
 
+    private boolean isClient = true;
+
     @Override
     public void acceptOptions(List<String> args, File gameDir, File assetsDir, String profile) {
         this.args.addAll(args);
 
         if (gameDir != null) {
-            this.args.add("--gameDir");
-            this.args.add(gameDir.getAbsolutePath());
+            addArg("gameDir", gameDir.getAbsolutePath());
         }
 
         if (assetsDir != null) {
-            this.args.add("--assetsDir");
-            this.args.add(assetsDir.getAbsolutePath());
+            addArg("assetsDir", assetsDir.getAbsolutePath());
         }
 
         if (profile != null) {
-            this.args.add("--version");
-            this.args.add(profile);
+            addArg("version", profile);
         }
     }
 
@@ -42,8 +42,6 @@ public class BookMCLoader implements ITweaker {
 
         MixinBootstrap.init();
 
-        MixinEnvironment.getDefaultEnvironment().setSide(MixinEnvironment.Side.CLIENT);
-
         File modsDirectory = new File(Launch.minecraftHome, "mods");
 
         if (!modsDirectory.exists()) {
@@ -52,13 +50,7 @@ public class BookMCLoader implements ITweaker {
             }
         }
 
-        for (MinecraftModDiscoverer discoverer : Loader.getModDiscoverers()) {
-            File[] files = modsDirectory.listFiles();
-
-            if (files != null || discoverer instanceof DevelopmentModDiscoverer) {
-                discoverer.discover(files);
-            }
-        }
+        DiscoveryUtils.discover(modsDirectory);
 
         for (ModVessel vessel : Loader.getModVessels()) {
             String mixinEntrypoint = vessel.getMixinEntrypoint();
@@ -68,34 +60,35 @@ public class BookMCLoader implements ITweaker {
             }
         }
 
-        Mixins.addConfiguration("bookmc-client.mixins.json");
-
-        boolean isTransformationServiceAvailable = false;
-
-        try {
-            Class.forName("org.bookmc.services.TransformationService");
-            isTransformationServiceAvailable = true;
-        } catch (ClassNotFoundException ignored) {
-
+        if (ClassUtils.isResourceAvailable("bookmc-client.mixins.json")) {
+            Mixins.addConfiguration("bookmc-client.mixins.json");
+            MixinEnvironment.getDefaultEnvironment().setSide(MixinEnvironment.Side.CLIENT);
         }
 
-        if (isTransformationServiceAvailable) {
+        if (ClassUtils.isResourceAvailable("bookmc-server.mixins.json")) {
+            isClient = false;
+            Mixins.addConfiguration("bookmc-server.mixins.json");
+            MixinEnvironment.getDefaultEnvironment().setSide(MixinEnvironment.Side.SERVER);
+        }
+
+        // Load our transformation service only if it's available.
+        if (ClassUtils.isClassAvailable("org.bookmc.services.TransformationService")) {
             classLoader.registerTransformer("org.bookmc.services.TransformationService");
         }
     }
 
     @Override
     public String getLaunchTarget() {
-        String version = args.get(args.indexOf("--version") + 1);
-        if (!version.equals("1.8.9")) {
-            throw new IllegalStateException("Unknown version was launched");
-        }
-
-        return "net.minecraft.client.main.Main";
+        return MixinEnvironment.getDefaultEnvironment().getSide() == MixinEnvironment.Side.CLIENT ? "net.minecraft.client.main.Main" : "net.minecraft.server.MinecraftServer";
     }
 
     @Override
     public String[] getLaunchArguments() {
         return args.toArray(new String[0]);
+    }
+
+    private void addArg(String key, String value) {
+        args.add("--" + key);
+        args.add(value);
     }
 }
