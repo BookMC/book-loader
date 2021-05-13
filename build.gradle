@@ -13,9 +13,13 @@ repositories {
     maven {
         url "https://repo.spongepowered.org/repository/maven-public/"
     }
+    maven {
+        url "https://jitpack.io"
+    }
 }
 
 dependencies {
     implementation "net.minecraft:launchwrapper:1.12"
+    compileOnly 'com.github.BookMC:modding:e1f7bc6e98'
     compileOnly "org.spongepowered:mixin:0.7.11-SNAPSHOT"
 }

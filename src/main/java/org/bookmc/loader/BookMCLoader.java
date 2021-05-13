@@ -2,6 +2,8 @@ package org.bookmc.loader;
 
 import net.minecraft.launchwrapper.ITweaker;
 import net.minecraft.launchwrapper.LaunchClassLoader;
+import org.bookmc.loader.book.DevelopmentModDiscoverer;
+import org.bookmc.loader.vessel.ModVessel;
 import org.spongepowered.asm.launch.MixinBootstrap;
 import org.spongepowered.asm.mixin.MixinEnvironment;
 import org.spongepowered.asm.mixin.Mixins;
@@ -13,6 +15,8 @@ import java.util.List;
 public class BookMCLoader implements ITweaker {
     private final List<String> args = new ArrayList<>();
 
+    private File gameDir;
+
     @Override
     public void acceptOptions(List<String> args, File gameDir, File assetsDir, String profile) {
         this.args.addAll(args);
@@ -20,6 +24,8 @@ public class BookMCLoader implements ITweaker {
         if (gameDir != null) {
             this.args.add("--gameDir");
             this.args.add(gameDir.getAbsolutePath());
+
+            this.gameDir = gameDir;
         }
 
         if (assetsDir != null) {
@@ -40,6 +46,23 @@ public class BookMCLoader implements ITweaker {
         MixinBootstrap.init();
 
         MixinEnvironment.getDefaultEnvironment().setSide(MixinEnvironment.Side.CLIENT);
+
+        for (MinecraftModDiscoverer discoverer : Loader.getModDiscoverers()) {
+            File[] files = gameDir.listFiles();
+
+            if (files != null || discoverer instanceof DevelopmentModDiscoverer) {
+                discoverer.discover(files);
+            }
+        }
+
+        for (ModVessel vessel : Loader.getModVessels()) {
+            String mixinEntrypoint = vessel.getMixinEntrypoint();
+
+            if (mixinEntrypoint != null) {
+                Mixins.addConfiguration(mixinEntrypoint);
+            }
+        }
+
         Mixins.addConfiguration("bookmc-client.mixins.json");
 
         classLoader.registerTransformer("org.bookmc.services.TransformationService");
