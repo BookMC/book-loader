@@ -8,6 +8,7 @@ import org.bookmc.loader.utils.ClassUtils;
 import org.bookmc.loader.utils.DiscoveryUtils;
 import org.bookmc.loader.vessel.ModVessel;
 import org.spongepowered.asm.launch.MixinBootstrap;
+import org.spongepowered.asm.launch.MixinTweaker;
 import org.spongepowered.asm.mixin.Mixins;
 
 import java.io.File;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class BookMCLoaderCommon implements ITweaker {
+    private final MixinTweaker mixinTweaker = new MixinTweaker();
 
     private final List<String> args = new ArrayList<>();
 
@@ -33,10 +35,12 @@ public abstract class BookMCLoaderCommon implements ITweaker {
         if (profile != null) {
             addArg("version", profile);
         }
+        mixinTweaker.acceptOptions(args, gameDir, assetsDir, profile);
     }
 
     @Override
     public void injectIntoClassLoader(LaunchClassLoader classLoader) {
+        mixinTweaker.injectIntoClassLoader(classLoader);
         classLoader.addTransformerExclusion("org.bookmc.loader."); // Disallow transformation of mod loading
 
         MixinBootstrap.init();
