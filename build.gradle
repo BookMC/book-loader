@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id "maven-publish"
 }
 
 group 'org.bookmc'
@@ -22,4 +23,30 @@ dependencies {
     implementation "net.minecraft:launchwrapper:1.12"
     compileOnly 'com.github.BookMC:modding:edb7f0ee8e'
     compileOnly "org.spongepowered:mixin:0.7.11-SNAPSHOT"
+}
+
+publishing {
+    repositories {
+        maven {
+            url = "$buildDir/repository"
+        }
+    }
+
+    publications {
+        //noinspection GroovyAssignabilityCheck
+        mavenJava(MavenPublication) {
+            from components.java
+            pom {
+                name = 'loader'
+                url = 'https://github.com/BookMC/loader'
+
+                developers {
+                    developer {
+                        id = 'loader'
+                        name = 'ChachyDev'
+                    }
+                }
+            }
+        }
+    }
 }
