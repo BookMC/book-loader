@@ -53,7 +53,7 @@ public abstract class BookMCLoaderCommon implements ITweaker {
         for (ModVessel vessel : Loader.getModVessels()) {
             String mixinEntrypoint = vessel.getMixinEntrypoint();
 
-            // Load from development environment :)
+            // Load mixins from everywhere (All jars should now be on the LaunchClassLoader)
             if (mixinEntrypoint != null) {
                 Mixins.addConfiguration(mixinEntrypoint);
             }

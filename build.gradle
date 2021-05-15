@@ -21,7 +21,7 @@ repositories {
 
 dependencies {
     implementation "net.minecraft:launchwrapper:1.12"
-    compileOnly 'com.github.BookMC:modding:edb7f0ee8e'
+    compileOnly 'com.github.BookMC:modding:db7e06da52'
     compileOnly "org.spongepowered:mixin:0.7.11-SNAPSHOT"
 }
 
