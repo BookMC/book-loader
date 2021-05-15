@@ -8,7 +8,6 @@ import org.bookmc.loader.utils.ClassUtils;
 import org.bookmc.loader.utils.DiscoveryUtils;
 import org.bookmc.loader.vessel.ModVessel;
 import org.spongepowered.asm.launch.MixinBootstrap;
-import org.spongepowered.asm.mixin.MixinEnvironment;
 import org.spongepowered.asm.mixin.Mixins;
 
 import java.io.File;
@@ -16,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class BookMCLoaderCommon implements ITweaker {
+
     private final List<String> args = new ArrayList<>();
 
     @Override
@@ -54,7 +54,8 @@ public abstract class BookMCLoaderCommon implements ITweaker {
         for (ModVessel vessel : Loader.getModVessels()) {
             String mixinEntrypoint = vessel.getMixinEntrypoint();
 
-            if (mixinEntrypoint != null) {
+            // Load from development environment :)
+            if (mixinEntrypoint != null && vessel.getClassLoader() == null) {
                 Mixins.addConfiguration(mixinEntrypoint);
             }
         }
