@@ -8,6 +8,7 @@ import org.bookmc.loader.utils.ClassUtils;
 import org.bookmc.loader.utils.DiscoveryUtils;
 import org.bookmc.loader.vessel.ModVessel;
 import org.spongepowered.asm.launch.MixinBootstrap;
+import org.spongepowered.asm.mixin.MixinEnvironment;
 import org.spongepowered.asm.mixin.Mixins;
 
 import java.io.File;
@@ -37,8 +38,11 @@ public abstract class BookMCLoaderCommon implements ITweaker {
     @Override
     public void injectIntoClassLoader(LaunchClassLoader classLoader) {
         classLoader.addTransformerExclusion("org.bookmc.loader."); // Disallow transformation of mod loading
-
         MixinBootstrap.init();
+
+        MixinEnvironment environment = MixinEnvironment.getDefaultEnvironment();
+
+        injectIntoClassLoader(classLoader, environment);
 
         File modsDirectory = new File(Launch.minecraftHome, "mods");
 
@@ -48,6 +52,35 @@ public abstract class BookMCLoaderCommon implements ITweaker {
             }
         }
 
+        loadModMixins(modsDirectory);
+
+        if (environment.getObfuscationContext() == null) {
+            environment.setObfuscationContext("notch"); // Switch's to notch mappings
+        }
+
+        // Load our transformation service only if it's available.
+        if (ClassUtils.isClassAvailable("org.bookmc.services.TransformationService")) {
+            classLoader.registerTransformer("org.bookmc.services.TransformationService");
+        }
+
+        setSide(environment);
+    }
+
+    public abstract void injectIntoClassLoader(LaunchClassLoader classLoader, MixinEnvironment environment);
+
+    public abstract void setSide(MixinEnvironment environment);
+
+    @Override
+    public String[] getLaunchArguments() {
+        return args.toArray(new String[0]);
+    }
+
+    private void addArg(String key, String value) {
+        args.add("--" + key);
+        args.add(value);
+    }
+
+    private void loadModMixins(File modsDirectory) {
         DiscoveryUtils.discover(modsDirectory);
 
         for (ModVessel vessel : Loader.getModVessels()) {
@@ -58,20 +91,5 @@ public abstract class BookMCLoaderCommon implements ITweaker {
                 Mixins.addConfiguration(mixinEntrypoint);
             }
         }
-
-        // Load our transformation service only if it's available.
-        if (ClassUtils.isClassAvailable("org.bookmc.services.TransformationService")) {
-            classLoader.registerTransformer("org.bookmc.services.TransformationService");
-        }
-    }
-
-    @Override
-    public String[] getLaunchArguments() {
-        return args.toArray(new String[0]);
-    }
-
-    private void addArg(String key, String value) {
-        args.add("--" + key);
-        args.add(value);
     }
 }

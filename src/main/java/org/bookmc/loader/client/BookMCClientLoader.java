@@ -7,11 +7,13 @@ import org.spongepowered.asm.mixin.Mixins;
 
 public class BookMCClientLoader extends BookMCLoaderCommon {
     @Override
-    public void injectIntoClassLoader(LaunchClassLoader classLoader) {
-        super.injectIntoClassLoader(classLoader);
-
+    public void injectIntoClassLoader(LaunchClassLoader classLoader, MixinEnvironment environment) {
         Mixins.addConfiguration("bookmc-client.mixins.json");
-        MixinEnvironment.getCurrentEnvironment().setSide(MixinEnvironment.Side.CLIENT);
+    }
+
+    @Override
+    public void setSide(MixinEnvironment environment) {
+        environment.setSide(MixinEnvironment.Side.CLIENT);
     }
 
     @Override

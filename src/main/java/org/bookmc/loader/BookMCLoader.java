@@ -9,5 +9,4 @@ import org.bookmc.loader.client.BookMCClientLoader;
  */
 @Deprecated
 public class BookMCLoader extends BookMCClientLoader {
-
 }
