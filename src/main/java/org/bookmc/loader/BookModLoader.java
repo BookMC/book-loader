@@ -1,5 +1,6 @@
 package org.bookmc.loader;
 
+import org.bookmc.loader.exception.MissingEntrypointException;
 import org.bookmc.loader.ui.MissingDependencyUI;
 import org.bookmc.loader.vessel.ModVessel;
 import org.bookmc.loader.vessel.json.library.LibraryModVessel;
@@ -82,6 +83,10 @@ public class BookModLoader {
     }
 
     private static void load(ModVessel vessel) {
+        if (!(vessel instanceof LibraryModVessel) && vessel.getEntrypoint() == null) {
+            throw new MissingEntrypointException("You must specify an entrypoint. If this is a mistake specify your mod as a library by adding \"library\": true to your book.mod.json file");
+        }
+
         if (!(vessel instanceof LibraryModVessel)) {
             String[] split = vessel.getEntrypoint().split("::");
 
