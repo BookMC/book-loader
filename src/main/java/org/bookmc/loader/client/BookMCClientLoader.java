@@ -6,6 +6,8 @@ import org.spongepowered.asm.mixin.MixinEnvironment;
 import org.spongepowered.asm.mixin.Mixins;
 
 public class BookMCClientLoader extends BookMCLoaderCommon {
+    private final String target = System.getProperty("book.launch.target", "net.minecraft.client.main.Main");
+
     @Override
     public void injectIntoClassLoader(LaunchClassLoader classLoader, MixinEnvironment environment) {
         Mixins.addConfiguration("bookmc-client.mixins.json");
@@ -18,6 +20,6 @@ public class BookMCClientLoader extends BookMCLoaderCommon {
 
     @Override
     public String getLaunchTarget() {
-        return "net.minecraft.client.main.Main";
+        return target;
     }
 }
