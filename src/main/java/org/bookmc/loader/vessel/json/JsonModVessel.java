@@ -1,4 +1,4 @@
-package org.bookmc.loader;
+package org.bookmc.loader.vessel.json;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;

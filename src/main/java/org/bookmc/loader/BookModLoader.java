@@ -2,6 +2,7 @@ package org.bookmc.loader;
 
 import org.bookmc.loader.ui.MissingDependencyUI;
 import org.bookmc.loader.vessel.ModVessel;
+import org.bookmc.loader.vessel.json.library.LibraryModVessel;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -81,23 +82,25 @@ public class BookModLoader {
     }
 
     private static void load(ModVessel vessel) {
-        String[] split = vessel.getEntrypoint().split("::");
+        if (!(vessel instanceof LibraryModVessel)) {
+            String[] split = vessel.getEntrypoint().split("::");
 
-        Class<?> entryClass = null;
+            Class<?> entryClass = null;
 
-        try {
-            entryClass = Class.forName(split[0]);
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        loaded.add(vessel);
-        try {
-            if (entryClass != null) {
-                entryClass.getDeclaredMethod(split[1]).invoke(entryClass.getConstructor().newInstance());
+            try {
+                entryClass = Class.forName(split[0]);
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
             }
-        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException | InstantiationException e) {
-            e.printStackTrace();
+
+            loaded.add(vessel);
+            try {
+                if (entryClass != null) {
+                    entryClass.getDeclaredMethod(split[1]).invoke(entryClass.getConstructor().newInstance());
+                }
+            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException | InstantiationException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

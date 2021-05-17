@@ -1,15 +1,22 @@
 package org.bookmc.loader.ui;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bookmc.loader.ui.renderer.CustomTreeCellRenderer;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.*;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 
 public class MissingDependencyUI {
-    public static void failed(Map<String, ArrayList<String>> missingDependencies) throws InterruptedException {
+
+    public static void failed(Map<String, ArrayList<String>> missingDependencies) {
         JFrame frame = new JFrame("Failed to launch! (Missing dependencies)");
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setSize(750, 500);
@@ -25,6 +32,40 @@ public class MissingDependencyUI {
         JScrollPane scrollPane = new JScrollPane(tree);
         tree.setBackground(new Color(27, 27, 27));
         frame.add(scrollPane);
+
+        frame.addWindowListener(new WindowListener() {
+            private final Logger logger = LogManager.getLogger(this);
+
+
+            @Override
+            public void windowOpened(WindowEvent e) {
+            }
+
+            @Override
+            public void windowClosing(WindowEvent e) {
+                logger.error("Exiting the game due to missing dependencies");
+            }
+
+            @Override
+            public void windowClosed(WindowEvent e) {
+            }
+
+            @Override
+            public void windowIconified(WindowEvent e) {
+            }
+
+            @Override
+            public void windowDeiconified(WindowEvent e) {
+            }
+
+            @Override
+            public void windowActivated(WindowEvent e) {
+            }
+
+            @Override
+            public void windowDeactivated(WindowEvent e) {
+            }
+        });
 
         frame.setVisible(true);
     }

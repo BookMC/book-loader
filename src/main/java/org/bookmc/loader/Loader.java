@@ -3,6 +3,7 @@ package org.bookmc.loader;
 import org.bookmc.loader.book.BookModDiscoverer;
 import org.bookmc.loader.book.DevelopmentModDiscoverer;
 import org.bookmc.loader.vessel.ModVessel;
+import org.bookmc.loader.vessel.json.library.LibraryModVessel;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -1,7 +1,10 @@
-package org.bookmc.loader;
+package org.bookmc.loader.book;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import org.bookmc.loader.vessel.json.library.LibraryModVessel;
+import org.bookmc.loader.Loader;
+import org.bookmc.loader.MinecraftModDiscoverer;
 import org.bookmc.loader.vessel.json.JsonModVessel;
 
 import java.io.File;
