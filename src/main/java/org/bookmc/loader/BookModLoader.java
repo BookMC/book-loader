@@ -60,18 +60,18 @@ public class BookModLoader {
     private static void loadDependencies(ModVessel vessel) {
         ArrayList<String> list = missingDependencies.getOrDefault(vessel.getId(), new ArrayList<>());
         for (String dependency : vessel.getDependencies()) {
-            // I believe this will become O(n^2), is there a better way to this?
-            boolean isFound = false;
-            for (ModVessel dependencyVessel : Loader.getModVessels()) {
-                if (dependencyVessel.getId().equals(dependency)) {
-                    loadDependencies(dependencyVessel);
-                    load(dependencyVessel);
-                    isFound = true;
-                    break;
-                }
+            boolean isFound;
+
+            ModVessel dependencyVessel = Loader.getModVesselsMap().get(dependency);
+
+            isFound = dependencyVessel != null;
+
+            if (dependencyVessel != null) {
+                loadDependencies(dependencyVessel);
+                load(dependencyVessel);
+                isFound = true;
             }
-
-
+            
             if (!isFound) {
                 list.add(dependency);
             }

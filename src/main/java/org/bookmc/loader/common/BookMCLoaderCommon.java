@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class BookMCLoaderCommon implements ITweaker {
+    private File modsDirectory;
+
     private final List<String> args = new ArrayList<>();
 
     @Override
@@ -44,7 +46,13 @@ public abstract class BookMCLoaderCommon implements ITweaker {
 
         injectIntoClassLoader(classLoader, environment);
 
-        File modsDirectory = new File(Launch.minecraftHome, "mods");
+        String passedDirectory = System.getProperty("book.discovery.folder");
+
+        if (passedDirectory != null) {
+            modsDirectory = new File(Launch.minecraftHome, passedDirectory);
+        } else {
+            modsDirectory = new File(Launch.minecraftHome, "mods");
+        }
 
         if (!modsDirectory.exists()) {
             if (!modsDirectory.mkdir()) {
@@ -53,6 +61,10 @@ public abstract class BookMCLoaderCommon implements ITweaker {
         }
 
         loadModMixins(modsDirectory);
+
+        String version = args.get(args.indexOf("--version") + 1);
+
+        loadModMixins(new File(modsDirectory, version));
 
         if (environment.getObfuscationContext() == null) {
             environment.setObfuscationContext("notch"); // Switch's to notch mappings
