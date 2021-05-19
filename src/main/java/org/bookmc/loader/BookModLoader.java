@@ -2,10 +2,8 @@ package org.bookmc.loader;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.bookmc.loader.exception.MissingEntrypointException;
 import org.bookmc.loader.ui.MissingDependencyUI;
 import org.bookmc.loader.vessel.ModVessel;
-import org.bookmc.loader.vessel.json.library.LibraryModVessel;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -22,16 +20,6 @@ public class BookModLoader {
     private static final Object object = new Object();
 
     public static void load() {
-        // Load libraries before mods
-        for (ModVessel vessel : Loader.getLibrariesVessels()) {
-            if (loaded.contains(vessel)) {
-                continue;
-            }
-
-            loadDependencies(vessel);
-            // In the chances of someone for some stupid reason decided to add their own mod as a dependency
-        }
-
         for (ModVessel vessel : Loader.getModVessels()) {
             if (loaded.contains(vessel)) {
                 continue;
@@ -69,12 +57,11 @@ public class BookModLoader {
 
             isFound = dependencyVessel != null;
 
-            if (dependencyVessel != null) {
+            if (isFound) {
                 loadDependencies(dependencyVessel);
                 load(dependencyVessel);
-                isFound = true;
             }
-            
+
             if (!isFound) {
                 list.add(dependency);
             }
@@ -86,30 +73,24 @@ public class BookModLoader {
     }
 
     private static void load(ModVessel vessel) {
-        if (!(vessel instanceof LibraryModVessel) && vessel.getEntrypoint() == null) {
-            throw new MissingEntrypointException("You must specify an entrypoint. If this is a mistake specify your mod as a library by adding \"library\": true to your book.mod.json file");
+        String[] split = vessel.getEntrypoint().split("::");
+
+        Class<?> entryClass = null;
+
+        try {
+            entryClass = Class.forName(split[0]);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
         }
 
-        if (!(vessel instanceof LibraryModVessel)) {
-            String[] split = vessel.getEntrypoint().split("::");
-
-            Class<?> entryClass = null;
-
-            try {
-                entryClass = Class.forName(split[0]);
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
+        loaded.add(vessel);
+        try {
+            if (entryClass != null) {
+                logger.debug("Loading " + vessel.getName() + " from " + vessel.getEntrypoint());
+                entryClass.getDeclaredMethod(split[1]).invoke(entryClass.getConstructor().newInstance());
             }
-
-            loaded.add(vessel);
-            try {
-                if (entryClass != null) {
-                    logger.debug("Loading " + vessel.getName() + " from " + vessel.getEntrypoint());
-                    entryClass.getDeclaredMethod(split[1]).invoke(entryClass.getConstructor().newInstance());
-                }
-            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException | InstantiationException e) {
-                e.printStackTrace();
-            }
+        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException | InstantiationException e) {
+            e.printStackTrace();
         }
     }
 }
