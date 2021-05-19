@@ -1,5 +1,7 @@
 package org.bookmc.loader;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bookmc.loader.exception.MissingEntrypointException;
 import org.bookmc.loader.ui.MissingDependencyUI;
 import org.bookmc.loader.vessel.ModVessel;
@@ -12,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 public class BookModLoader {
+    private static final Logger logger = LogManager.getLogger();
     private static final List<ModVessel> loaded = new ArrayList<>();
 
     private static final Map<String, ArrayList<String>> missingDependencies = new HashMap<>();
@@ -101,6 +104,7 @@ public class BookModLoader {
             loaded.add(vessel);
             try {
                 if (entryClass != null) {
+                    logger.debug("Loading " + vessel.getName() + " from " + vessel.getEntrypoint());
                     entryClass.getDeclaredMethod(split[1]).invoke(entryClass.getConstructor().newInstance());
                 }
             } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException | InstantiationException e) {
