@@ -2,9 +2,9 @@ package org.bookmc.loader.book;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import org.bookmc.loader.utils.ClassUtils;
 import org.bookmc.loader.Loader;
 import org.bookmc.loader.MinecraftModDiscoverer;
+import org.bookmc.loader.utils.ClassUtils;
 import org.bookmc.loader.vessel.json.JsonModVessel;
 
 import java.io.File;
@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 public class DevelopmentModDiscoverer implements MinecraftModDiscoverer {
+
     @Override
     public void discover(File[] files) {
         // Only run in a deobfuscated environment
