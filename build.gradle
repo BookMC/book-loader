@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id "java-library"
     id "maven-publish"
 }
 
@@ -20,7 +21,9 @@ repositories {
 }
 
 dependencies {
-    implementation "net.minecraft:launchwrapper:1.12"
+    api group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.0-beta9'
+    api group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.0-beta9'
+    implementation "com.github.BookMC:LegacyLauncher:2cbe27165a"
     compileOnly "org.spongepowered:mixin:0.7.11-SNAPSHOT"
 }
 
