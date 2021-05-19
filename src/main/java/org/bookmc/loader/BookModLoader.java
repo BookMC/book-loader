@@ -2,9 +2,11 @@ package org.bookmc.loader;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bookmc.loader.book.DevelopmentModDiscoverer;
 import org.bookmc.loader.ui.MissingDependencyUI;
 import org.bookmc.loader.vessel.ModVessel;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -92,5 +94,17 @@ public class BookModLoader {
         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException | InstantiationException e) {
             e.printStackTrace();
         }
+    }
+
+    public static void reload(File directory) {
+        for (MinecraftModDiscoverer discoverer : Loader.getModDiscoverers()) {
+            File[] files = directory.listFiles();
+
+            if (files != null || discoverer instanceof DevelopmentModDiscoverer) {
+                discoverer.discover(files);
+            }
+        }
+
+        load();
     }
 }
