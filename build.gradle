@@ -10,6 +10,9 @@ version '0.0.1'
 repositories {
     mavenCentral()
     maven {
+        url "https://repo.spongepowered.org/repository/maven-public/"
+    }
+    maven {
         url "https://jitpack.io"
     }
 }
@@ -17,9 +20,8 @@ repositories {
 dependencies {
     api group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.0-beta9'
     api group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.0-beta9'
-
     implementation "com.github.BookMC:LegacyLauncher:2cbe27165a"
-    compileOnly "com.google.code.gson:gson:2.2.4"
+    compileOnly "org.spongepowered:mixin:0.7.11-SNAPSHOT"
 }
 
 publishing {
