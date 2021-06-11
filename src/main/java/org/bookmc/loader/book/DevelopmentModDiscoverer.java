@@ -16,6 +16,8 @@ public class DevelopmentModDiscoverer implements MinecraftModDiscoverer {
 
     @Override
     public void discover(File[] files) {
+        new ClasspathModDiscoverer().discover(files); // Discover here too :)
+
         // Only run in a deobfuscated environment
         if (ClassUtils.isClassAvailable("net.minecraft.client.Minecraft")) {
             // (Files are useless to us)
