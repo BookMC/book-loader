@@ -1,11 +1,11 @@
 plugins {
-    id 'java'
+    id "java"
     id "java-library"
     id "maven-publish"
 }
 
-group 'org.bookmc'
-version '0.0.1'
+group "org.bookmc"
+version "0.0.1"
 
 repositories {
     mavenCentral()
@@ -18,9 +18,9 @@ repositories {
 }
 
 dependencies {
-    api group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.0-beta9'
-    api group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.0-beta9'
-    implementation "com.github.BookMC:LegacyLauncher:2cbe27165a"
+    api group: "org.apache.logging.log4j", name: "log4j-api", version: "2.0-beta9"
+    api group: "org.apache.logging.log4j", name: "log4j-core", version: "2.0-beta9"
+    api "com.github.BookMC:LegacyLauncher:2cbe27165a"
     compileOnly "org.spongepowered:mixin:0.7.11-SNAPSHOT"
 }
 
@@ -36,13 +36,13 @@ publishing {
         mavenJava(MavenPublication) {
             from components.java
             pom {
-                name = 'loader'
-                url = 'https://github.com/BookMC/loader'
+                name = "loader"
+                url = "https://github.com/BookMC/loader"
 
                 developers {
                     developer {
-                        id = 'loader'
-                        name = 'ChachyDev'
+                        id = "loader"
+                        name = "ChachyDev"
                     }
                 }
             }
