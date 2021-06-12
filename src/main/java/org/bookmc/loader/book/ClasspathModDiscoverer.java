@@ -26,9 +26,8 @@ public class ClasspathModDiscoverer implements MinecraftModDiscoverer {
 
         for (URL url : classpath) {
             try {
-                URLConnection connection = url.openConnection();
-                if (connection instanceof JarURLConnection) {
-                    addConnection(connection.getURL());
+                if (url.getPath().endsWith(".jar") || url.getPath().endsWith(".zip")) {
+                    addConnection(url);
                 }
             } catch (IOException | URISyntaxException e) {
                 e.printStackTrace();
