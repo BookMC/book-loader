@@ -41,7 +41,6 @@ public class JsonModVessel implements ModVessel {
         return object.has("config") ? object.get("config").getAsString() : null;
     }
 
-    @Deprecated
     @Override
     public String getAuthor() {
         return object.has("author") ? object.get("author").getAsString() : "MysteriousDev";
