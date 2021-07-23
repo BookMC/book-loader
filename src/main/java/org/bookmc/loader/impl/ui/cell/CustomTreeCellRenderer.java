@@ -1,4 +1,4 @@
-package org.bookmc.loader.ui.renderer;
+package org.bookmc.loader.impl.ui.cell;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeCellRenderer;

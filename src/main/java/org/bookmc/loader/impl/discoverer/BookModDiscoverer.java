@@ -1,13 +1,13 @@
-package org.bookmc.loader.book;
+package org.bookmc.loader.impl.discoverer;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.minecraft.launchwrapper.Launch;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.bookmc.loader.Loader;
-import org.bookmc.loader.MinecraftModDiscoverer;
-import org.bookmc.loader.vessel.json.JsonModVessel;
+import org.bookmc.loader.api.MinecraftModDiscoverer;
+import org.bookmc.loader.impl.Loader;
+import org.bookmc.loader.impl.vessel.JsonModVessel;
 
 import java.io.File;
 import java.io.InputStream;
@@ -67,8 +67,8 @@ public class BookModDiscoverer implements MinecraftModDiscoverer {
                             break;
                         }
                     }
-                } catch (Throwable exception) {
-                    exception.printStackTrace();
+                } catch (Throwable t) {
+                    t.printStackTrace();
                 }
             }
         }

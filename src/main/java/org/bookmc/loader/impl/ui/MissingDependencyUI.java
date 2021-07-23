@@ -1,8 +1,8 @@
-package org.bookmc.loader.ui;
+package org.bookmc.loader.impl.ui;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.bookmc.loader.ui.renderer.CustomTreeCellRenderer;
+import org.bookmc.loader.impl.ui.cell.CustomTreeCellRenderer;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -10,8 +10,6 @@ import java.awt.*;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 
 public class MissingDependencyUI {

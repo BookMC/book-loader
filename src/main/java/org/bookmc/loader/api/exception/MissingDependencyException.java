@@ -1,4 +1,4 @@
-package org.bookmc.loader.exception;
+package org.bookmc.loader.api.exception;
 
 public class MissingDependencyException extends IllegalStateException {
     public MissingDependencyException(String dependency) {

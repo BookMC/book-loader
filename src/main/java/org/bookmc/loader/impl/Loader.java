@@ -1,9 +1,12 @@
-package org.bookmc.loader;
+package org.bookmc.loader.impl;
 
-import org.bookmc.loader.book.BookModDiscoverer;
-import org.bookmc.loader.book.DevelopmentModDiscoverer;
-import org.bookmc.loader.vessel.ModVessel;
+import org.bookmc.loader.api.MinecraftModDiscoverer;
+import org.bookmc.loader.api.vessel.ModVessel;
+import org.bookmc.loader.impl.discoverer.BookModDiscoverer;
+import org.bookmc.loader.impl.discoverer.ClasspathModDiscoverer;
+import org.bookmc.loader.impl.discoverer.DevelopmentModDiscoverer;
 
+import java.io.File;
 import java.util.*;
 
 public class Loader {
@@ -13,6 +16,7 @@ public class Loader {
     static {
         // Register default mod loader.
         Loader.registerModDiscoverer(new BookModDiscoverer());
+        Loader.registerModDiscoverer(new ClasspathModDiscoverer());
         Loader.registerModDiscoverer(new DevelopmentModDiscoverer());
     }
 
@@ -34,5 +38,15 @@ public class Loader {
 
     public static Map<String, ModVessel> getModVesselsMap() {
         return Collections.unmodifiableMap(modVessels);
+    }
+
+    public static void discover(File modsDirectory) {
+        for (MinecraftModDiscoverer discoverer : Loader.getModDiscoverers()) {
+            File[] files = modsDirectory.listFiles();
+
+            if (files != null || !discoverer.isFilesRequired()) {
+                discoverer.discover(files);
+            }
+        }
     }
 }

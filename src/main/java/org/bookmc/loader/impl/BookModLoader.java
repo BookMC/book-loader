@@ -1,10 +1,11 @@
-package org.bookmc.loader;
+package org.bookmc.loader.impl;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.bookmc.loader.book.DevelopmentModDiscoverer;
-import org.bookmc.loader.ui.MissingDependencyUI;
-import org.bookmc.loader.vessel.ModVessel;
+import org.bookmc.loader.api.MinecraftModDiscoverer;
+import org.bookmc.loader.api.vessel.ModVessel;
+import org.bookmc.loader.impl.discoverer.DevelopmentModDiscoverer;
+import org.bookmc.loader.impl.ui.MissingDependencyUI;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;

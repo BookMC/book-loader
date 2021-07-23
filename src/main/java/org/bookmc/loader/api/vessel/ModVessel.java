@@ -1,4 +1,4 @@
-package org.bookmc.loader.vessel;
+package org.bookmc.loader.api.vessel;
 
 import java.io.File;
 

@@ -1,8 +1,8 @@
-package org.bookmc.loader.vessel.json;
+package org.bookmc.loader.impl.vessel;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import org.bookmc.loader.vessel.ModVessel;
+import org.bookmc.loader.api.vessel.ModVessel;
 
 import java.io.File;
 

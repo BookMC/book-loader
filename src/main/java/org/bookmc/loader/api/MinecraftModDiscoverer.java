@@ -1,4 +1,4 @@
-package org.bookmc.loader;
+package org.bookmc.loader.api;
 
 import com.google.gson.JsonParser;
 
@@ -13,4 +13,8 @@ public interface MinecraftModDiscoverer {
      * @param files Array of files to be loaded via the implementation
      */
     void discover(File[] files);
+
+    default boolean isFilesRequired() {
+        return true;
+    }
 }

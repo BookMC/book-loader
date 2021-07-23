@@ -1,11 +1,11 @@
-package org.bookmc.loader.book;
+package org.bookmc.loader.impl.discoverer;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.minecraft.launchwrapper.hacks.LaunchWrapperHacks;
-import org.bookmc.loader.Loader;
-import org.bookmc.loader.MinecraftModDiscoverer;
-import org.bookmc.loader.vessel.json.JsonModVessel;
+import org.bookmc.loader.api.MinecraftModDiscoverer;
+import org.bookmc.loader.impl.Loader;
+import org.bookmc.loader.impl.vessel.JsonModVessel;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,6 +31,11 @@ public class ClasspathModDiscoverer implements MinecraftModDiscoverer {
                 e.printStackTrace();
             }
         }
+    }
+
+    @Override
+    public boolean isFilesRequired() {
+        return false;
     }
 
     private void addConnection(URL url) throws URISyntaxException, IOException {
