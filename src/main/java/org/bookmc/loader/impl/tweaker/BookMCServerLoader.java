@@ -1,4 +1,4 @@
-package org.bookmc.loader.impl.tweaker.server;
+package org.bookmc.loader.impl.tweaker;
 
 import net.minecraft.launchwrapper.LaunchClassLoader;
 import org.bookmc.loader.api.BookMCLoaderCommon;
