@@ -7,8 +7,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bookmc.loader.api.vessel.ModVessel;
 import org.bookmc.loader.impl.Loader;
-import org.bookmc.loader.impl.dummy.MinecraftModVessel;
 import org.bookmc.loader.impl.dummy.JavaModVessel;
+import org.bookmc.loader.impl.dummy.MinecraftModVessel;
 import org.bookmc.loader.utils.ClassUtils;
 import org.spongepowered.asm.launch.MixinBootstrap;
 import org.spongepowered.asm.mixin.MixinEnvironment;
@@ -19,15 +19,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class BookMCLoaderCommon implements ITweaker {
-    private final Logger logger = LogManager.getLogger(this);
-
     private static File modsDirectory;
-
+    private static MixinEnvironment.Side side = MixinEnvironment.Side.UNKNOWN;
+    private final Logger logger = LogManager.getLogger(this);
     private final List<String> args = new ArrayList<>();
-
     private String version;
 
-    private static MixinEnvironment.Side side = MixinEnvironment.Side.UNKNOWN;
+    public static File getModsDirectory() {
+        return modsDirectory;
+    }
+
+    public static MixinEnvironment.Side getSide() {
+        return side;
+    }
 
     @Override
     public void acceptOptions(List<String> args, File gameDir, File assetsDir, String profile) {
@@ -115,13 +119,5 @@ public abstract class BookMCLoaderCommon implements ITweaker {
                 Mixins.addConfiguration(mixinEntrypoint);
             }
         }
-    }
-
-    public static File getModsDirectory() {
-        return modsDirectory;
-    }
-
-    public static MixinEnvironment.Side getSide() {
-        return side;
     }
 }

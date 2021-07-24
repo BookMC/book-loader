@@ -4,8 +4,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.bookmc.loader.api.MinecraftModDiscoverer;
 import org.bookmc.loader.impl.Loader;
-import org.bookmc.loader.utils.ClassUtils;
 import org.bookmc.loader.impl.vessel.JsonModVessel;
+import org.bookmc.loader.utils.ClassUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,8 +30,6 @@ public class DevelopmentModDiscoverer implements MinecraftModDiscoverer {
                                 Loader.registerVessel(new JsonModVessel(mod, new File("there_is_no_mod_to_see")));
                             }
                         }
-                    } catch (IOException e) {
-                        e.printStackTrace();
                     }
                 }
             } catch (IOException e) {

@@ -17,13 +17,10 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 public class BookModDiscoverer implements MinecraftModDiscoverer {
-    private final Logger logger = LogManager.getLogger();
-
     private static final String LOADER_JSON_FILE = "book.mod.json";
-
     private static final String FABRIC_JSON_FILE = "fabric.mod.json";
-
     private static final String FORGE_JSON_FILE = "mcmod.info";
+    private final Logger logger = LogManager.getLogger();
 
     @Override
     public void discover(File[] files) {
