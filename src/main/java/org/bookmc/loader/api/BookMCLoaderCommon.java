@@ -77,6 +77,7 @@ public abstract class BookMCLoaderCommon implements ITweaker {
 
         Loader.registerVessel(new JavaModVessel());
         Loader.registerVessel(new MinecraftModVessel(version));
+
         try {
             loadModMixins(modsDirectory, classLoader);
         } catch (IllegalDependencyException e) {
@@ -127,19 +128,21 @@ public abstract class BookMCLoaderCommon implements ITweaker {
             if (vessel.isInternallyEnabled()) {
                 try {
                     String entrypoint = vessel.getEntrypoint();
-                    Class<?> clazz = Class.forName(entrypoint);
+                    if (!entrypoint.contains("::")) {
+                        Class<?> clazz = Class.forName(entrypoint, false, classLoader);
 
-                    if (clazz.isAssignableFrom(CompatabilityLayer.class)) {
-                        if (vessel.getDependencies().length != 0) {
-                            throw new IllegalDependencyException(vessel);
+                        if (clazz.isAssignableFrom(CompatabilityLayer.class)) {
+                            if (vessel.getDependencies().length != 0) {
+                                throw new IllegalDependencyException(vessel);
+                            }
+
+                            BookModLoader.loaded.add(vessel); // Trick BookModLoader#load to believe we have "loaded" our "mod".
+                            CompatabilityLayer layer = (CompatabilityLayer) clazz.newInstance();
+                            layer.init(this, classLoader);
                         }
-
-                        BookModLoader.loaded.add(vessel); // Trick BookModLoader#load to believe we have "loaded" our "mod".
-                        CompatabilityLayer layer = (CompatabilityLayer) clazz.newInstance();
-                        layer.init(this, classLoader);
                     }
-                } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-                    e.printStackTrace();
+                } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ignored) {
+
                 }
 
                 String mixinEntrypoint = vessel.getMixinEntrypoint();
