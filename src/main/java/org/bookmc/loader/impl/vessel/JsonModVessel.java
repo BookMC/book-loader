@@ -87,6 +87,11 @@ public class JsonModVessel implements ModVessel {
         throw new UnsupportedOperationException("This operation has not been implemented");
     }
 
+    @Override
+    public boolean isCompatabilityLayer() {
+        return object.has("compat_layer") && object.get("compat_layer").getAsBoolean();
+    }
+
     private String[] toString(JsonArray array) {
         int size = array.size();
         String[] strings = new String[size];

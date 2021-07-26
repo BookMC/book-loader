@@ -76,4 +76,9 @@ public class MinecraftModVessel implements ModVessel {
     public void setInternallyEnabled(boolean enabled) {
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    public boolean isCompatabilityLayer() {
+        return false;
+    }
 }
