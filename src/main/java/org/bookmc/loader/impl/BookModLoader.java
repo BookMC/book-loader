@@ -16,7 +16,7 @@ import java.util.Map;
 
 public class BookModLoader {
     private static final Logger logger = LogManager.getLogger();
-    private static final List<ModVessel> loaded = new ArrayList<>();
+    public static final List<ModVessel> loaded = new ArrayList<>();
 
     private static final Map<String, ArrayList<String>> missingDependencies = new HashMap<>();
 

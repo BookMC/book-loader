@@ -5,7 +5,10 @@ import net.minecraft.launchwrapper.Launch;
 import net.minecraft.launchwrapper.LaunchClassLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bookmc.loader.api.compat.CompatabilityLayer;
+import org.bookmc.loader.api.exception.IllegalDependencyException;
 import org.bookmc.loader.api.vessel.ModVessel;
+import org.bookmc.loader.impl.BookModLoader;
 import org.bookmc.loader.impl.Loader;
 import org.bookmc.loader.impl.dummy.JavaModVessel;
 import org.bookmc.loader.impl.dummy.MinecraftModVessel;
@@ -73,10 +76,19 @@ public abstract class BookMCLoaderCommon implements ITweaker {
         }
 
         Loader.registerVessel(new JavaModVessel());
-        loadModMixins(modsDirectory);
+        Loader.registerVessel(new MinecraftModVessel(version));
+        try {
+            loadModMixins(modsDirectory, classLoader);
+        } catch (IllegalDependencyException e) {
+            e.printStackTrace();
+        }
 
         if (version != null) {
-            loadModMixins(new File(modsDirectory, version));
+            try {
+                loadModMixins(new File(modsDirectory, version), classLoader);
+            } catch (IllegalDependencyException e) {
+                e.printStackTrace();
+            }
             Loader.registerVessel(new MinecraftModVessel(version));
         } else {
             logger.error("Failed to detect the game version! Mods inside the game version's mod folder will not be loaded!");
@@ -108,12 +120,27 @@ public abstract class BookMCLoaderCommon implements ITweaker {
         args.add(value);
     }
 
-    private void loadModMixins(File modsDirectory) {
+    private void loadModMixins(File modsDirectory, LaunchClassLoader classLoader) throws IllegalDependencyException {
         Loader.discover(modsDirectory);
 
         for (ModVessel vessel : Loader.getModVessels()) {
-            String mixinEntrypoint = vessel.getMixinEntrypoint();
+            try {
+                String entrypoint = vessel.getEntrypoint();
+                Class<?> clazz = Class.forName(entrypoint);
+                if (clazz.isAssignableFrom(CompatabilityLayer.class)) {
+                    if (vessel.getDependencies().length != 0) {
+                        throw new IllegalDependencyException(vessel);
+                    } else {
+                        BookModLoader.loaded.add(vessel);
+                        CompatabilityLayer layer = (CompatabilityLayer) clazz.newInstance();
+                        layer.init(this, classLoader);
+                    }
+                }
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+                e.printStackTrace();
+            }
 
+            String mixinEntrypoint = vessel.getMixinEntrypoint();
             // Load mixins from everywhere (All jars should now be on the LaunchClassLoader)
             if (mixinEntrypoint != null) {
                 Mixins.addConfiguration(mixinEntrypoint);
