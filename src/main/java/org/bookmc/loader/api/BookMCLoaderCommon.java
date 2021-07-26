@@ -127,14 +127,15 @@ public abstract class BookMCLoaderCommon implements ITweaker {
             try {
                 String entrypoint = vessel.getEntrypoint();
                 Class<?> clazz = Class.forName(entrypoint);
+
                 if (clazz.isAssignableFrom(CompatabilityLayer.class)) {
                     if (vessel.getDependencies().length != 0) {
                         throw new IllegalDependencyException(vessel);
-                    } else {
-                        BookModLoader.loaded.add(vessel);
-                        CompatabilityLayer layer = (CompatabilityLayer) clazz.newInstance();
-                        layer.init(this, classLoader);
                     }
+
+                    BookModLoader.loaded.add(vessel); // Trick BookModLoader#load to believe we have "loaded" our "mod".
+                    CompatabilityLayer layer = (CompatabilityLayer) clazz.newInstance();
+                    layer.init(this, classLoader);
                 }
             } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
                 e.printStackTrace();
