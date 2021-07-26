@@ -127,7 +127,7 @@ public abstract class BookMCLoaderCommon implements ITweaker {
         for (ModVessel vessel : Loader.getModVessels()) {
             if (vessel.isInternallyEnabled()) {
                 try {
-                    if (vessel.isCompatabilityLayer()) {
+                    if (vessel.isCompatabilityLayer() && !BookModLoader.loaded.contains(vessel)) {
                         String entrypoint = vessel.getEntrypoint();
                         if (!entrypoint.contains("::")) {
                             Class<?> clazz = Class.forName(entrypoint, false, classLoader)
