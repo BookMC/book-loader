@@ -76,6 +76,7 @@ public class BookModLoader {
     }
 
     private static void load(ModVessel vessel) {
+        if (!vessel.isInternallyEnabled()) return;
         String[] split = vessel.getEntrypoint().split("::");
 
         Class<?> entryClass = null;

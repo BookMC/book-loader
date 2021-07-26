@@ -76,6 +76,17 @@ public class JsonModVessel implements ModVessel {
         return object.has("dependencies") ? toString(object.get("dependencies").getAsJsonArray()) : new String[0];
     }
 
+    @Override
+    public boolean isInternallyEnabled() {
+        return true;
+    }
+
+    @Override
+    public void setInternallyEnabled(boolean enabled) {
+        // TODO: Make this work
+        throw new UnsupportedOperationException("This operation has not been implemented");
+    }
+
     private String[] toString(JsonArray array) {
         int size = array.size();
         String[] strings = new String[size];

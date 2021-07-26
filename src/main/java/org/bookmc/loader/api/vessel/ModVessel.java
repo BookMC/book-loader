@@ -36,4 +36,8 @@ public interface ModVessel {
 
     // Returns the dependencies of the mod
     String[] getDependencies();
+
+    boolean isInternallyEnabled();
+
+    void setInternallyEnabled(boolean enabled);
 }

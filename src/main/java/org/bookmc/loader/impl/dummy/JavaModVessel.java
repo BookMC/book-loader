@@ -63,4 +63,14 @@ public class JavaModVessel implements ModVessel {
     public String[] getDependencies() {
         return new String[0];
     }
+
+    @Override
+    public boolean isInternallyEnabled() {
+        return false;
+    }
+
+    @Override
+    public void setInternallyEnabled(boolean enabled) {
+        throw new UnsupportedOperationException();
+    }
 }

@@ -124,27 +124,29 @@ public abstract class BookMCLoaderCommon implements ITweaker {
         Loader.discover(modsDirectory);
 
         for (ModVessel vessel : Loader.getModVessels()) {
-            try {
-                String entrypoint = vessel.getEntrypoint();
-                Class<?> clazz = Class.forName(entrypoint);
+            if (vessel.isInternallyEnabled()) {
+                try {
+                    String entrypoint = vessel.getEntrypoint();
+                    Class<?> clazz = Class.forName(entrypoint);
 
-                if (clazz.isAssignableFrom(CompatabilityLayer.class)) {
-                    if (vessel.getDependencies().length != 0) {
-                        throw new IllegalDependencyException(vessel);
+                    if (clazz.isAssignableFrom(CompatabilityLayer.class)) {
+                        if (vessel.getDependencies().length != 0) {
+                            throw new IllegalDependencyException(vessel);
+                        }
+
+                        BookModLoader.loaded.add(vessel); // Trick BookModLoader#load to believe we have "loaded" our "mod".
+                        CompatabilityLayer layer = (CompatabilityLayer) clazz.newInstance();
+                        layer.init(this, classLoader);
                     }
-
-                    BookModLoader.loaded.add(vessel); // Trick BookModLoader#load to believe we have "loaded" our "mod".
-                    CompatabilityLayer layer = (CompatabilityLayer) clazz.newInstance();
-                    layer.init(this, classLoader);
+                } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+                    e.printStackTrace();
                 }
-            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-                e.printStackTrace();
-            }
 
-            String mixinEntrypoint = vessel.getMixinEntrypoint();
-            // Load mixins from everywhere (All jars should now be on the LaunchClassLoader)
-            if (mixinEntrypoint != null) {
-                Mixins.addConfiguration(mixinEntrypoint);
+                String mixinEntrypoint = vessel.getMixinEntrypoint();
+                // Load mixins from everywhere (All jars should now be on the LaunchClassLoader)
+                if (mixinEntrypoint != null) {
+                    Mixins.addConfiguration(mixinEntrypoint);
+                }
             }
         }
     }
