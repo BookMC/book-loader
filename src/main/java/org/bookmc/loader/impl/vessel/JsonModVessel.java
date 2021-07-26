@@ -88,7 +88,7 @@ public class JsonModVessel implements ModVessel {
     }
 
     @Override
-    public boolean isCompatabilityLayer() {
+    public boolean isCompatibilityLayer() {
         return object.has("compat_layer") && object.get("compat_layer").getAsBoolean();
     }
 

@@ -78,7 +78,7 @@ public class MinecraftModVessel implements ModVessel {
     }
 
     @Override
-    public boolean isCompatabilityLayer() {
+    public boolean isCompatibilityLayer() {
         return false;
     }
 }

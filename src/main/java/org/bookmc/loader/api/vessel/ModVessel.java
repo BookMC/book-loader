@@ -41,5 +41,5 @@ public interface ModVessel {
 
     void setInternallyEnabled(boolean enabled);
 
-    boolean isCompatabilityLayer();
+    boolean isCompatibilityLayer();
 }

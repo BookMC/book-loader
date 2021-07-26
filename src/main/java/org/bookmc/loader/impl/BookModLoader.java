@@ -77,7 +77,7 @@ public class BookModLoader {
     }
 
     private static void load(ModVessel vessel) {
-        if (!vessel.isInternallyEnabled() || vessel.isCompatabilityLayer()) return;
+        if (!vessel.isInternallyEnabled() || vessel.isCompatibilityLayer()) return;
         String[] split = vessel.getEntrypoint().split("::");
 
         Class<?> entryClass = null;

@@ -5,7 +5,7 @@ import net.minecraft.launchwrapper.Launch;
 import net.minecraft.launchwrapper.LaunchClassLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.bookmc.loader.api.compat.CompatabilityLayer;
+import org.bookmc.loader.api.compat.CompatiblityLayer;
 import org.bookmc.loader.api.exception.IllegalDependencyException;
 import org.bookmc.loader.api.vessel.ModVessel;
 import org.bookmc.loader.impl.BookModLoader;
@@ -127,18 +127,18 @@ public abstract class BookMCLoaderCommon implements ITweaker {
         for (ModVessel vessel : Loader.getModVessels()) {
             if (vessel.isInternallyEnabled()) {
                 try {
-                    if (vessel.isCompatabilityLayer() && !BookModLoader.loaded.contains(vessel)) {
+                    if (vessel.isCompatibilityLayer() && !BookModLoader.loaded.contains(vessel)) {
                         String entrypoint = vessel.getEntrypoint();
                         if (!entrypoint.contains("::")) {
                             Class<?> clazz = Class.forName(entrypoint, false, classLoader)
-                                .asSubclass(classLoader.loadClass(CompatabilityLayer.class.getName()));
+                                .asSubclass(classLoader.loadClass(CompatiblityLayer.class.getName()));
 
                             if (vessel.getDependencies().length != 0) {
                                 throw new IllegalDependencyException(vessel);
                             }
 
                             BookModLoader.loaded.add(vessel); // Trick BookModLoader#load to believe we have "loaded" our "mod".
-                            CompatabilityLayer layer = (CompatabilityLayer) clazz.newInstance();
+                            CompatiblityLayer layer = (CompatiblityLayer) clazz.newInstance();
                             layer.init(this, classLoader);
                         }
                     }
