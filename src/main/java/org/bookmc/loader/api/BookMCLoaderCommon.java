@@ -56,9 +56,6 @@ public abstract class BookMCLoaderCommon implements ITweaker {
 
     @Override
     public void injectIntoClassLoader(LaunchClassLoader classLoader) {
-        // Redirect this stuff to the parent classloader
-        classLoader.addClassLoaderExclusion("org.bookmc.loader.");
-
         MixinBootstrap.init();
 
         MixinEnvironment environment = MixinEnvironment.getDefaultEnvironment();
@@ -128,22 +125,9 @@ public abstract class BookMCLoaderCommon implements ITweaker {
             if (vessel.isInternallyEnabled()) {
                 try {
                     if (vessel.isCompatibilityLayer() && !BookModLoader.loaded.contains(vessel)) {
-                        String entrypoint = vessel.getEntrypoint();
-                        if (!entrypoint.contains("::")) {
-                            Class<?> clazz = Class.forName(entrypoint, false, classLoader)
-                                .asSubclass(classLoader.loadClass(CompatiblityLayer.class.getName()));
-
-                            if (vessel.getDependencies().length != 0) {
-                                throw new IllegalDependencyException(vessel);
-                            }
-
-                            BookModLoader.loaded.add(vessel); // Trick BookModLoader#load to believe we have "loaded" our "mod".
-                            CompatiblityLayer layer = (CompatiblityLayer) clazz.newInstance();
-                            layer.init(this, classLoader);
-                        }
+                        loadCompatibilityLayer(vessel, classLoader);
                     }
                 } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ignored) {
-
                 }
 
                 String mixinEntrypoint = vessel.getMixinEntrypoint();
@@ -152,6 +136,22 @@ public abstract class BookMCLoaderCommon implements ITweaker {
                     Mixins.addConfiguration(mixinEntrypoint);
                 }
             }
+        }
+    }
+
+    private void loadCompatibilityLayer(ModVessel vessel, LaunchClassLoader classLoader) throws ClassNotFoundException, IllegalDependencyException, InstantiationException, IllegalAccessException {
+        String entrypoint = vessel.getEntrypoint();
+        if (!entrypoint.contains("::")) {
+            Class<?> clazz = Class.forName(entrypoint)
+                .asSubclass(CompatiblityLayer.class);
+
+            if (vessel.getDependencies().length != 0) {
+                throw new IllegalDependencyException(vessel);
+            }
+
+            BookModLoader.loaded.add(vessel); // Trick BookModLoader#load to believe we have "loaded" our "mod".
+            CompatiblityLayer layer = (CompatiblityLayer) clazz.newInstance();
+            layer.init(this, classLoader);
         }
     }
 }

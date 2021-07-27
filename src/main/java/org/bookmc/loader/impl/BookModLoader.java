@@ -1,6 +1,5 @@
 package org.bookmc.loader.impl;
 
-import net.minecraft.launchwrapper.Launch;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bookmc.loader.api.MinecraftModDiscoverer;
@@ -83,7 +82,7 @@ public class BookModLoader {
         Class<?> entryClass = null;
 
         try {
-            entryClass = Class.forName(split[0], true, Launch.classLoader);
+            entryClass = Class.forName(split[0]);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
