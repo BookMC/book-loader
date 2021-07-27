@@ -49,7 +49,7 @@ jar {
     }
 
     duplicatesStrategy DuplicatesStrategy.EXCLUDE
-    exclude "module-info.class", "LICENSE.*"
+    exclude "module-info.class", "LICENSE.*", "META-INF/*.RSA", "META-INF/*.SF", "META-INF/*.DSA"
 }
 
 publishing {
