@@ -1,5 +1,6 @@
 package org.bookmc.loader.impl;
 
+import net.minecraft.launchwrapper.Launch;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bookmc.loader.api.MinecraftModDiscoverer;
@@ -46,7 +47,7 @@ public class BookModLoader {
             }
 
             if (!loaded.contains(vessel)) {
-                load(vessel);
+                load(vessel, Launch.classLoader);
             }
         }
     }
@@ -62,7 +63,7 @@ public class BookModLoader {
 
             if (isFound) {
                 loadDependencies(dependencyVessel);
-                load(dependencyVessel);
+                load(dependencyVessel, Launch.classLoader);
             }
 
             if (!isFound) {
@@ -75,14 +76,14 @@ public class BookModLoader {
         }
     }
 
-    private static void load(ModVessel vessel) {
+    private static void load(ModVessel vessel, ClassLoader classLoader) {
         if (!vessel.isInternallyEnabled() || vessel.isCompatibilityLayer()) return;
         String[] split = vessel.getEntrypoint().split("::");
 
         Class<?> entryClass = null;
 
         try {
-            entryClass = Class.forName(split[0]);
+            entryClass = Class.forName(split[0], false, classLoader);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
