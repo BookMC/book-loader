@@ -129,7 +129,8 @@ public abstract class BookMCLoaderCommon implements ITweaker {
                     if (vessel.isCompatibilityLayer() && !BookModLoader.loaded.contains(vessel)) {
                         loadCompatibilityLayer(vessel, classLoader);
                     }
-                } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ignored) {
+                } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+                    e.printStackTrace();
                 }
 
                 String mixinEntrypoint = vessel.getMixinEntrypoint();
