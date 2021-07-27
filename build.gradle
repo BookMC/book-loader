@@ -5,7 +5,7 @@ plugins {
 }
 
 group "org.bookmc"
-version "0.0.1"
+version "0.1.1"
 
 repositories {
     mavenCentral()
@@ -17,11 +17,39 @@ repositories {
     }
 }
 
+configurations {
+    include
+    implementation.extendsFrom(include)
+}
+
+
 dependencies {
+    // Libraries to be downloaded via the installer
     api group: "org.apache.logging.log4j", name: "log4j-api", version: "2.0-beta9"
     api group: "org.apache.logging.log4j", name: "log4j-core", version: "2.0-beta9"
     api "com.github.BookMC:LegacyLauncher:2cbe27165a"
-    compileOnly "org.spongepowered:mixin:0.7.11-SNAPSHOT"
+
+    // Shaded libraries
+    include("org.spongepowered:mixin:0.7.11-SNAPSHOT") {
+        exclude module: "guava"
+        exclude module: "commons-io"
+        exclude module: "gson"
+        exclude module: "launchwrapper"
+        exclude module: "log4j-core"
+    }
+
+    compileOnly "com.google.code.gson:gson:2.2.4" // BookMC/minecraft#28
+}
+
+jar {
+    from {
+        configurations.include.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+
+    duplicatesStrategy DuplicatesStrategy.EXCLUDE
+    exclude "module-info.class", "LICENSE.*"
 }
 
 publishing {
@@ -41,7 +69,6 @@ publishing {
 
                 developers {
                     developer {
-                        id = "loader"
                         name = "ChachyDev"
                     }
                 }

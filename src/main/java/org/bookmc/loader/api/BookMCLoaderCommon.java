@@ -142,15 +142,14 @@ public abstract class BookMCLoaderCommon implements ITweaker {
     private void loadCompatibilityLayer(ModVessel vessel, LaunchClassLoader classLoader) throws ClassNotFoundException, IllegalDependencyException, InstantiationException, IllegalAccessException {
         String entrypoint = vessel.getEntrypoint();
         if (!entrypoint.contains("::")) {
-            Class<?> clazz = Class.forName(entrypoint)
-                .asSubclass(CompatiblityLayer.class);
+            Class<? extends CompatiblityLayer> clazz = Class.forName(entrypoint).asSubclass(CompatiblityLayer.class);
 
             if (vessel.getDependencies().length != 0) {
                 throw new IllegalDependencyException(vessel);
             }
 
             BookModLoader.loaded.add(vessel); // Trick BookModLoader#load to believe we have "loaded" our "mod".
-            CompatiblityLayer layer = (CompatiblityLayer) clazz.newInstance();
+            CompatiblityLayer layer = clazz.newInstance();
             layer.init(this, classLoader);
         }
     }

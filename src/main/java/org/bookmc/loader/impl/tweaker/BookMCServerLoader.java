@@ -11,13 +11,11 @@ public class BookMCServerLoader extends BookMCLoaderCommon {
     @Override
     public void injectIntoClassLoader(LaunchClassLoader classLoader, MixinEnvironment environment) {
         Mixins.addConfiguration("bookmc-server.mixins.json");
-
     }
 
     @Override
     public MixinEnvironment.Side setSide(MixinEnvironment environment) {
         environment.setSide(MixinEnvironment.Side.SERVER);
-
         return MixinEnvironment.Side.SERVER;
     }
 
