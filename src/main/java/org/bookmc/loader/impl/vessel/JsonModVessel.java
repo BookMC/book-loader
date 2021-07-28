@@ -77,6 +77,11 @@ public class JsonModVessel implements ModVessel {
     }
 
     @Override
+    public String getIcon() {
+        return object.has("icon") ? object.get("icon").getAsString() : null;
+    }
+
+    @Override
     public boolean isInternallyEnabled() {
         return true;
     }

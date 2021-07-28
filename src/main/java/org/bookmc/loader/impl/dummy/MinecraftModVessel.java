@@ -68,6 +68,11 @@ public class MinecraftModVessel implements ModVessel {
     }
 
     @Override
+    public String getIcon() {
+        return null;
+    }
+
+    @Override
     public boolean isInternallyEnabled() {
         return false;
     }

@@ -65,6 +65,11 @@ public class JavaModVessel implements ModVessel {
     }
 
     @Override
+    public String getIcon() {
+        return null;
+    }
+
+    @Override
     public boolean isInternallyEnabled() {
         return false;
     }
