@@ -1,19 +1,18 @@
 package org.bookmc.loader.impl;
 
 import net.minecraft.launchwrapper.Launch;
+import net.minecraft.launchwrapper.LaunchClassLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bookmc.loader.api.MinecraftModDiscoverer;
+import org.bookmc.loader.api.candidate.ModCandidate;
 import org.bookmc.loader.api.vessel.ModVessel;
 import org.bookmc.loader.impl.discoverer.DevelopmentModDiscoverer;
 import org.bookmc.loader.impl.ui.MissingDependencyUI;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class BookModLoader {
     private static final Logger logger = LogManager.getLogger();
@@ -109,5 +108,41 @@ public class BookModLoader {
         }
 
         load();
+    }
+
+    public static void loadCandidates(LaunchClassLoader classLoader) {
+        List<ModCandidate> toRemove = new ArrayList<>();
+
+        for (ModCandidate candidate : Loader.getCandidates()) {
+            if (candidate.isAcceptable()) {
+                for (ModVessel vessel : candidate.getVessels()) {
+                    if (!Loader.isVesselDiscovered(vessel.getId())) {
+                        candidate.addToClasspath(classLoader);
+                        Loader.registerVessel(vessel);
+                    } else {
+                        toRemove.add(candidate);
+                    }
+                }
+            } else {
+                toRemove.add(candidate);
+                if (!Loader.getRejectedCandidates().contains(candidate)) {
+                    Loader.rejectCandidate(candidate);
+                }
+            }
+        }
+
+        for (ModCandidate candidate : toRemove) {
+            Loader.getCandidates().remove(candidate);
+        }
+    }
+
+    public static boolean isModLoaded(String id) {
+        for (ModVessel vessel : loaded) {
+            if (vessel.getId().equals(id)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

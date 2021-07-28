@@ -1,33 +1,41 @@
 package org.bookmc.loader.impl.discoverer;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import net.minecraft.launchwrapper.hacks.LaunchWrapperHacks;
 import org.bookmc.loader.api.MinecraftModDiscoverer;
 import org.bookmc.loader.impl.Loader;
-import org.bookmc.loader.impl.vessel.JsonModVessel;
+import org.bookmc.loader.impl.candidate.DirectoryModCandidate;
+import org.bookmc.loader.impl.candidate.ZipModCandidate;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Enumeration;
-import java.util.zip.ZipEntry;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.zip.ZipFile;
 
 public class ClasspathModDiscoverer implements MinecraftModDiscoverer {
+    private final Map<File, Boolean> zipCache = new HashMap<>();
+
+    private static final String DISABLED_SUFFIX = ".disabled";
+
     @Override
     public void discover(File[] files) {
         URL[] classpath = LaunchWrapperHacks.getClasspathURLs();
 
         for (URL url : classpath) {
             try {
-                if (url.getPath().endsWith(".jar") || url.getPath().endsWith(".zip")) {
-                    addConnection(url);
+                File file = new File(url.toURI());
+                String name = file.getName();
+
+                if (!name.endsWith(DISABLED_SUFFIX)) {
+                    if (isZipFile(file)) {
+                        Loader.registerCandidate(new ZipModCandidate(new File(url.toURI())));
+                    } else if (file.isDirectory()) {
+                        Loader.registerCandidate(new DirectoryModCandidate(file));
+                    }
                 }
-            } catch (IOException | URISyntaxException e) {
+            } catch (URISyntaxException e) {
                 e.printStackTrace();
             }
         }
@@ -38,30 +46,18 @@ public class ClasspathModDiscoverer implements MinecraftModDiscoverer {
         return false;
     }
 
-    private void addConnection(URL url) throws URISyntaxException, IOException {
-        File file = new File(url.toURI());
-        try (ZipFile zip = new ZipFile(file)) {
-            Enumeration<? extends ZipEntry> entries = zip.entries();
+    private boolean isZipFile(File file) {
+        if (zipCache.containsKey(file)) {
+            return zipCache.get(file);
+        }
 
-            while (entries.hasMoreElements()) {
-                ZipEntry entry = entries.nextElement();
-
-                if (entry.getName().equals("book.mod.json")) {
-                    try (InputStream stream = zip.getInputStream(entry)) {
-                        try (InputStreamReader inputStreamReader = new InputStreamReader(stream)) {
-                            JsonArray mods = parser.parse(inputStreamReader).getAsJsonArray();
-
-                            for (int i = 0; i < mods.size(); i++) {
-                                JsonObject mod = mods.get(i).getAsJsonObject();
-                                if (!Loader.getModVesselsMap().containsKey(mod.get("id").getAsString())) {
-                                    Loader.registerVessel(new JsonModVessel(mod, file));
-                                }
-                            }
-                        }
-                    }
-                    break;
-                }
-            }
+        try {
+            new ZipFile(file);
+            zipCache.put(file, true);
+            return true;
+        } catch (IOException e) {
+            zipCache.put(file, false);
+            return false;
         }
     }
 }

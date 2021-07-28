@@ -12,6 +12,7 @@ import org.bookmc.loader.impl.BookModLoader;
 import org.bookmc.loader.impl.Loader;
 import org.bookmc.loader.impl.dummy.JavaModVessel;
 import org.bookmc.loader.impl.dummy.MinecraftModVessel;
+import org.bookmc.loader.impl.dummy.candidate.DummyCandidate;
 import org.bookmc.loader.utils.ClassUtils;
 import org.spongepowered.asm.launch.MixinBootstrap;
 import org.spongepowered.asm.mixin.MixinEnvironment;
@@ -74,8 +75,8 @@ public abstract class BookMCLoaderCommon implements ITweaker {
             }
         }
 
-        Loader.registerVessel(new JavaModVessel());
-        Loader.registerVessel(new MinecraftModVessel(version));
+        Loader.registerCandidate(new DummyCandidate(new ModVessel[]{new JavaModVessel()}));
+        Loader.registerCandidate(new DummyCandidate(new ModVessel[]{new MinecraftModVessel(version)}));
 
         try {
             loadModMixins(modsDirectory, classLoader);
@@ -89,7 +90,6 @@ public abstract class BookMCLoaderCommon implements ITweaker {
             } catch (IllegalDependencyException e) {
                 e.printStackTrace();
             }
-            Loader.registerVessel(new MinecraftModVessel(version));
         } else {
             logger.error("Failed to detect the game version! Mods inside the game version's mod folder will not be loaded!");
         }
@@ -122,11 +122,12 @@ public abstract class BookMCLoaderCommon implements ITweaker {
 
     private void loadModMixins(File modsDirectory, LaunchClassLoader classLoader) throws IllegalDependencyException {
         Loader.discover(modsDirectory);
+        BookModLoader.loadCandidates(classLoader);
 
         for (ModVessel vessel : Loader.getModVessels()) {
             if (vessel.isInternallyEnabled()) {
                 try {
-                    if (vessel.isCompatibilityLayer() && !BookModLoader.loaded.contains(vessel)) {
+                    if (vessel.isCompatibilityLayer() && !BookModLoader.isModLoaded(vessel.getId())) {
                         loadCompatibilityLayer(vessel, classLoader);
                     }
                 } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
