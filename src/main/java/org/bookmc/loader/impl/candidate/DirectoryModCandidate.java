@@ -7,6 +7,7 @@ import net.minecraft.launchwrapper.LaunchClassLoader;
 import org.bookmc.loader.api.candidate.ModCandidate;
 import org.bookmc.loader.api.vessel.ModVessel;
 import org.bookmc.loader.impl.vessel.JsonModVessel;
+import org.bookmc.loader.shared.Constants;
 
 import java.io.*;
 import java.net.MalformedURLException;
@@ -16,8 +17,6 @@ import java.util.List;
 public class DirectoryModCandidate implements ModCandidate {
     private final List<ModVessel> vesselList = new ArrayList<>();
     private final JsonParser parser = new JsonParser();
-
-    private static final String LOADER_JSON_FILE = "book.mod.json";
 
     private final File file;
 
@@ -41,7 +40,7 @@ public class DirectoryModCandidate implements ModCandidate {
         if (files == null) return false;
 
         for (File file : files) {
-            if (file.getName().equals(LOADER_JSON_FILE)) {
+            if (file.getName().equals(Constants.LOADER_JSON_FILE)) {
                 try (InputStream fis = new FileInputStream(file)) {
                     try (InputStreamReader reader = new InputStreamReader(fis)) {
                         JsonArray mods = parser.parse(reader).getAsJsonArray();

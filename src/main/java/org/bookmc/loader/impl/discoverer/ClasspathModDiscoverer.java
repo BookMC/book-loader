@@ -5,6 +5,7 @@ import org.bookmc.loader.api.MinecraftModDiscoverer;
 import org.bookmc.loader.impl.Loader;
 import org.bookmc.loader.impl.candidate.DirectoryModCandidate;
 import org.bookmc.loader.impl.candidate.ZipModCandidate;
+import org.bookmc.loader.shared.Constants;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,8 +18,6 @@ import java.util.zip.ZipFile;
 public class ClasspathModDiscoverer implements MinecraftModDiscoverer {
     private final Map<File, Boolean> zipCache = new HashMap<>();
 
-    private static final String DISABLED_SUFFIX = ".disabled";
-
     @Override
     public void discover(File[] files) {
         URL[] classpath = LaunchWrapperHacks.getClasspathURLs();
@@ -28,7 +27,7 @@ public class ClasspathModDiscoverer implements MinecraftModDiscoverer {
                 File file = new File(url.toURI());
                 String name = file.getName();
 
-                if (!name.endsWith(DISABLED_SUFFIX)) {
+                if (!name.endsWith(Constants.DISABLED_SUFFIX)) {
                     if (isZipFile(file)) {
                         Loader.registerCandidate(new ZipModCandidate(new File(url.toURI())));
                     } else if (file.isDirectory()) {

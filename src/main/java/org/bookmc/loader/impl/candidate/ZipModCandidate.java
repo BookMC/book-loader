@@ -7,6 +7,7 @@ import net.minecraft.launchwrapper.LaunchClassLoader;
 import org.bookmc.loader.api.candidate.ModCandidate;
 import org.bookmc.loader.api.vessel.ModVessel;
 import org.bookmc.loader.impl.vessel.JsonModVessel;
+import org.bookmc.loader.shared.Constants;
 
 import java.io.File;
 import java.io.InputStream;
@@ -20,8 +21,6 @@ import java.util.zip.ZipFile;
 
 public class ZipModCandidate implements ModCandidate {
     private final File file;
-
-    private static final String LOADER_JSON_FILE = "book.mod.json";
 
     private final List<ModVessel> vessels = new ArrayList<>();
     private final JsonParser parser = new JsonParser();
@@ -48,7 +47,7 @@ public class ZipModCandidate implements ModCandidate {
             while (entries.hasMoreElements()) {
                 ZipEntry entry = entries.nextElement();
 
-                if (entry.getName().equals(LOADER_JSON_FILE)) {
+                if (entry.getName().equals(Constants.LOADER_JSON_FILE)) {
                     try (InputStream inputStream = zipFile.getInputStream(entry)) {
                         try (InputStreamReader inputStreamReader = new InputStreamReader(inputStream)) {
                             JsonArray mods = parser.parse(inputStreamReader).getAsJsonArray();

@@ -7,6 +7,7 @@ import net.minecraft.launchwrapper.LaunchClassLoader;
 import org.bookmc.loader.api.candidate.ModCandidate;
 import org.bookmc.loader.api.vessel.ModVessel;
 import org.bookmc.loader.impl.vessel.JsonModVessel;
+import org.bookmc.loader.shared.Constants;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,7 +19,6 @@ public class LocalClassLoaderModCandidate implements ModCandidate {
     private final JsonParser parser = new JsonParser();
 
     private final List<ModVessel> vesselList = new ArrayList<>();
-    private static final String LOADER_MOD_JSON = "book.mod.json";
 
     @Override
     public ModVessel[] getVessels() {
@@ -27,7 +27,7 @@ public class LocalClassLoaderModCandidate implements ModCandidate {
 
     @Override
     public boolean isAcceptable() {
-        try (InputStream stream = this.getClass().getResourceAsStream(LOADER_MOD_JSON)) {
+        try (InputStream stream = this.getClass().getResourceAsStream(Constants.LOADER_JSON_FILE)) {
             if (stream == null) return false;
 
             try (InputStreamReader reader = new InputStreamReader(stream)) {
