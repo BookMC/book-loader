@@ -1,8 +1,7 @@
 package org.bookmc.loader.api.compat;
 
-import net.minecraft.launchwrapper.LaunchClassLoader;
-import org.bookmc.loader.api.BookMCLoaderCommon;
+import org.bookmc.loader.api.classloader.ClassLoaderURLAppender;
 
 public interface CompatiblityLayer {
-    void init(LaunchClassLoader classLoader);
+    void init(ClassLoaderURLAppender classLoader);
 }

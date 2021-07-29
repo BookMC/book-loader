@@ -1,7 +1,6 @@
 package org.bookmc.loader.impl;
 
 import net.minecraft.launchwrapper.Launch;
-import net.minecraft.launchwrapper.LaunchClassLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bookmc.loader.api.MinecraftModDiscoverer;
@@ -20,15 +19,15 @@ import org.bookmc.loader.shared.utils.ZipUtils;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class BookModLoader {
-    private static final Logger logger = LogManager.getLogger();
     public static final List<ModVessel> loaded = new ArrayList<>();
-
+    private static final Logger logger = LogManager.getLogger();
     private static final Map<String, ArrayList<String>> missingDependencies = new HashMap<>();
 
     private static final Object object = new Object();
@@ -164,7 +163,7 @@ public class BookModLoader {
         load(environment);
     }
 
-    public static void loadCandidates(LaunchClassLoader classLoader) {
+    public static void loadCandidates(URLClassLoader classLoader) {
         // To avoid a CMFE we have to add the to-be-removed candidates
         // to a new list and then iterate over it and remove the rejects
         // Once we're finished processing.

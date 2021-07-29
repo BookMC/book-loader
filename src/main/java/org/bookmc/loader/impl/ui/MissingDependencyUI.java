@@ -10,7 +10,6 @@ import java.awt.*;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 public class MissingDependencyUI {
@@ -34,6 +33,7 @@ public class MissingDependencyUI {
 
         frame.addWindowListener(new WindowListener() {
             private final Logger logger = LogManager.getLogger(this);
+
             @Override
             public void windowOpened(WindowEvent e) {
             }

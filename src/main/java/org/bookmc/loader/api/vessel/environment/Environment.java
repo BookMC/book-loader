@@ -30,8 +30,6 @@ public enum Environment {
         }
     };
 
-    public abstract boolean allows(Environment environment);
-
     public static Environment getEnvironment(String environment) {
         if (environment.equals("*")) return ANY;
         if (environment.toLowerCase(Locale.ROOT).equals("client")) return CLIENT;
@@ -44,4 +42,6 @@ public enum Environment {
         if (environment == SERVER) return MixinEnvironment.Side.SERVER;
         return MixinEnvironment.Side.UNKNOWN;
     }
+
+    public abstract boolean allows(Environment environment);
 }

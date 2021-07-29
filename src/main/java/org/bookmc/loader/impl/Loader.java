@@ -3,15 +3,20 @@ package org.bookmc.loader.impl;
 import net.minecraft.launchwrapper.LaunchClassLoader;
 import org.bookmc.loader.api.MinecraftModDiscoverer;
 import org.bookmc.loader.api.candidate.ModCandidate;
+import org.bookmc.loader.api.classloader.ClassLoaderURLAppender;
 import org.bookmc.loader.api.compat.CompatiblityLayer;
 import org.bookmc.loader.api.exception.IllegalDependencyException;
 import org.bookmc.loader.api.vessel.ModVessel;
 import org.bookmc.loader.api.vessel.entrypoint.Entrypoint;
+import org.bookmc.loader.api.vessel.entrypoint.MixinEntrypoint;
+import org.bookmc.loader.api.vessel.environment.Environment;
 import org.bookmc.loader.impl.discoverer.BookModDiscoverer;
 import org.bookmc.loader.impl.discoverer.ClasspathModDiscoverer;
 import org.bookmc.loader.impl.discoverer.DevelopmentModDiscoverer;
+import org.spongepowered.asm.mixin.Mixins;
 
 import java.io.File;
+import java.net.URLClassLoader;
 import java.util.*;
 
 public class Loader {
@@ -63,7 +68,7 @@ public class Loader {
 
     /**
      * Registers a ModCandidate onto the mod candidate list. If it has passed the initial process time you can reinvoke
-     * {@link BookModLoader#loadCandidates(LaunchClassLoader)}
+     * {@link BookModLoader#loadCandidates(URLClassLoader)}
      *
      * @param candidate The ModCandidate to be registered
      */
@@ -73,11 +78,11 @@ public class Loader {
     }
 
     /**
-     * Returns the currently available candidates. If {@link BookModLoader#loadCandidates(LaunchClassLoader)}
+     * Returns the currently available candidates. If {@link BookModLoader#loadCandidates(URLClassLoader)}
      * has been invoekd then it will only return accepted candidates however if this had not been invoked it
      * will contain rejected candidates so especially you CompatibilityLayer people beware!
      * Don't worry we've made it as safe as possible for developers to call our internals, interesting right?
-     * If another [compatibility] layer calls {@link BookModLoader#loadCandidates(LaunchClassLoader)} then
+     * If another [compatibility] layer calls {@link BookModLoader#loadCandidates(URLClassLoader)} then
      * it will simply skip the candidate if it has already been checked.
      *
      * @return Read note
@@ -118,7 +123,7 @@ public class Loader {
         }
     }
 
-    public static void loadCompatibilityLayer(ModVessel vessel, LaunchClassLoader classLoader) {
+    public static void loadCompatibilityLayer(ModVessel vessel, URLClassLoader classLoader) {
         try {
             Entrypoint[] entrypoints = vessel.getEntrypoints();
             for (Entrypoint entrypoint : entrypoints) {
@@ -133,7 +138,7 @@ public class Loader {
 
                         BookModLoader.loaded.add(vessel); // Trick BookModLoader#load to believe we have "loaded" our "mod".
                         CompatiblityLayer layer = (CompatiblityLayer) clazz.newInstance();
-                        layer.init(classLoader);
+                        layer.init(new ClassLoaderURLAppender(classLoader));
                     } catch (ClassCastException e) {
                         throw new IllegalStateException("The entrypoint (" + entrypoint + ") does not implement CompatibilityLayer");
                     }
@@ -141,6 +146,32 @@ public class Loader {
             }
         } catch (Throwable t) {
             t.printStackTrace();
+        }
+    }
+
+    public static void loadMixins(Environment environment) {
+        for (ModVessel vessel : Loader.getModVessels()) {
+            loadMixin(vessel, environment);
+        }
+    }
+
+    public static void loadMixin(ModVessel vessel, Environment environment) {
+        MixinEntrypoint[] mixinEntrypoints = vessel.getMixinEntrypoints();
+
+        for (MixinEntrypoint entrypoint : mixinEntrypoints) {
+            if (environment.allows(entrypoint.getEnvironment())) {
+                Mixins.addConfiguration(entrypoint.getMixinFile());
+            }
+        }
+    }
+
+    public static void discoverAndLoad(File modsDirectory, URLClassLoader classLoader, Environment environment) throws IllegalDependencyException {
+        Loader.discover(modsDirectory);
+        BookModLoader.loadCandidates(classLoader);
+
+        for (ModVessel vessel : Loader.getModVessels()) {
+            Loader.loadCompatibilityLayer(vessel, classLoader);
+            Loader.loadMixin(vessel, environment);
         }
     }
 }

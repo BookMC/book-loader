@@ -4,7 +4,6 @@ import net.minecraft.launchwrapper.LaunchClassLoader;
 import org.bookmc.loader.api.BookMCLoaderCommon;
 import org.bookmc.loader.api.vessel.environment.Environment;
 import org.spongepowered.asm.mixin.MixinEnvironment;
-import org.spongepowered.asm.mixin.Mixins;
 
 public class BookMCServerLoader extends BookMCLoaderCommon {
     private final String target = System.getProperty("book.launch.target", "net.minecraft.server.MinecraftServer");
