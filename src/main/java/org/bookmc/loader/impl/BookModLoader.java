@@ -6,17 +6,27 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bookmc.loader.api.MinecraftModDiscoverer;
 import org.bookmc.loader.api.candidate.ModCandidate;
+import org.bookmc.loader.api.classloader.ClassLoaderURLAppender;
 import org.bookmc.loader.api.vessel.ModVessel;
 import org.bookmc.loader.api.vessel.dependency.ModDependency;
+import org.bookmc.loader.impl.candidate.DirectoryModCandidate;
+import org.bookmc.loader.impl.candidate.ZipModCandidate;
 import org.bookmc.loader.impl.discoverer.DevelopmentModDiscoverer;
 import org.bookmc.loader.impl.ui.MissingDependencyUI;
+import org.bookmc.loader.shared.utils.DownloadUtils;
+import org.bookmc.loader.shared.utils.ZipUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipException;
+import java.util.zip.ZipFile;
 
 public class BookModLoader {
     private static final Logger logger = LogManager.getLogger();
@@ -58,6 +68,20 @@ public class BookModLoader {
     private static void loadDependencies(ModVessel vessel) {
         ArrayList<String> missingDependencies = BookModLoader.missingDependencies.getOrDefault(vessel.getId(), new ArrayList<>());
 
+        for (URL url : vessel.getExternalDependencies()) {
+            File file = DownloadUtils.downloadFile(url, new File(Launch.minecraftHome, "libraries/" + url.getPath()));
+            logger.info("Downloaded an external dependency (" + file.getName() + ") from " + vessel.getName() + ".");
+
+            if (ZipUtils.isZipFile(file)) {
+                Loader.registerCandidate(new ZipModCandidate(file));
+            } else {
+                logger.error("The external library (" + file.getName() + ") is not a jar/zip! Ignoring and deleteing...");
+                file.delete();
+            }
+        }
+
+        loadCandidates(Launch.classLoader); // Reload our candidates since we added new stuff
+
         for (ModDependency dependency : vessel.getDependsOn()) {
             ModVessel dependencyVessel = Loader.getModVesselsMap().get(dependency.getId());
 
@@ -66,9 +90,9 @@ public class BookModLoader {
                 continue;
             }
 
-            // TOOD: Replace with semver checking and >=/<=/>/< support
+            // TODO: Replace with semver checking and >=/<=/>/< support
             if (!dependency.getVersion().equals("*") && !dependencyVessel.getVersion().equals(vessel.getVersion())) {
-                missingDependencies.add("The dependency " + dependency.getId() + " was located! However " + vessel.getName() + " requires " + dependency.getVersion());
+                missingDependencies.add("The dependency " + dependency.getId() + " was located! However "  + vessel.getName() + " requires " + dependency.getVersion() + " but " + dependencyVessel.getVersion() + " was given");
                 continue;
             }
 
@@ -144,7 +168,7 @@ public class BookModLoader {
             if (candidate.isAcceptable()) {
                 for (ModVessel vessel : candidate.getVessels()) {
                     if (!Loader.isVesselDiscovered(vessel.getId())) {
-                        candidate.addToClasspath(classLoader);
+                        candidate.addToClasspath(new ClassLoaderURLAppender(classLoader));
                         Loader.registerVessel(vessel);
                     } else {
                         removeQueue.add(candidate);

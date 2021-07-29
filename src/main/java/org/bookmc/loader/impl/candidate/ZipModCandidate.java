@@ -3,8 +3,8 @@ package org.bookmc.loader.impl.candidate;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import net.minecraft.launchwrapper.LaunchClassLoader;
 import org.bookmc.loader.api.candidate.ModCandidate;
+import org.bookmc.loader.api.classloader.ClassLoaderURLAppender;
 import org.bookmc.loader.api.vessel.ModVessel;
 import org.bookmc.loader.impl.vessel.JsonModVessel;
 import org.bookmc.loader.shared.Constants;
@@ -69,10 +69,9 @@ public class ZipModCandidate implements ModCandidate {
     }
 
     @Override
-    public void addToClasspath(LaunchClassLoader classLoader) {
+    public void addToClasspath(ClassLoaderURLAppender appender) {
         try {
-            System.out.println("Adding " + file.getName());
-            classLoader.addURL(file.toURI().toURL());
+            appender.add(file.toURI().toURL());
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
