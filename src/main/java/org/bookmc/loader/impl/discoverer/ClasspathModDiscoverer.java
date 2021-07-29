@@ -9,12 +9,8 @@ import org.bookmc.loader.shared.Constants;
 import org.bookmc.loader.shared.utils.ZipUtils;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.zip.ZipFile;
 
 public class ClasspathModDiscoverer implements MinecraftModDiscoverer {
     @Override

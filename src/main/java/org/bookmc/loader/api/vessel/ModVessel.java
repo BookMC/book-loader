@@ -1,6 +1,10 @@
 package org.bookmc.loader.api.vessel;
 
+import org.bookmc.loader.api.vessel.author.Author;
 import org.bookmc.loader.api.vessel.dependency.ModDependency;
+import org.bookmc.loader.api.vessel.entrypoint.Entrypoint;
+import org.bookmc.loader.api.vessel.entrypoint.MixinEntrypoint;
+import org.bookmc.loader.api.vessel.environment.Environment;
 
 import java.io.File;
 import java.net.URL;
@@ -19,7 +23,7 @@ public interface ModVessel {
     String getConfig();
 
     // Returns the authors of the mod
-    String[] getAuthors();
+    Author[] getAuthors();
 
     // Get version of the mod
     String getVersion();
@@ -27,14 +31,18 @@ public interface ModVessel {
     // Get an (optional) icon
     String getIcon();
 
+    String getLicense();
+
     // Get the entrypoint of the mod
-    String getEntrypoint();
+    Entrypoint[] getEntrypoints();
+
+    Environment getEnvironment();
 
     // Return the location of the mod (If it is a jar/zip mod)
     File getFile();
 
     // Returns the mixin entrypoint file (if available)
-    String getMixinEntrypoint();
+    MixinEntrypoint[] getMixinEntrypoints();
 
     // Returns the dependencies of the mod
     ModDependency[] getDependsOn();

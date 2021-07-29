@@ -1,9 +1,9 @@
 package org.bookmc.loader.impl.candidate;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import net.minecraft.launchwrapper.LaunchClassLoader;
 import org.bookmc.loader.api.candidate.ModCandidate;
 import org.bookmc.loader.api.classloader.ClassLoaderURLAppender;
 import org.bookmc.loader.api.vessel.ModVessel;
@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DirectoryModCandidate implements ModCandidate {
-    private final List<ModVessel> vesselList = new ArrayList<>();
+    private final List<ModVessel> vessels = new ArrayList<>();
     private final JsonParser parser = new JsonParser();
 
     private final File file;
@@ -27,11 +27,11 @@ public class DirectoryModCandidate implements ModCandidate {
 
     @Override
     public ModVessel[] getVessels() {
-        if (vesselList.isEmpty()) {
+        if (vessels.isEmpty()) {
             throw new IllegalStateException("Failed to parse any vessels");
         }
 
-        return vesselList.toArray(new ModVessel[0]);
+        return vessels.toArray(new ModVessel[0]);
     }
 
     @Override
@@ -44,13 +44,21 @@ public class DirectoryModCandidate implements ModCandidate {
             if (file.getName().equals(Constants.LOADER_JSON_FILE)) {
                 try (InputStream fis = new FileInputStream(file)) {
                     try (InputStreamReader reader = new InputStreamReader(fis)) {
-                        JsonArray mods = parser.parse(reader).getAsJsonArray();
+                        JsonElement json = parser.parse(reader);
 
-                        for (int i = 0; i < mods.size(); i++) {
-                            JsonObject mod = mods.get(i).getAsJsonObject();
-                            vesselList.add(new JsonModVessel(mod, file));
+                        if (json.isJsonObject()) {
+                            vessels.add(new JsonModVessel(json.getAsJsonObject(), file));
+                            return true;
+                        } else if (json.isJsonArray()) {
+                            JsonArray mods = parser.parse(reader).getAsJsonArray();
+                            for (int i = 0; i < mods.size(); i++) {
+                                JsonObject mod = mods.get(i).getAsJsonObject();
+                                vessels.add(new JsonModVessel(mod, file));
+                            }
+                            return true;
                         }
-                        return true;
+
+                        return false;
                     }
                 } catch (IOException e) {
                     e.printStackTrace();

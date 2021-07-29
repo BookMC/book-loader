@@ -32,6 +32,7 @@ public class ClassLoaderURLAppender {
      * Simply calls the {@link URLClassLoader#addURL(URL)} via reflection.
      * This is due to it's default visibility being protected so we change
      * the visibility and then invoke it.
+     *
      * @param url The URL to be added to the classloader
      * @author ChachyDev
      * @since 0.3.0
@@ -44,4 +45,7 @@ public class ClassLoaderURLAppender {
         }
     }
 
+    public URLClassLoader getClassLoader() {
+        return classLoader;
+    }
 }

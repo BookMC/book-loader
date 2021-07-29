@@ -1,6 +1,7 @@
 package org.bookmc.loader.impl.candidate;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.bookmc.loader.api.candidate.ModCandidate;
@@ -50,15 +51,24 @@ public class ZipModCandidate implements ModCandidate {
                 if (entry.getName().equals(Constants.LOADER_JSON_FILE)) {
                     try (InputStream inputStream = zipFile.getInputStream(entry)) {
                         try (InputStreamReader inputStreamReader = new InputStreamReader(inputStream)) {
-                            JsonArray mods = parser.parse(inputStreamReader).getAsJsonArray();
+                            JsonElement json = parser.parse(inputStreamReader);
 
-                            for (int i = 0; i < mods.size(); i++) {
-                                JsonObject mod = mods.get(i).getAsJsonObject();
-                                vessels.add(new JsonModVessel(mod, file));
+                            if (json.isJsonObject()) {
+                                vessels.add(new JsonModVessel(json.getAsJsonObject(), file));
+                                return true;
+                            } else if (json.isJsonArray()) {
+                                JsonArray mods = json.getAsJsonArray();
+
+                                for (int i = 0; i < mods.size(); i++) {
+                                    JsonObject mod = mods.get(i).getAsJsonObject();
+                                    vessels.add(new JsonModVessel(mod, file));
+                                }
+                                return true;
                             }
+
+                            return false;
                         }
                     }
-                    return true;
                 }
             }
         } catch (Throwable t) {
