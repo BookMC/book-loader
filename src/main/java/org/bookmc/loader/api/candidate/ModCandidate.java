@@ -1,6 +1,7 @@
 package org.bookmc.loader.api.candidate;
 
 import net.minecraft.launchwrapper.LaunchClassLoader;
+import org.bookmc.loader.api.classloader.ClassLoaderURLAppender;
 import org.bookmc.loader.api.vessel.ModVessel;
 import org.bookmc.loader.impl.candidate.ZipModCandidate;
 
@@ -38,7 +39,7 @@ public interface ModCandidate {
      * Invoked directly before the vessel is registered to add the candidate to the classpath. In some cases
      * such as {@link org.bookmc.loader.impl.discoverer.DevelopmentModDiscoverer} or {@link org.bookmc.loader.impl.discoverer.ClasspathModDiscoverer}
      * this method may not be needed at all as the mod candidates should already be present on the classpath or something is going wrong!
-     * @param classLoader The classloader to add the mod onto
+     * @param appender A custom class to abstract appending to the current URLClassLoader. (Currently {@link LaunchClassLoader})
      */
-    void addToClasspath(LaunchClassLoader classLoader);
+    void addToClasspath(ClassLoaderURLAppender appender);
 }

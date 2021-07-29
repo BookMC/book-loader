@@ -6,6 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bookmc.loader.api.MinecraftModDiscoverer;
 import org.bookmc.loader.api.candidate.ModCandidate;
+import org.bookmc.loader.api.classloader.ClassLoaderURLAppender;
 import org.bookmc.loader.api.vessel.ModVessel;
 import org.bookmc.loader.api.vessel.dependency.ModDependency;
 import org.bookmc.loader.impl.candidate.DirectoryModCandidate;
@@ -167,7 +168,7 @@ public class BookModLoader {
             if (candidate.isAcceptable()) {
                 for (ModVessel vessel : candidate.getVessels()) {
                     if (!Loader.isVesselDiscovered(vessel.getId())) {
-                        candidate.addToClasspath(classLoader);
+                        candidate.addToClasspath(new ClassLoaderURLAppender(classLoader));
                         Loader.registerVessel(vessel);
                     } else {
                         removeQueue.add(candidate);
