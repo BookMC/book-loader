@@ -8,13 +8,13 @@ public enum Environment {
     CLIENT {
         @Override
         public boolean allows(Environment environment) {
-            return environment == CLIENT;
+            return environment == CLIENT || environment == ANY;
         }
     },
     SERVER {
         @Override
         public boolean allows(Environment environment) {
-            return environment == CLIENT;
+            return environment == CLIENT || environment == ANY;
         }
     },
     UNKNOWN {
