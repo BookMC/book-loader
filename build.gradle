@@ -46,6 +46,15 @@ dependencies {
     }
 
     compileOnly "com.google.code.gson:gson:2.2.4" // BookMC/minecraft#28
+
+    testImplementation "org.junit.jupiter:junit-jupiter-api:5.7.0"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.7.0"
+
+    testRuntimeOnly "com.google.code.gson:gson:2.2.4" // BookMC/minecraft#28
+}
+
+test {
+    useJUnitPlatform()
 }
 
 blossom {

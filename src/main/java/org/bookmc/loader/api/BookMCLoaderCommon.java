@@ -125,13 +125,7 @@ public abstract class BookMCLoaderCommon implements ITweaker {
         BookModLoader.loadCandidates(classLoader);
 
         for (ModVessel vessel : Loader.getModVessels()) {
-            try {
-                if (vessel.isCompatibilityLayer() && !BookModLoader.isModLoaded(vessel.getId())) {
-                    loadCompatibilityLayer(vessel, classLoader);
-                }
-            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-                e.printStackTrace();
-            }
+            Loader.loadCompatibilityLayer(vessel, classLoader);
 
             String mixinEntrypoint = vessel.getMixinEntrypoint();
             // Load mixins from everywhere (All jars should now be on the LaunchClassLoader)
@@ -141,23 +135,7 @@ public abstract class BookMCLoaderCommon implements ITweaker {
         }
     }
 
-    private void loadCompatibilityLayer(ModVessel vessel, LaunchClassLoader classLoader) throws ClassNotFoundException, IllegalDependencyException, InstantiationException, IllegalAccessException {
-        String entrypoint = vessel.getEntrypoint();
-        if (entrypoint != null && !entrypoint.contains("::")) {
-            try {
-                Class<?> clazz = Class.forName(entrypoint, false, classLoader)
-                    .asSubclass(classLoader.loadClass(CompatiblityLayer.class.getName()));
-
-                if (vessel.getDependsOn().length != 0) {
-                    throw new IllegalDependencyException(vessel);
-                }
-
-                BookModLoader.loaded.add(vessel); // Trick BookModLoader#load to believe we have "loaded" our "mod".
-                CompatiblityLayer layer = (CompatiblityLayer) clazz.newInstance();
-                layer.init(this, classLoader);
-            } catch (ClassCastException e) {
-                throw new IllegalStateException("The entrypoint (" + entrypoint + ") does not implement CompatibilityLayer");
-            }
-        }
+    public String getVersion() {
+        return version;
     }
 }

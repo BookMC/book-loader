@@ -3,6 +3,8 @@ package org.bookmc.loader.impl;
 import net.minecraft.launchwrapper.LaunchClassLoader;
 import org.bookmc.loader.api.MinecraftModDiscoverer;
 import org.bookmc.loader.api.candidate.ModCandidate;
+import org.bookmc.loader.api.compat.CompatiblityLayer;
+import org.bookmc.loader.api.exception.IllegalDependencyException;
 import org.bookmc.loader.api.vessel.ModVessel;
 import org.bookmc.loader.impl.discoverer.BookModDiscoverer;
 import org.bookmc.loader.impl.discoverer.ClasspathModDiscoverer;
@@ -105,5 +107,37 @@ public class Loader {
         }
 
         return false;
+    }
+
+    public static void loadCompatibilityLayers(LaunchClassLoader classLoader) {
+        for (ModVessel vessel : getModVessels()) {
+            if (vessel.isCompatibilityLayer() && !BookModLoader.isModLoaded(vessel.getId())) {
+                loadCompatibilityLayer(vessel, classLoader);
+            }
+        }
+    }
+
+    public static void loadCompatibilityLayer(ModVessel vessel, LaunchClassLoader classLoader) {
+        try {
+            String entrypoint = vessel.getEntrypoint();
+            if (entrypoint != null && !entrypoint.contains("::")) {
+                try {
+                    Class<?> clazz = Class.forName(entrypoint, false, classLoader)
+                        .asSubclass(classLoader.loadClass(CompatiblityLayer.class.getName()));
+
+                    if (vessel.getDependsOn().length != 0) {
+                        throw new IllegalDependencyException(vessel);
+                    }
+
+                    BookModLoader.loaded.add(vessel); // Trick BookModLoader#load to believe we have "loaded" our "mod".
+                    CompatiblityLayer layer = (CompatiblityLayer) clazz.newInstance();
+                    layer.init(classLoader);
+                } catch (ClassCastException e) {
+                    throw new IllegalStateException("The entrypoint (" + entrypoint + ") does not implement CompatibilityLayer");
+                }
+            }
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
     }
 }
