@@ -46,16 +46,16 @@ public abstract class BookMCLoaderCommon implements ITweaker {
         this.args.addAll(args);
 
         if (gameDir != null) {
-            args.addAll(Arrays.asList("--gameDir", gameDir.getAbsolutePath()));
+            this.args.addAll(Arrays.asList("--gameDir", gameDir.getAbsolutePath()));
         }
 
         if (assetsDir != null) {
-            args.addAll(Arrays.asList("--assetsDir", assetsDir.getAbsolutePath()));
+            this.args.addAll(Arrays.asList("--assetsDir", assetsDir.getAbsolutePath()));
         }
 
         if (profile != null) {
             version = profile;
-            args.addAll(Arrays.asList("--version", profile));
+            this.args.addAll(Arrays.asList("--version", profile));
         }
     }
 
