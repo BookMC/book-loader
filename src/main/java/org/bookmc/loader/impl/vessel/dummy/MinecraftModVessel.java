@@ -45,8 +45,13 @@ public class MinecraftModVessel implements ModVessel {
     }
 
     @Override
+    public String getIcon() {
+        return null;
+    }
+
+    @Override
     public String getEntrypoint() {
-        return "org.bookmc.loader.impl.vessel.dummy.entrypoint.FakeEntrypoint::fakeItToMakeIt";
+        return null;
     }
 
     @Override
@@ -72,21 +77,6 @@ public class MinecraftModVessel implements ModVessel {
     @Override
     public URL[] getExternalDependencies() {
         return new URL[0];
-    }
-
-    @Override
-    public String getIcon() {
-        return null;
-    }
-
-    @Override
-    public boolean isInternallyEnabled() {
-        return false;
-    }
-
-    @Override
-    public void setInternallyEnabled(boolean enabled) {
-        throw new UnsupportedOperationException();
     }
 
     @Override

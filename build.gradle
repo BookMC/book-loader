@@ -2,10 +2,16 @@ plugins {
     id "java"
     id "java-library"
     id "maven-publish"
+    id "net.kyori.blossom" version "1.2.0"
+}
+
+ext {
+    def env = System.getenv()
+    local = !(env.GITHUB_ACTIONS || env.JITPACK)
 }
 
 group "org.bookmc"
-version "0.3.0"
+version "0.3.0${local ? "+local" : ""}"
 
 repositories {
     mavenCentral()
@@ -39,6 +45,10 @@ dependencies {
     }
 
     compileOnly "com.google.code.gson:gson:2.2.4" // BookMC/minecraft#28
+}
+
+blossom {
+    replaceToken("%LOADER_VERSION%", project.version)
 }
 
 jar {

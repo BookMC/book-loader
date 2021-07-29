@@ -59,6 +59,11 @@ public class JsonModVessel implements ModVessel {
     }
 
     @Override
+    public String getIcon() {
+        return object.has("icon") ? object.get("icon").getAsString() : null;
+    }
+
+    @Override
     public String getEntrypoint() {
         return object.get("entrypoint").getAsString();
     }
@@ -103,22 +108,6 @@ public class JsonModVessel implements ModVessel {
         }
 
         return urls.toArray(new URL[0]);
-    }
-
-    @Override
-    public String getIcon() {
-        return object.has("icon") ? object.get("icon").getAsString() : null;
-    }
-
-    @Override
-    public boolean isInternallyEnabled() {
-        return true;
-    }
-
-    @Override
-    public void setInternallyEnabled(boolean enabled) {
-        // TODO: Make this work
-        throw new UnsupportedOperationException("This operation has not been implemented");
     }
 
     @Override

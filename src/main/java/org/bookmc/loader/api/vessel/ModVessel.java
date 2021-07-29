@@ -24,6 +24,9 @@ public interface ModVessel {
     // Get version of the mod
     String getVersion();
 
+    // Get an (optional) icon
+    String getIcon();
+
     // Get the entrypoint of the mod
     String getEntrypoint();
 
@@ -39,12 +42,6 @@ public interface ModVessel {
     ModDependency[] getSuggestions();
 
     URL[] getExternalDependencies();
-
-    String getIcon();
-
-    boolean isInternallyEnabled();
-
-    void setInternallyEnabled(boolean enabled);
 
     boolean isCompatibilityLayer();
 }

@@ -10,6 +10,7 @@ import org.bookmc.loader.api.exception.IllegalDependencyException;
 import org.bookmc.loader.api.vessel.ModVessel;
 import org.bookmc.loader.impl.BookModLoader;
 import org.bookmc.loader.impl.Loader;
+import org.bookmc.loader.impl.vessel.dummy.BookLoaderVessel;
 import org.bookmc.loader.impl.vessel.dummy.JavaModVessel;
 import org.bookmc.loader.impl.vessel.dummy.MinecraftModVessel;
 import org.bookmc.loader.impl.vessel.dummy.candidate.DummyCandidate;
@@ -75,8 +76,7 @@ public abstract class BookMCLoaderCommon implements ITweaker {
             }
         }
 
-        Loader.registerCandidate(new DummyCandidate(new ModVessel[]{new JavaModVessel()}));
-        Loader.registerCandidate(new DummyCandidate(new ModVessel[]{new MinecraftModVessel(version)}));
+        Loader.registerCandidate(new DummyCandidate(new ModVessel[]{new MinecraftModVessel(version), new JavaModVessel(), new BookLoaderVessel()}));
 
         try {
             loadModMixins(modsDirectory, classLoader);
@@ -125,27 +125,25 @@ public abstract class BookMCLoaderCommon implements ITweaker {
         BookModLoader.loadCandidates(classLoader);
 
         for (ModVessel vessel : Loader.getModVessels()) {
-            if (vessel.isInternallyEnabled()) {
-                try {
-                    if (vessel.isCompatibilityLayer() && !BookModLoader.isModLoaded(vessel.getId())) {
-                        loadCompatibilityLayer(vessel, classLoader);
-                    }
-                } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-                    e.printStackTrace();
+            try {
+                if (vessel.isCompatibilityLayer() && !BookModLoader.isModLoaded(vessel.getId())) {
+                    loadCompatibilityLayer(vessel, classLoader);
                 }
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+                e.printStackTrace();
+            }
 
-                String mixinEntrypoint = vessel.getMixinEntrypoint();
-                // Load mixins from everywhere (All jars should now be on the LaunchClassLoader)
-                if (mixinEntrypoint != null) {
-                    Mixins.addConfiguration(mixinEntrypoint);
-                }
+            String mixinEntrypoint = vessel.getMixinEntrypoint();
+            // Load mixins from everywhere (All jars should now be on the LaunchClassLoader)
+            if (mixinEntrypoint != null) {
+                Mixins.addConfiguration(mixinEntrypoint);
             }
         }
     }
 
     private void loadCompatibilityLayer(ModVessel vessel, LaunchClassLoader classLoader) throws ClassNotFoundException, IllegalDependencyException, InstantiationException, IllegalAccessException {
         String entrypoint = vessel.getEntrypoint();
-        if (!entrypoint.contains("::")) {
+        if (entrypoint != null && !entrypoint.contains("::")) {
             try {
                 Class<?> clazz = Class.forName(entrypoint, false, classLoader)
                     .asSubclass(classLoader.loadClass(CompatiblityLayer.class.getName()));

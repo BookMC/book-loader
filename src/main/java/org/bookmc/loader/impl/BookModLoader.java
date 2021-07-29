@@ -9,7 +9,6 @@ import org.bookmc.loader.api.candidate.ModCandidate;
 import org.bookmc.loader.api.classloader.ClassLoaderURLAppender;
 import org.bookmc.loader.api.vessel.ModVessel;
 import org.bookmc.loader.api.vessel.dependency.ModDependency;
-import org.bookmc.loader.impl.candidate.DirectoryModCandidate;
 import org.bookmc.loader.impl.candidate.ZipModCandidate;
 import org.bookmc.loader.impl.discoverer.DevelopmentModDiscoverer;
 import org.bookmc.loader.impl.ui.MissingDependencyUI;
@@ -17,16 +16,12 @@ import org.bookmc.loader.shared.utils.DownloadUtils;
 import org.bookmc.loader.shared.utils.ZipUtils;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.zip.ZipException;
-import java.util.zip.ZipFile;
 
 public class BookModLoader {
     private static final Logger logger = LogManager.getLogger();
@@ -76,7 +71,9 @@ public class BookModLoader {
                 Loader.registerCandidate(new ZipModCandidate(file));
             } else {
                 logger.error("The external library (" + file.getName() + ") is not a jar/zip! Ignoring and deleteing...");
-                file.delete();
+                if (!file.delete()) {
+                    logger.fatal("Failwd to delete external library!");
+                }
             }
         }
 
@@ -92,7 +89,7 @@ public class BookModLoader {
 
             // TODO: Replace with semver checking and >=/<=/>/< support
             if (!dependency.getVersion().equals("*") && !dependencyVessel.getVersion().equals(vessel.getVersion())) {
-                missingDependencies.add("The dependency " + dependency.getId() + " was located! However "  + vessel.getName() + " requires " + dependency.getVersion() + " but " + dependencyVessel.getVersion() + " was given");
+                missingDependencies.add("The dependency " + dependency.getId() + " was located! However " + vessel.getName() + " requires " + dependency.getVersion() + " but " + dependencyVessel.getVersion() + " was given");
                 continue;
             }
 
@@ -124,7 +121,7 @@ public class BookModLoader {
     }
 
     private static void load(ModVessel vessel, ClassLoader classLoader) {
-        if (!vessel.isInternallyEnabled() || vessel.isCompatibilityLayer()) return;
+        if (vessel.getEntrypoint() == null|| vessel.isCompatibilityLayer()) return;
         String[] split = vessel.getEntrypoint().split("::");
 
         Class<?> entryClass = null;

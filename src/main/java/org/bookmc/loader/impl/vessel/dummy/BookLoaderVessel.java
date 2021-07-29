@@ -6,24 +6,20 @@ import org.bookmc.loader.api.vessel.dependency.ModDependency;
 import java.io.File;
 import java.net.URL;
 
-public class JavaModVessel implements ModVessel {
+public class BookLoaderVessel implements ModVessel {
     @Override
     public String getName() {
-        return "Java";
+        return "book-loader";
     }
 
     @Override
     public String getId() {
-        return "java";
+        return "book-loader";
     }
 
     @Override
     public String getDescription() {
-        return "Java is a set of computer software " +
-            "and specifications developed by James Gosling at Sun Microsystems, " +
-            "which was later acquired by the Oracle Corporation, " +
-            "that provides a system for developing application software " +
-            "and deploying it in a cross-platform computing environment.";
+        return "The version independent loader for Book";
     }
 
     @Override
@@ -33,12 +29,12 @@ public class JavaModVessel implements ModVessel {
 
     @Override
     public String[] getAuthors() {
-        return new String[]{"Oracle Corporation", "Sun Microsystems", "James Gosling"};
+        return new String[]{"BookMC", "ChachyDev"};
     }
 
     @Override
     public String getVersion() {
-        return System.getProperty("java.version");
+        return "%LOADER_VERSION%";
     }
 
     @Override
