@@ -3,6 +3,7 @@ package org.bookmc.loader.api.vessel;
 import org.bookmc.loader.api.vessel.dependency.ModDependency;
 
 import java.io.File;
+import java.net.URL;
 
 public interface ModVessel {
     // Name of the mod
@@ -36,6 +37,8 @@ public interface ModVessel {
     ModDependency[] getDependsOn();
 
     ModDependency[] getSuggestions();
+
+    URL[] getExternalDependencies();
 
     String getIcon();
 

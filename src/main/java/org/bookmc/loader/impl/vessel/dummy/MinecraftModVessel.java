@@ -4,6 +4,7 @@ import org.bookmc.loader.api.vessel.ModVessel;
 import org.bookmc.loader.api.vessel.dependency.ModDependency;
 
 import java.io.File;
+import java.net.URL;
 
 public class MinecraftModVessel implements ModVessel {
     private final String version;
@@ -66,6 +67,11 @@ public class MinecraftModVessel implements ModVessel {
     @Override
     public ModDependency[] getSuggestions() {
         return new ModDependency[0];
+    }
+
+    @Override
+    public URL[] getExternalDependencies() {
+        return new URL[0];
     }
 
     @Override

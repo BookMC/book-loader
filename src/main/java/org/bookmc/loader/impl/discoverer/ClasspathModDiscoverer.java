@@ -6,6 +6,7 @@ import org.bookmc.loader.impl.Loader;
 import org.bookmc.loader.impl.candidate.DirectoryModCandidate;
 import org.bookmc.loader.impl.candidate.ZipModCandidate;
 import org.bookmc.loader.shared.Constants;
+import org.bookmc.loader.shared.utils.ZipUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,8 +17,6 @@ import java.util.Map;
 import java.util.zip.ZipFile;
 
 public class ClasspathModDiscoverer implements MinecraftModDiscoverer {
-    private final Map<File, Boolean> zipCache = new HashMap<>();
-
     @Override
     public void discover(File[] files) {
         URL[] classpath = LaunchWrapperHacks.getClasspathURLs();
@@ -28,7 +27,7 @@ public class ClasspathModDiscoverer implements MinecraftModDiscoverer {
                 String name = file.getName();
 
                 if (!name.endsWith(Constants.DISABLED_SUFFIX)) {
-                    if (isZipFile(file)) {
+                    if (ZipUtils.isZipFile(file)) {
                         Loader.registerCandidate(new ZipModCandidate(new File(url.toURI())));
                     } else if (file.isDirectory()) {
                         Loader.registerCandidate(new DirectoryModCandidate(file));
@@ -43,20 +42,5 @@ public class ClasspathModDiscoverer implements MinecraftModDiscoverer {
     @Override
     public boolean isFilesRequired() {
         return false;
-    }
-
-    private boolean isZipFile(File file) {
-        if (zipCache.containsKey(file)) {
-            return zipCache.get(file);
-        }
-
-        try {
-            new ZipFile(file);
-            zipCache.put(file, true);
-            return true;
-        } catch (IOException e) {
-            zipCache.put(file, false);
-            return false;
-        }
     }
 }

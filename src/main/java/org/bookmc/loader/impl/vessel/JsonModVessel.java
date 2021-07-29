@@ -7,6 +7,8 @@ import org.bookmc.loader.api.vessel.ModVessel;
 import org.bookmc.loader.api.vessel.dependency.ModDependency;
 
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -82,6 +84,28 @@ public class JsonModVessel implements ModVessel {
     }
 
     @Override
+    public URL[] getExternalDependencies() {
+        List<URL> urls = new ArrayList<>();
+
+        if (!object.has("external")) return new URL[0];
+        if (!object.isJsonObject())
+            throw new IllegalStateException("The external dependencies block must be a json object");
+
+        for (Map.Entry<String, JsonElement> key : object.get("external").getAsJsonObject().entrySet()) {
+            JsonElement element = key.getValue();
+            if (element.isJsonPrimitive()) {
+                try {
+                    urls.add(new URL(element.getAsString()));
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return urls.toArray(new URL[0]);
+    }
+
+    @Override
     public String getIcon() {
         return object.has("icon") ? object.get("icon").getAsString() : null;
     }
@@ -117,9 +141,9 @@ public class JsonModVessel implements ModVessel {
         List<ModDependency> dependencies = new ArrayList<>();
 
         if (!object.has(memberName)) return new ModDependency[0];
-        if (!object.isJsonObject()) throw new IllegalStateException("Dependencies must be specified in a json object");
+        if (!object.isJsonObject()) throw new IllegalStateException(memberName + " must be specified in a json object");
 
-        for (Map.Entry<String, JsonElement> key : object.entrySet()) {
+        for (Map.Entry<String, JsonElement> key : object.get(memberName).getAsJsonObject().entrySet()) {
             String id = key.getKey();
 
             JsonElement element = key.getValue();

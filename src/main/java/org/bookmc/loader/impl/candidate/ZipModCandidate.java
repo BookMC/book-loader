@@ -71,7 +71,6 @@ public class ZipModCandidate implements ModCandidate {
     @Override
     public void addToClasspath(LaunchClassLoader classLoader) {
         try {
-            System.out.println("Adding " + file.getName());
             classLoader.addURL(file.toURI().toURL());
         } catch (MalformedURLException e) {
             e.printStackTrace();
