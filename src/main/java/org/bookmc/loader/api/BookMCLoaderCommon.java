@@ -37,8 +37,6 @@ public abstract class BookMCLoaderCommon implements ITweaker {
         return environment;
     }
 
-    public abstract void injectIntoClassLoader(LaunchClassLoader classLoader, MixinEnvironment environment);
-
     public abstract Environment setEnvironment();
 
     @Override
@@ -68,8 +66,6 @@ public abstract class BookMCLoaderCommon implements ITweaker {
         MixinBootstrap.init();
 
         MixinEnvironment mixinEnvironment = MixinEnvironment.getDefaultEnvironment();
-
-        injectIntoClassLoader(classLoader, mixinEnvironment);
 
         String passedDirectory = System.getProperty("book.discovery.folder", "mods");
 
