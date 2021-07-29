@@ -1,4 +1,4 @@
-package org.bookmc.loader.impl.dummy.candidate;
+package org.bookmc.loader.impl.vessel.dummy.candidate;
 
 import net.minecraft.launchwrapper.LaunchClassLoader;
 import org.bookmc.loader.api.candidate.ModCandidate;

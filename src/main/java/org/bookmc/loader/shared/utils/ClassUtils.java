@@ -1,4 +1,4 @@
-package org.bookmc.loader.utils;
+package org.bookmc.loader.shared.utils;
 
 import java.util.HashMap;
 import java.util.Map;

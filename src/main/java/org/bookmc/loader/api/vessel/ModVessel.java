@@ -1,5 +1,7 @@
 package org.bookmc.loader.api.vessel;
 
+import org.bookmc.loader.api.vessel.dependency.ModDependency;
+
 import java.io.File;
 
 public interface ModVessel {
@@ -14,10 +16,6 @@ public interface ModVessel {
 
     // Returns the config class string of the mod
     String getConfig();
-
-    // (Deprecated) Returns the author of the mod.
-    @Deprecated
-    String getAuthor();
 
     // Returns the authors of the mod
     String[] getAuthors();
@@ -35,7 +33,9 @@ public interface ModVessel {
     String getMixinEntrypoint();
 
     // Returns the dependencies of the mod
-    String[] getDependencies();
+    ModDependency[] getDependsOn();
+
+    ModDependency[] getSuggestions();
 
     String getIcon();
 

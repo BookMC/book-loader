@@ -1,10 +1,15 @@
 package org.bookmc.loader.impl.vessel;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.bookmc.loader.api.vessel.ModVessel;
+import org.bookmc.loader.api.vessel.dependency.ModDependency;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class JsonModVessel implements ModVessel {
     private final JsonObject object;
@@ -42,13 +47,8 @@ public class JsonModVessel implements ModVessel {
     }
 
     @Override
-    public String getAuthor() {
-        return object.has("author") ? object.get("author").getAsString() : "MysteriousDev";
-    }
-
-    @Override
     public String[] getAuthors() {
-        return object.has("authors") ? toString(object.get("authors").getAsJsonArray()) : new String[]{getAuthor()};
+        return object.has("authors") ? toString(object.get("authors").getAsJsonArray()) : new String[0];
     }
 
     @Override
@@ -72,8 +72,13 @@ public class JsonModVessel implements ModVessel {
     }
 
     @Override
-    public String[] getDependencies() {
-        return object.has("dependencies") ? toString(object.get("dependencies").getAsJsonArray()) : new String[0];
+    public ModDependency[] getDependsOn() {
+        return getDependsOn("depends");
+    }
+
+    @Override
+    public ModDependency[] getSuggestions() {
+        return getDependsOn("suggests");
     }
 
     @Override
@@ -106,5 +111,23 @@ public class JsonModVessel implements ModVessel {
         }
 
         return strings;
+    }
+
+    private ModDependency[] getDependsOn(String memberName) {
+        List<ModDependency> dependencies = new ArrayList<>();
+
+        if (!object.has(memberName)) return new ModDependency[0];
+        if (!object.isJsonObject()) throw new IllegalStateException("Dependencies must be specified in a json object");
+
+        for (Map.Entry<String, JsonElement> key : object.entrySet()) {
+            String id = key.getKey();
+
+            JsonElement element = key.getValue();
+            if (element.isJsonPrimitive()) {
+                dependencies.add(new ModDependency(id, element.getAsString()));
+            }
+        }
+
+        return dependencies.toArray(new ModDependency[0]);
     }
 }

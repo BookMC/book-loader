@@ -7,12 +7,16 @@ import org.apache.logging.log4j.Logger;
 import org.bookmc.loader.api.MinecraftModDiscoverer;
 import org.bookmc.loader.api.candidate.ModCandidate;
 import org.bookmc.loader.api.vessel.ModVessel;
+import org.bookmc.loader.api.vessel.dependency.ModDependency;
 import org.bookmc.loader.impl.discoverer.DevelopmentModDiscoverer;
 import org.bookmc.loader.impl.ui.MissingDependencyUI;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class BookModLoader {
     private static final Logger logger = LogManager.getLogger();
@@ -52,26 +56,46 @@ public class BookModLoader {
     }
 
     private static void loadDependencies(ModVessel vessel) {
-        ArrayList<String> list = missingDependencies.getOrDefault(vessel.getId(), new ArrayList<>());
-        for (String dependency : vessel.getDependencies()) {
-            boolean isFound;
+        ArrayList<String> missingDependencies = BookModLoader.missingDependencies.getOrDefault(vessel.getId(), new ArrayList<>());
 
-            ModVessel dependencyVessel = Loader.getModVesselsMap().get(dependency);
+        for (ModDependency dependency : vessel.getDependsOn()) {
+            ModVessel dependencyVessel = Loader.getModVesselsMap().get(dependency.getId());
 
-            isFound = dependencyVessel != null;
-
-            if (isFound) {
-                loadDependencies(dependencyVessel);
-                load(dependencyVessel, Launch.classLoader);
+            if (dependencyVessel == null) {
+                missingDependencies.add("The dependency " + dependency.getId() + " was missing! Please make sure it's installed");
+                continue;
             }
 
-            if (!isFound) {
-                list.add(dependency);
+            // TOOD: Replace with semver checking and >=/<=/>/< support
+            if (!dependency.getVersion().equals("*") && !dependencyVessel.getVersion().equals(vessel.getVersion())) {
+                missingDependencies.add("The dependency " + dependency.getId() + " was located! However " + vessel.getName() + " requires " + dependency.getVersion());
+                continue;
             }
+
+
+            loadDependencies(dependencyVessel);
+            load(dependencyVessel, Launch.classLoader);
         }
 
-        if (!list.isEmpty()) {
-            missingDependencies.put(vessel.getId(), list);
+        for (ModDependency dependency : vessel.getSuggestions()) {
+            ModVessel suggestionVessel = Loader.getModVesselsMap().get(dependency.getId());
+
+            if (suggestionVessel == null) {
+                logger.info("The mod " + vessel.getName() + " suggests that you should install " + dependency.getId() + ".");
+                continue;
+            }
+
+            if (!dependency.getVersion().equals("*") && !suggestionVessel.getVersion().equals(vessel.getVersion())) {
+                logger.info("The dependency " + dependency.getId() + " was located! However " + vessel.getName() + " wants " + dependency.getVersion());
+                continue;
+            }
+
+            loadDependencies(suggestionVessel);
+            load(suggestionVessel, Launch.classLoader);
+        }
+
+        if (!missingDependencies.isEmpty()) {
+            BookModLoader.missingDependencies.put(vessel.getId(), missingDependencies);
         }
     }
 
@@ -111,7 +135,10 @@ public class BookModLoader {
     }
 
     public static void loadCandidates(LaunchClassLoader classLoader) {
-        List<ModCandidate> toRemove = new ArrayList<>();
+        // To avoid a CMFE we have to add the to-be-removed candidates
+        // to a new list and then iterate over it and remove the rejects
+        // Once we're finished processing.
+        List<ModCandidate> removeQueue = new ArrayList<>();
 
         for (ModCandidate candidate : Loader.getCandidates()) {
             if (candidate.isAcceptable()) {
@@ -120,18 +147,18 @@ public class BookModLoader {
                         candidate.addToClasspath(classLoader);
                         Loader.registerVessel(vessel);
                     } else {
-                        toRemove.add(candidate);
+                        removeQueue.add(candidate);
                     }
                 }
             } else {
-                toRemove.add(candidate);
+                removeQueue.add(candidate);
                 if (!Loader.getRejectedCandidates().contains(candidate)) {
                     Loader.rejectCandidate(candidate);
                 }
             }
         }
 
-        for (ModCandidate candidate : toRemove) {
+        for (ModCandidate candidate : removeQueue) {
             Loader.getCandidates().remove(candidate);
         }
     }

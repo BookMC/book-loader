@@ -10,10 +10,10 @@ import org.bookmc.loader.api.exception.IllegalDependencyException;
 import org.bookmc.loader.api.vessel.ModVessel;
 import org.bookmc.loader.impl.BookModLoader;
 import org.bookmc.loader.impl.Loader;
-import org.bookmc.loader.impl.dummy.JavaModVessel;
-import org.bookmc.loader.impl.dummy.MinecraftModVessel;
-import org.bookmc.loader.impl.dummy.candidate.DummyCandidate;
-import org.bookmc.loader.utils.ClassUtils;
+import org.bookmc.loader.impl.vessel.dummy.JavaModVessel;
+import org.bookmc.loader.impl.vessel.dummy.MinecraftModVessel;
+import org.bookmc.loader.impl.vessel.dummy.candidate.DummyCandidate;
+import org.bookmc.loader.shared.utils.ClassUtils;
 import org.spongepowered.asm.launch.MixinBootstrap;
 import org.spongepowered.asm.mixin.MixinEnvironment;
 import org.spongepowered.asm.mixin.Mixins;
@@ -149,7 +149,7 @@ public abstract class BookMCLoaderCommon implements ITweaker {
             Class<?> clazz = Class.forName(entrypoint, false, classLoader)
                 .asSubclass(classLoader.loadClass(CompatiblityLayer.class.getName()));
 
-            if (vessel.getDependencies().length != 0) {
+            if (vessel.getDependsOn().length != 0) {
                 throw new IllegalDependencyException(vessel);
             }
 

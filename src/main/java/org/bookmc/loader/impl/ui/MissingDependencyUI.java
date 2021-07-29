@@ -10,12 +10,13 @@ import java.awt.*;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class MissingDependencyUI {
 
     public static void failed(Map<String, ArrayList<String>> missingDependencies) {
-        JFrame frame = new JFrame("Failed to launch! (Missing dependencies)");
+        JFrame frame = new JFrame("Failed to launch! (Dependency problems!)");
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setSize(750, 500);
         frame.setLocationRelativeTo(null);
@@ -33,8 +34,6 @@ public class MissingDependencyUI {
 
         frame.addWindowListener(new WindowListener() {
             private final Logger logger = LogManager.getLogger(this);
-
-
             @Override
             public void windowOpened(WindowEvent e) {
             }
@@ -72,14 +71,14 @@ public class MissingDependencyUI {
         for (String key : missingDependencies.keySet()) {
             DefaultMutableTreeNode dependencyRoot = new DefaultMutableTreeNode(key);
             root.add(dependencyRoot);
-            for (String dependency : missingDependencies.get(key)) {
-                dependencyRoot.add(new DefaultMutableTreeNode(String.format("The dependency \"%s\" is missing. Please check it's installed. (It should be located in the mods folder)", dependency)));
+            for (String reason : missingDependencies.get(key)) {
+                dependencyRoot.add(new DefaultMutableTreeNode(reason));
             }
         }
     }
 
     private static void expandAllNodes(JTree tree, int startingIndex, int rowCount) {
-        for (int i = startingIndex; i < rowCount; ++i) {
+        for (int i = startingIndex; i < rowCount; i++) {
             tree.expandRow(i);
         }
 

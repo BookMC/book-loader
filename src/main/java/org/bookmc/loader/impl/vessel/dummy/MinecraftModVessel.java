@@ -1,6 +1,7 @@
-package org.bookmc.loader.impl.dummy;
+package org.bookmc.loader.impl.vessel.dummy;
 
 import org.bookmc.loader.api.vessel.ModVessel;
+import org.bookmc.loader.api.vessel.dependency.ModDependency;
 
 import java.io.File;
 
@@ -33,11 +34,6 @@ public class MinecraftModVessel implements ModVessel {
     }
 
     @Override
-    public String getAuthor() {
-        return null;
-    }
-
-    @Override
     public String[] getAuthors() {
         return new String[]{"Oracle Corporation", "Sun Microsystems", "James Gosling"};
     }
@@ -49,7 +45,7 @@ public class MinecraftModVessel implements ModVessel {
 
     @Override
     public String getEntrypoint() {
-        return "org.bookmc.loader.impl.dummy.entrypoint.FakeEntrypoint::fakeItToMakeIt";
+        return "org.bookmc.loader.impl.vessel.dummy.entrypoint.FakeEntrypoint::fakeItToMakeIt";
     }
 
     @Override
@@ -63,8 +59,13 @@ public class MinecraftModVessel implements ModVessel {
     }
 
     @Override
-    public String[] getDependencies() {
-        return new String[0];
+    public ModDependency[] getDependsOn() {
+        return new ModDependency[0];
+    }
+
+    @Override
+    public ModDependency[] getSuggestions() {
+        return new ModDependency[0];
     }
 
     @Override

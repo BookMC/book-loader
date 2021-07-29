@@ -3,7 +3,7 @@ package org.bookmc.loader.impl.discoverer;
 import org.bookmc.loader.api.MinecraftModDiscoverer;
 import org.bookmc.loader.impl.Loader;
 import org.bookmc.loader.impl.candidate.LocalClassLoaderModCandidate;
-import org.bookmc.loader.utils.ClassUtils;
+import org.bookmc.loader.shared.utils.ClassUtils;
 
 import java.io.File;
 
