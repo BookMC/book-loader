@@ -9,6 +9,8 @@ import org.bookmc.loader.api.candidate.ModCandidate;
 import org.bookmc.loader.api.classloader.ClassLoaderURLAppender;
 import org.bookmc.loader.api.vessel.ModVessel;
 import org.bookmc.loader.api.vessel.dependency.ModDependency;
+import org.bookmc.loader.api.vessel.entrypoint.Entrypoint;
+import org.bookmc.loader.api.vessel.environment.Environment;
 import org.bookmc.loader.impl.candidate.ZipModCandidate;
 import org.bookmc.loader.impl.discoverer.DevelopmentModDiscoverer;
 import org.bookmc.loader.impl.ui.MissingDependencyUI;
@@ -31,13 +33,17 @@ public class BookModLoader {
 
     private static final Object object = new Object();
 
-    public static void load() {
+    private static Environment environment = Environment.UNKNOWN;
+
+    public static void load(Environment environment) {
+        BookModLoader.environment = environment;
+
         for (ModVessel vessel : Loader.getModVessels()) {
             if (loaded.contains(vessel)) {
                 continue;
             }
 
-            loadDependencies(vessel);
+            loadDependencies(vessel, environment);
             // In the chances of someone for some stupid reason decided to add their own mod as a dependency
         }
 
@@ -55,12 +61,12 @@ public class BookModLoader {
             }
 
             if (!loaded.contains(vessel)) {
-                load(vessel, Launch.classLoader);
+                load(vessel, Launch.classLoader, environment);
             }
         }
     }
 
-    private static void loadDependencies(ModVessel vessel) {
+    private static void loadDependencies(ModVessel vessel, Environment environment) {
         ArrayList<String> missingDependencies = BookModLoader.missingDependencies.getOrDefault(vessel.getId(), new ArrayList<>());
 
         for (URL url : vessel.getExternalDependencies()) {
@@ -72,7 +78,7 @@ public class BookModLoader {
             } else {
                 logger.error("The external library (" + file.getName() + ") is not a jar/zip! Ignoring and deleteing...");
                 if (!file.delete()) {
-                    logger.fatal("Failwd to delete external library!");
+                    logger.fatal("Failed to delete external library!");
                 }
             }
         }
@@ -94,8 +100,8 @@ public class BookModLoader {
             }
 
 
-            loadDependencies(dependencyVessel);
-            load(dependencyVessel, Launch.classLoader);
+            loadDependencies(dependencyVessel, environment);
+            load(dependencyVessel, Launch.classLoader, environment);
         }
 
         for (ModDependency dependency : vessel.getSuggestions()) {
@@ -111,8 +117,8 @@ public class BookModLoader {
                 continue;
             }
 
-            loadDependencies(suggestionVessel);
-            load(suggestionVessel, Launch.classLoader);
+            loadDependencies(suggestionVessel, environment);
+            load(suggestionVessel, Launch.classLoader, environment);
         }
 
         if (!missingDependencies.isEmpty()) {
@@ -120,26 +126,29 @@ public class BookModLoader {
         }
     }
 
-    private static void load(ModVessel vessel, ClassLoader classLoader) {
-        if (vessel.getEntrypoint() == null|| vessel.isCompatibilityLayer()) return;
-        String[] split = vessel.getEntrypoint().split("::");
+    private static void load(ModVessel vessel, ClassLoader classLoader, Environment environment) {
+        if (vessel.getEntrypoints().length <= 0 || !environment.allows(vessel.getEnvironment())) return;
+        Entrypoint[] entrypoints = vessel.getEntrypoints();
 
-        Class<?> entryClass = null;
+        for (Entrypoint entrypoint : entrypoints) {
 
-        try {
-            entryClass = Class.forName(split[0], false, classLoader);
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
+            Class<?> entryClass = null;
 
-        loaded.add(vessel);
-        try {
-            if (entryClass != null) {
-                logger.debug("Loading " + vessel.getName() + " from " + vessel.getEntrypoint());
-                entryClass.getDeclaredMethod(split[1]).invoke(entryClass.getConstructor().newInstance());
+            try {
+                entryClass = Class.forName(entrypoint.getOwner(), false, classLoader);
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
             }
-        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException | InstantiationException e) {
-            e.printStackTrace();
+
+            loaded.add(vessel);
+            try {
+                if (entryClass != null) {
+                    logger.debug("Loading " + vessel.getName() + " from " + entrypoint.getOwner());
+                    entryClass.getDeclaredMethod(entrypoint.getMethod()).invoke(entryClass.getConstructor().newInstance());
+                }
+            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException | InstantiationException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -152,7 +161,7 @@ public class BookModLoader {
             }
         }
 
-        load();
+        load(environment);
     }
 
     public static void loadCandidates(LaunchClassLoader classLoader) {

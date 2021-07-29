@@ -4,7 +4,11 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.bookmc.loader.api.vessel.ModVessel;
+import org.bookmc.loader.api.vessel.author.Author;
 import org.bookmc.loader.api.vessel.dependency.ModDependency;
+import org.bookmc.loader.api.vessel.entrypoint.Entrypoint;
+import org.bookmc.loader.api.vessel.entrypoint.MixinEntrypoint;
+import org.bookmc.loader.api.vessel.environment.Environment;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -19,11 +23,6 @@ public class JsonModVessel implements ModVessel {
 
     public JsonModVessel(JsonObject object, File file) {
         this.object = object;
-
-        if (!object.has("entrypoint")) {
-            throw new IllegalStateException("Nope! You cannot not load a mod without an entrypoint!");
-        }
-
         this.file = file;
     }
 
@@ -49,8 +48,23 @@ public class JsonModVessel implements ModVessel {
     }
 
     @Override
-    public String[] getAuthors() {
-        return object.has("authors") ? toString(object.get("authors").getAsJsonArray()) : new String[0];
+    public Author[] getAuthors() {
+        List<Author> authors = new ArrayList<>();
+
+        if (!object.has("authors") || !object.get("authors").isJsonObject()) return new Author[0];
+
+        JsonObject obj = object.getAsJsonObject("authors");
+        for (Map.Entry<String, JsonElement> author : obj.entrySet()) {
+            String name = author.getKey();
+            JsonObject authorObj = author.getValue().getAsJsonObject();
+            authors.add(new Author(
+                name,
+                authorObj.has("github") ? authorObj.get("github").getAsString() : null,
+                authorObj.has("email") ? authorObj.get("email").getAsString() : null
+            ));
+        }
+
+        return authors.toArray(new Author[0]);
     }
 
     @Override
@@ -64,8 +78,35 @@ public class JsonModVessel implements ModVessel {
     }
 
     @Override
-    public String getEntrypoint() {
-        return object.get("entrypoint").getAsString();
+    public String getLicense() {
+        return object.has("license") ? object.get("license").getAsString() : null;
+    }
+
+    @Override
+    public Entrypoint[] getEntrypoints() {
+        if (!object.has("entrypoint") || !object.get("entrypoint").isJsonObject()) return new Entrypoint[0];
+        List<Entrypoint> entrypoints = new ArrayList<>();
+
+        JsonObject entrypoint = object.getAsJsonObject("entrypoint");
+
+        if (entrypoint.has("main")) {
+            String[] owners = toString(entrypoint.get("main").getAsJsonArray());
+            for (String owner : owners) {
+                String[] split = owner.split("::");
+                if (split.length == 1) {
+                    entrypoints.add(new Entrypoint(owner, "main"));
+                } else {
+                    entrypoints.add(new Entrypoint(owner, split[2]));
+                }
+            }
+        }
+
+        return entrypoints.toArray(new Entrypoint[0]);
+    }
+
+    @Override
+    public Environment getEnvironment() {
+        return object.has("environment") ? Environment.getEnvironment(object.get("environment").getAsString()) : Environment.UNKNOWN;
     }
 
     @Override
@@ -74,8 +115,34 @@ public class JsonModVessel implements ModVessel {
     }
 
     @Override
-    public String getMixinEntrypoint() {
-        return object.has("mixin_entrypoint") ? object.get("mixin_entrypoint").getAsString() : null;
+    public MixinEntrypoint[] getMixinEntrypoints() {
+        if (!object.has("mixin") || !object.get("mixin").isJsonObject()) return new MixinEntrypoint[0];
+        List<MixinEntrypoint> entrypoints = new ArrayList<>();
+
+        JsonObject mixinObj = object.getAsJsonObject("mixin");
+
+        if (mixinObj.has("client") && mixinObj.get("client").isJsonArray()) {
+            String[] entries = toString(mixinObj.get("client").getAsJsonArray());
+            for (String entry : entries) {
+                entrypoints.add(new MixinEntrypoint(entry, Environment.CLIENT));
+            }
+        }
+
+        if (mixinObj.has("server") && mixinObj.get("server").isJsonArray()) {
+            String[] entries = toString(mixinObj.get("server").getAsJsonArray());
+            for (String entry : entries) {
+                entrypoints.add(new MixinEntrypoint(entry, Environment.SERVER));
+            }
+        }
+
+        if (mixinObj.has("*") && mixinObj.get("*").isJsonArray()) {
+            String[] entries = toString(mixinObj.get("*").getAsJsonArray());
+            for (String entry : entries) {
+                entrypoints.add(new MixinEntrypoint(entry, Environment.ANY));
+            }
+        }
+
+        return entrypoints.toArray(new MixinEntrypoint[0]);
     }
 
     @Override

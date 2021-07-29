@@ -1,7 +1,11 @@
 package org.bookmc.loader.impl.vessel.dummy;
 
 import org.bookmc.loader.api.vessel.ModVessel;
+import org.bookmc.loader.api.vessel.author.Author;
 import org.bookmc.loader.api.vessel.dependency.ModDependency;
+import org.bookmc.loader.api.vessel.entrypoint.Entrypoint;
+import org.bookmc.loader.api.vessel.entrypoint.MixinEntrypoint;
+import org.bookmc.loader.api.vessel.environment.Environment;
 
 import java.io.File;
 import java.net.URL;
@@ -28,8 +32,8 @@ public class BookLoaderVessel implements ModVessel {
     }
 
     @Override
-    public String[] getAuthors() {
-        return new String[]{"BookMC", "ChachyDev"};
+    public Author[] getAuthors() {
+        return new Author[]{new Author("BookMC", "https://github.com/BookMC", null), new Author("ChachyDev", "https://github.com/ChachyDev", null)};
     }
 
     @Override
@@ -43,8 +47,18 @@ public class BookLoaderVessel implements ModVessel {
     }
 
     @Override
-    public String getEntrypoint() {
+    public String getLicense() {
         return null;
+    }
+
+    @Override
+    public Entrypoint[] getEntrypoints() {
+        return new Entrypoint[0];
+    }
+
+    @Override
+    public Environment getEnvironment() {
+        return Environment.ANY;
     }
 
     @Override
@@ -53,8 +67,8 @@ public class BookLoaderVessel implements ModVessel {
     }
 
     @Override
-    public String getMixinEntrypoint() {
-        return null;
+    public MixinEntrypoint[] getMixinEntrypoints() {
+        return new MixinEntrypoint[0];
     }
 
     @Override

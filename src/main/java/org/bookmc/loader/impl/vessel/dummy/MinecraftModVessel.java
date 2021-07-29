@@ -1,7 +1,11 @@
 package org.bookmc.loader.impl.vessel.dummy;
 
 import org.bookmc.loader.api.vessel.ModVessel;
+import org.bookmc.loader.api.vessel.author.Author;
 import org.bookmc.loader.api.vessel.dependency.ModDependency;
+import org.bookmc.loader.api.vessel.entrypoint.Entrypoint;
+import org.bookmc.loader.api.vessel.entrypoint.MixinEntrypoint;
+import org.bookmc.loader.api.vessel.environment.Environment;
 
 import java.io.File;
 import java.net.URL;
@@ -35,8 +39,8 @@ public class MinecraftModVessel implements ModVessel {
     }
 
     @Override
-    public String[] getAuthors() {
-        return new String[]{"Oracle Corporation", "Sun Microsystems", "James Gosling"};
+    public Author[] getAuthors() {
+        return new Author[]{new Author("Mojang", "https://github.com/Mojang", null)};
     }
 
     @Override
@@ -50,8 +54,18 @@ public class MinecraftModVessel implements ModVessel {
     }
 
     @Override
-    public String getEntrypoint() {
-        return null;
+    public String getLicense() {
+        return "CUSTOM";
+    }
+
+    @Override
+    public Entrypoint[] getEntrypoints() {
+        return new Entrypoint[0];
+    }
+
+    @Override
+    public Environment getEnvironment() {
+        return Environment.ANY;
     }
 
     @Override
@@ -60,8 +74,8 @@ public class MinecraftModVessel implements ModVessel {
     }
 
     @Override
-    public String getMixinEntrypoint() {
-        return null;
+    public MixinEntrypoint[] getMixinEntrypoints() {
+        return new MixinEntrypoint[0];
     }
 
     @Override

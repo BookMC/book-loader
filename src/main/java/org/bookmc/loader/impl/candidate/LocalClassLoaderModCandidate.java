@@ -1,9 +1,9 @@
 package org.bookmc.loader.impl.candidate;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import net.minecraft.launchwrapper.LaunchClassLoader;
 import org.bookmc.loader.api.candidate.ModCandidate;
 import org.bookmc.loader.api.classloader.ClassLoaderURLAppender;
 import org.bookmc.loader.api.vessel.ModVessel;
@@ -19,11 +19,11 @@ import java.util.List;
 public class LocalClassLoaderModCandidate implements ModCandidate {
     private final JsonParser parser = new JsonParser();
 
-    private final List<ModVessel> vesselList = new ArrayList<>();
+    private final List<ModVessel> vessels = new ArrayList<>();
 
     @Override
     public ModVessel[] getVessels() {
-        return vesselList.toArray(new ModVessel[0]);
+        return vessels.toArray(new ModVessel[0]);
     }
 
     @Override
@@ -32,14 +32,22 @@ public class LocalClassLoaderModCandidate implements ModCandidate {
             if (stream == null) return false;
 
             try (InputStreamReader reader = new InputStreamReader(stream)) {
-                JsonArray mods = parser.parse(reader).getAsJsonArray();
+                JsonElement json = parser.parse(reader);
 
-                for (int i = 0; i < mods.size(); i++) {
-                    JsonObject mod = mods.get(i).getAsJsonObject();
-                    // TODO: Use CodeSource to get the location
-                    vesselList.add(new JsonModVessel(mod, null));
+                if (json.isJsonObject()) {
+                    vessels.add(new JsonModVessel(json.getAsJsonObject(), null));
+                    return true;
+                } else if (json.isJsonArray()) {
+                    JsonArray mods = json.getAsJsonArray();
+                    for (int i = 0; i < mods.size(); i++) {
+                        JsonObject mod = mods.get(i).getAsJsonObject();
+                        // TODO: Use CodeSource to get the location
+                        vessels.add(new JsonModVessel(mod, null));
+                    }
+                    return true;
                 }
-                return true;
+
+                return false;
             }
         } catch (IOException ignored) {
 
