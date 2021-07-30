@@ -18,6 +18,10 @@ public class ClassLoaderURLAppender {
     private Method addURL;
 
     public ClassLoaderURLAppender(URLClassLoader classLoader) {
+        if (classLoader.getClass().getName().startsWith("jdk.internal.loader.ClassLoaders$")) {
+            throw new IllegalStateException("To avoid issues with later JREs we simple do not allow use of addURL for the AppClassLoader. Rethink your logic");
+        }
+
         this.classLoader = classLoader;
 
         try {
