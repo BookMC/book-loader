@@ -1,7 +1,7 @@
 package org.bookmc.loader.impl;
 
 import net.minecraft.launchwrapper.LaunchClassLoader;
-import org.bookmc.loader.api.MinecraftModDiscoverer;
+import org.bookmc.loader.api.ModResolver;
 import org.bookmc.loader.api.candidate.ModCandidate;
 import org.bookmc.loader.api.classloader.ClassLoaderURLAppender;
 import org.bookmc.loader.api.compat.CompatiblityLayer;
@@ -10,9 +10,9 @@ import org.bookmc.loader.api.vessel.ModVessel;
 import org.bookmc.loader.api.vessel.entrypoint.Entrypoint;
 import org.bookmc.loader.api.vessel.entrypoint.MixinEntrypoint;
 import org.bookmc.loader.api.vessel.environment.Environment;
-import org.bookmc.loader.impl.discoverer.BookModDiscoverer;
-import org.bookmc.loader.impl.discoverer.ClasspathModDiscoverer;
-import org.bookmc.loader.impl.discoverer.DevelopmentModDiscoverer;
+import org.bookmc.loader.impl.resolve.BookModResolver;
+import org.bookmc.loader.impl.resolve.ClasspathModResolver;
+import org.bookmc.loader.impl.resolve.DevelopmentModResolver;
 import org.spongepowered.asm.mixin.Mixins;
 
 import java.io.File;
@@ -20,7 +20,7 @@ import java.net.URLClassLoader;
 import java.util.*;
 
 public class Loader {
-    private static final List<MinecraftModDiscoverer> discoverers = new ArrayList<>();
+    private static final List<ModResolver> resolvers = new ArrayList<>();
     private static final Map<String, ModVessel> modVessels = new HashMap<>();
 
     private static final List<ModCandidate> candidates = new ArrayList<>();
@@ -28,17 +28,17 @@ public class Loader {
 
     static {
         // Register default mod loader.
-        Loader.registerModDiscoverer(new BookModDiscoverer());
-        Loader.registerModDiscoverer(new ClasspathModDiscoverer());
-        Loader.registerModDiscoverer(new DevelopmentModDiscoverer());
+        Loader.registerResolver(new BookModResolver());
+        Loader.registerResolver(new ClasspathModResolver());
+        Loader.registerResolver(new DevelopmentModResolver());
     }
 
-    public static void registerModDiscoverer(MinecraftModDiscoverer minecraftModDiscoverer) {
-        discoverers.add(minecraftModDiscoverer);
+    public static void registerResolver(ModResolver modResolver) {
+        resolvers.add(modResolver);
     }
 
-    public static List<MinecraftModDiscoverer> getModDiscoverers() {
-        return Collections.unmodifiableList(discoverers);
+    public static List<ModResolver> getModResolvers() {
+        return Collections.unmodifiableList(resolvers);
     }
 
     public static void registerVessel(ModVessel vessel) {
@@ -57,18 +57,20 @@ public class Loader {
     }
 
     public static void discover(File modsDirectory) {
-        for (MinecraftModDiscoverer discoverer : Loader.getModDiscoverers()) {
+        for (ModResolver discoverer : Loader.getModResolvers()) {
             File[] files = modsDirectory.listFiles();
 
-            if (files != null || !discoverer.isFilesRequired()) {
-                discoverer.discover(files);
+            if (files == null) {
+                files = new File[0];
             }
+
+            discoverer.resolve(files);
         }
     }
 
     /**
      * Registers a ModCandidate onto the mod candidate list. If it has passed the initial process time you can reinvoke
-     * {@link BookModLoader#loadCandidates(URLClassLoader)}
+     * {@link BookLauncherBase#loadCandidates()}
      *
      * @param candidate The ModCandidate to be registered
      */
@@ -78,11 +80,11 @@ public class Loader {
     }
 
     /**
-     * Returns the currently available candidates. If {@link BookModLoader#loadCandidates(URLClassLoader)}
+     * Returns the currently available candidates. If {@link BookLauncherBase#loadCandidates()}
      * has been invoekd then it will only return accepted candidates however if this had not been invoked it
      * will contain rejected candidates so especially you CompatibilityLayer people beware!
      * Don't worry we've made it as safe as possible for developers to call our internals, interesting right?
-     * If another [compatibility] layer calls {@link BookModLoader#loadCandidates(URLClassLoader)} then
+     * If another [compatibility] layer calls {@link BookLauncherBase#loadCandidates()} then
      * it will simply skip the candidate if it has already been checked.
      *
      * @return Read note
@@ -117,35 +119,33 @@ public class Loader {
 
     public static void loadCompatibilityLayers(LaunchClassLoader classLoader) {
         for (ModVessel vessel : getModVessels()) {
-            if (!BookModLoader.isModLoaded(vessel.getId())) {
+            if (!BookLauncherBase.isModLoaded(vessel.getId())) {
                 loadCompatibilityLayer(vessel, classLoader);
             }
         }
     }
 
     public static void loadCompatibilityLayer(ModVessel vessel, URLClassLoader classLoader) {
-        try {
-            Entrypoint[] entrypoints = vessel.getEntrypoints();
-            for (Entrypoint entrypoint : entrypoints) {
-                if (entrypoint.getMethod().equals("compat")) {
-                    try {
-                        Class<?> clazz = Class.forName(entrypoint.getOwner(), false, classLoader)
-                            .asSubclass(classLoader.loadClass(CompatiblityLayer.class.getName()));
+        Entrypoint[] entrypoints = vessel.getEntrypoints();
+        for (Entrypoint entrypoint : entrypoints) {
+            try {
+                Class<?> compatClass = classLoader.loadClass(CompatiblityLayer.class.getName());
+                Class<?> clazz = Class.forName(entrypoint.getOwner(), false, classLoader);
 
-                        if (vessel.getDependsOn().length != 0) {
-                            throw new IllegalDependencyException(vessel);
-                        }
-
-                        BookModLoader.loaded.add(vessel); // Trick BookModLoader#load to believe we have "loaded" our "mod".
-                        CompatiblityLayer layer = (CompatiblityLayer) clazz.newInstance();
-                        layer.init(new ClassLoaderURLAppender(classLoader));
-                    } catch (ClassCastException e) {
-                        throw new IllegalStateException("The entrypoint (" + entrypoint + ") does not implement CompatibilityLayer");
+                if (clazz.isAssignableFrom(compatClass)) {
+                    if (vessel.getDependsOn().length != 0) {
+                        throw new IllegalDependencyException(vessel);
                     }
+
+                    BookLauncherBase.loaded.add(vessel); // Trick BookModLoader#load to believe we have "loaded" our "mod".
+                    CompatiblityLayer layer = (CompatiblityLayer) clazz.newInstance();
+                    layer.init(new ClassLoaderURLAppender(classLoader));
                 }
+            } catch (ClassCastException e) {
+                throw new IllegalStateException("The entrypoint (" + entrypoint + ") does not implement CompatibilityLayer");
+            } catch (Throwable t) {
+                t.printStackTrace();
             }
-        } catch (Throwable t) {
-            t.printStackTrace();
         }
     }
 
@@ -165,12 +165,13 @@ public class Loader {
         }
     }
 
-    public static void discoverAndLoad(File modsDirectory, URLClassLoader classLoader, Environment environment) throws IllegalDependencyException {
+    public static void discoverAndLoad(File modsDirectory, Environment environment) throws
+        IllegalDependencyException {
         Loader.discover(modsDirectory);
-        BookModLoader.loadCandidates(classLoader);
+        BookLauncherBase.loadCandidates();
 
         for (ModVessel vessel : Loader.getModVessels()) {
-            Loader.loadCompatibilityLayer(vessel, classLoader);
+            Loader.loadCompatibilityLayer(vessel, vessel.getClassLoader());
             Loader.loadMixin(vessel, environment);
         }
     }

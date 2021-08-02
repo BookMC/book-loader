@@ -89,7 +89,7 @@ publishing {
         mavenJava(MavenPublication) {
             from components.java
             pom {
-                name = "loader"
+                name = "book-loader"
                 url = "https://github.com/BookMC/loader"
 
                 developers {

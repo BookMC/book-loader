@@ -3,6 +3,7 @@ package org.bookmc.loader.impl.vessel;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import org.bookmc.loader.api.classloader.ModClassLoader;
 import org.bookmc.loader.api.vessel.ModVessel;
 import org.bookmc.loader.api.vessel.author.Author;
 import org.bookmc.loader.api.vessel.dependency.ModDependency;
@@ -13,13 +14,20 @@ import org.bookmc.loader.api.vessel.environment.Environment;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class JsonModVessel implements ModVessel {
+    private URLClassLoader classLoader;
     private final JsonObject object;
     private final File file;
+
+    public JsonModVessel(JsonObject object, File file, URLClassLoader classLoader) {
+        this.object = object;
+        this.file = file;
+    }
 
     public JsonModVessel(JsonObject object, File file) {
         this.object = object;
@@ -106,7 +114,7 @@ public class JsonModVessel implements ModVessel {
 
     @Override
     public Environment getEnvironment() {
-        return object.has("environment") ? Environment.getEnvironment(object.get("environment").getAsString()) : Environment.UNKNOWN;
+        return object.has("environment") ? Environment.fromString(object.get("environment").getAsString()) : Environment.UNKNOWN;
     }
 
     @Override
@@ -178,8 +186,13 @@ public class JsonModVessel implements ModVessel {
     }
 
     @Override
-    public boolean isCompatibilityLayer() {
-        return object.has("compat_layer") && object.get("compat_layer").getAsBoolean();
+    public URLClassLoader getClassLoader() {
+        return classLoader;
+    }
+
+    @Override
+    public void setClassLoader(URLClassLoader classLoader) {
+        this.classLoader = classLoader;
     }
 
     private String[] toString(JsonArray array) {

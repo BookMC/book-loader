@@ -40,7 +40,7 @@ public class ZipModCandidate implements ModCandidate {
     }
 
     @Override
-    public boolean isAcceptable() {
+    public boolean isResolvable() {
         try {
             ZipFile zipFile = new ZipFile(file);
             Enumeration<? extends ZipEntry> entries = zipFile.entries();

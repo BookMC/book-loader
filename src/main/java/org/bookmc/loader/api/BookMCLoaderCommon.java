@@ -80,14 +80,14 @@ public abstract class BookMCLoaderCommon implements ITweaker {
         Loader.registerCandidate(new DummyCandidate(new ModVessel[]{new MinecraftModVessel(version), new JavaModVessel(), new BookLoaderVessel()}));
 
         try {
-            Loader.discoverAndLoad(modsDirectory, classLoader, environment);
+            Loader.discoverAndLoad(modsDirectory, environment);
         } catch (IllegalDependencyException e) {
             e.printStackTrace();
         }
 
         if (version != null) {
             try {
-                Loader.discoverAndLoad(new File(modsDirectory, version), classLoader, environment);
+                Loader.discoverAndLoad(new File(modsDirectory, version), environment);
             } catch (IllegalDependencyException e) {
                 e.printStackTrace();
             }

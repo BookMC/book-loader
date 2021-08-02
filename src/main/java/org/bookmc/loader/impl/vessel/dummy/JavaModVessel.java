@@ -1,5 +1,6 @@
 package org.bookmc.loader.impl.vessel.dummy;
 
+import net.minecraft.launchwrapper.Launch;
 import org.bookmc.loader.api.vessel.ModVessel;
 import org.bookmc.loader.api.vessel.author.Author;
 import org.bookmc.loader.api.vessel.dependency.ModDependency;
@@ -9,6 +10,7 @@ import org.bookmc.loader.api.vessel.environment.Environment;
 
 import java.io.File;
 import java.net.URL;
+import java.net.URLClassLoader;
 
 public class JavaModVessel implements ModVessel {
     @Override
@@ -91,7 +93,12 @@ public class JavaModVessel implements ModVessel {
     }
 
     @Override
-    public boolean isCompatibilityLayer() {
-        return false;
+    public URLClassLoader getClassLoader() {
+        return Launch.classLoader;
+    }
+
+    @Override
+    public void setClassLoader(URLClassLoader classLoader) {
+
     }
 }

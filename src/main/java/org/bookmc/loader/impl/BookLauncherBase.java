@@ -3,21 +3,21 @@ package org.bookmc.loader.impl;
 import net.minecraft.launchwrapper.Launch;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.bookmc.loader.api.MinecraftModDiscoverer;
 import org.bookmc.loader.api.candidate.ModCandidate;
 import org.bookmc.loader.api.classloader.ClassLoaderURLAppender;
+import org.bookmc.loader.api.classloader.ModClassLoader;
 import org.bookmc.loader.api.vessel.ModVessel;
 import org.bookmc.loader.api.vessel.dependency.ModDependency;
 import org.bookmc.loader.api.vessel.entrypoint.Entrypoint;
 import org.bookmc.loader.api.vessel.environment.Environment;
 import org.bookmc.loader.impl.candidate.ZipModCandidate;
-import org.bookmc.loader.impl.discoverer.DevelopmentModDiscoverer;
 import org.bookmc.loader.impl.ui.MissingDependencyUI;
 import org.bookmc.loader.shared.utils.DownloadUtils;
 import org.bookmc.loader.shared.utils.ZipUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class BookModLoader {
+public class BookLauncherBase {
     public static final List<ModVessel> loaded = new ArrayList<>();
     private static final Logger logger = LogManager.getLogger();
     private static final Map<String, ArrayList<String>> missingDependencies = new HashMap<>();
@@ -35,7 +35,7 @@ public class BookModLoader {
     private static Environment environment = Environment.UNKNOWN;
 
     public static void load(Environment environment) {
-        BookModLoader.environment = environment;
+        BookLauncherBase.environment = environment;
 
         for (ModVessel vessel : Loader.getModVessels()) {
             if (loaded.contains(vessel)) {
@@ -60,13 +60,13 @@ public class BookModLoader {
             }
 
             if (!loaded.contains(vessel)) {
-                load(vessel, Launch.classLoader, environment);
+                load(vessel, vessel.getClassLoader(), environment);
             }
         }
     }
 
     private static void loadDependencies(ModVessel vessel, Environment environment) {
-        ArrayList<String> missingDependencies = BookModLoader.missingDependencies.getOrDefault(vessel.getId(), new ArrayList<>());
+        ArrayList<String> missingDependencies = BookLauncherBase.missingDependencies.getOrDefault(vessel.getId(), new ArrayList<>());
 
         for (URL url : vessel.getExternalDependencies()) {
             File file = DownloadUtils.downloadFile(url, new File(Launch.minecraftHome, "libraries/" + url.getPath()));
@@ -82,7 +82,7 @@ public class BookModLoader {
             }
         }
 
-        loadCandidates(Launch.classLoader); // Reload our candidates since we added new stuff
+        loadCandidates(); // Reload our candidates since we added new stuff
 
         for (ModDependency dependency : vessel.getDependsOn()) {
             ModVessel dependencyVessel = Loader.getModVesselsMap().get(dependency.getId());
@@ -100,7 +100,9 @@ public class BookModLoader {
 
 
             loadDependencies(dependencyVessel, environment);
-            load(dependencyVessel, Launch.classLoader, environment);
+            if (!loaded.contains(dependencyVessel)) {
+                load(dependencyVessel, dependencyVessel.getClassLoader(), environment);
+            }
         }
 
         for (ModDependency dependency : vessel.getSuggestions()) {
@@ -117,11 +119,13 @@ public class BookModLoader {
             }
 
             loadDependencies(suggestionVessel, environment);
-            load(suggestionVessel, Launch.classLoader, environment);
+            if (!loaded.contains(suggestionVessel)) {
+                load(suggestionVessel, suggestionVessel.getClassLoader(), environment);
+            }
         }
 
         if (!missingDependencies.isEmpty()) {
-            BookModLoader.missingDependencies.put(vessel.getId(), missingDependencies);
+            BookLauncherBase.missingDependencies.put(vessel.getId(), missingDependencies);
         }
     }
 
@@ -152,28 +156,22 @@ public class BookModLoader {
     }
 
     public static void reload(File directory) {
-        for (MinecraftModDiscoverer discoverer : Loader.getModDiscoverers()) {
-            File[] files = directory.listFiles();
-
-            if (files != null || discoverer instanceof DevelopmentModDiscoverer) {
-                discoverer.discover(files);
-            }
-        }
+        Loader.discover(directory);
+        loadCandidates();
 
         load(environment);
     }
 
-    public static void loadCandidates(URLClassLoader classLoader) {
+    public static void loadCandidates() {
         // To avoid a CMFE we have to add the to-be-removed candidates
         // to a new list and then iterate over it and remove the rejects
         // Once we're finished processing.
         List<ModCandidate> removeQueue = new ArrayList<>();
 
         for (ModCandidate candidate : Loader.getCandidates()) {
-            if (candidate.isAcceptable()) {
+            if (candidate.isResolvable()) {
                 for (ModVessel vessel : candidate.getVessels()) {
                     if (!Loader.isVesselDiscovered(vessel.getId())) {
-                        candidate.addToClasspath(new ClassLoaderURLAppender(classLoader));
                         Loader.registerVessel(vessel);
                     } else {
                         removeQueue.add(candidate);
@@ -190,6 +188,13 @@ public class BookModLoader {
         for (ModCandidate candidate : removeQueue) {
             Loader.getCandidates().remove(candidate);
         }
+
+        sortClassLoaders(Loader.getModVessels());
+        for (ModCandidate candidate : Loader.getCandidates()) {
+            for (ModVessel vessel : candidate.getVessels()) {
+                candidate.addToClasspath(new ClassLoaderURLAppender(vessel.getClassLoader()));
+            }
+        }
     }
 
     public static boolean isModLoaded(String id) {
@@ -200,5 +205,72 @@ public class BookModLoader {
         }
 
         return false;
+    }
+
+    public static URLClassLoader getTransformationClassLoader() {
+        return Launch.classLoader;
+    }
+
+    public static void sortClassLoaders(List<ModVessel> vessels) {
+        for (ModVessel vessel : vessels) {
+            sortClassLoader(vessel);
+        }
+    }
+
+    private static void sortClassLoader(ModVessel vessel) {
+        if (vessel.getClassLoader() == null) {
+            URL[] urls = new URL[0];
+            if (vessel.getFile() != null) {
+                try {
+                    urls = new URL[]{vessel.getFile().toURI().toURL()};
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                }
+            }
+            vessel.setClassLoader(new ModClassLoader(urls));
+        }
+        for (ModDependency dependency : vessel.getDependsOn()) {
+            sortClassLoaderDependsOn(dependency, vessel);
+        }
+        for (ModDependency suggestion : vessel.getSuggestions()) {
+            sortClassLoaderSuggests(suggestion, vessel);
+        }
+    }
+
+    private static void sortClassLoaderDependsOn(ModDependency dependency, ModVessel vessel) {
+        if (Loader.getModVesselsMap().containsKey(dependency.getId())) {
+            ModVessel dependencyVessel = Loader.getModVesselsMap().get(dependency.getId());
+
+            if (dependencyVessel.getClassLoader() == null) {
+                sortClassLoader(dependencyVessel);
+            }
+
+            if (dependencyVessel.getClassLoader() != vessel.getClassLoader() && !dependencyVessel.isInternal()) {
+                URL[] urls = dependencyVessel.getClassLoader().getURLs();
+                for (URL url : urls) {
+                    ClassLoaderURLAppender.add(vessel.getClassLoader(), url);
+                }
+                dependencyVessel.setClassLoader(vessel.getClassLoader());
+                for (ModDependency modDependency : dependencyVessel.getDependsOn()) {
+                    sortClassLoaderDependsOn(modDependency, dependencyVessel);
+                }
+            }
+        }
+    }
+
+    private static void sortClassLoaderSuggests(ModDependency dependency, ModVessel vessel) {
+        if (Loader.getModVesselsMap().containsKey(dependency.getId())) {
+            ModVessel dependencyVessel = Loader.getModVesselsMap().get(dependency.getId());
+            if (dependencyVessel.getClassLoader() != vessel.getClassLoader()) {
+                URL[] urls = dependencyVessel.getClassLoader().getURLs();
+                for (URL url : urls) {
+                    ClassLoaderURLAppender.add(vessel.getClassLoader(), url);
+                }
+                dependencyVessel.setClassLoader(vessel.getClassLoader());
+                for (ModDependency modDependency : dependencyVessel.getSuggestions()) {
+                    sortClassLoaderSuggests(modDependency, dependencyVessel);
+                }
+            }
+        }
     }
 }
