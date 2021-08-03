@@ -1,11 +1,13 @@
 package org.bookmc.loader.impl.vessel.dummy;
 
+import org.bookmc.loader.api.classloader.IQuiltClassLoader;
 import org.bookmc.loader.api.vessel.ModVessel;
 import org.bookmc.loader.api.vessel.author.Author;
 import org.bookmc.loader.api.vessel.dependency.ModDependency;
 import org.bookmc.loader.api.vessel.entrypoint.Entrypoint;
 import org.bookmc.loader.api.vessel.entrypoint.MixinEntrypoint;
 import org.bookmc.loader.api.vessel.environment.Environment;
+import org.bookmc.loader.impl.launch.Launcher;
 
 import java.io.File;
 import java.net.URL;
@@ -87,7 +89,12 @@ public class BookLoaderVessel implements ModVessel {
     }
 
     @Override
-    public boolean isCompatibilityLayer() {
-        return false;
+    public IQuiltClassLoader getAbstractedClassLoader() {
+        return Launcher.getQuiltClassLoader();
+    }
+
+    @Override
+    public void setClassLoader(IQuiltClassLoader classLoader) {
+
     }
 }

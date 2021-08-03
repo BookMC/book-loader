@@ -7,6 +7,7 @@ import com.google.gson.JsonParser;
 import org.bookmc.loader.api.candidate.ModCandidate;
 import org.bookmc.loader.api.classloader.ClassLoaderURLAppender;
 import org.bookmc.loader.api.vessel.ModVessel;
+import org.bookmc.loader.impl.launch.Launcher;
 import org.bookmc.loader.impl.vessel.JsonModVessel;
 import org.bookmc.loader.shared.Constants;
 
@@ -35,7 +36,7 @@ public class DirectoryModCandidate implements ModCandidate {
     }
 
     @Override
-    public boolean isAcceptable() {
+    public boolean isResolvable() {
         File[] files = file.listFiles();
 
         if (files == null) return false;
@@ -47,13 +48,13 @@ public class DirectoryModCandidate implements ModCandidate {
                         JsonElement json = parser.parse(reader);
 
                         if (json.isJsonObject()) {
-                            vessels.add(new JsonModVessel(json.getAsJsonObject(), file));
+                            vessels.add(new JsonModVessel(json.getAsJsonObject(), file, Launcher.getQuiltClassLoader()));
                             return true;
                         } else if (json.isJsonArray()) {
                             JsonArray mods = parser.parse(reader).getAsJsonArray();
                             for (int i = 0; i < mods.size(); i++) {
                                 JsonObject mod = mods.get(i).getAsJsonObject();
-                                vessels.add(new JsonModVessel(mod, file));
+                                vessels.add(new JsonModVessel(mod, file, Launcher.getQuiltClassLoader()));
                             }
                             return true;
                         }

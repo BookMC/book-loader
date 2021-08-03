@@ -30,7 +30,7 @@ public enum Environment {
         }
     };
 
-    public static Environment getEnvironment(String environment) {
+    public static Environment fromString(String environment) {
         if (environment.equals("*")) return ANY;
         if (environment.toLowerCase(Locale.ROOT).equals("client")) return CLIENT;
         if (environment.toLowerCase(Locale.ROOT).equals("server")) return SERVER;

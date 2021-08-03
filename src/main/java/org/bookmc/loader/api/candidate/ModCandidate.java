@@ -1,9 +1,12 @@
 package org.bookmc.loader.api.candidate;
 
-import net.minecraft.launchwrapper.LaunchClassLoader;
 import org.bookmc.loader.api.classloader.ClassLoaderURLAppender;
 import org.bookmc.loader.api.vessel.ModVessel;
 import org.bookmc.loader.impl.candidate.ZipModCandidate;
+import org.bookmc.loader.impl.resolve.ClasspathModResolver;
+import org.bookmc.loader.impl.resolve.DevelopmentModResolver;
+
+import java.util.List;
 
 /**
  * An interface to allow for 3rd parties and alternative implementations of ModCandidates.
@@ -19,7 +22,7 @@ import org.bookmc.loader.impl.candidate.ZipModCandidate;
  */
 public interface ModCandidate {
     /**
-     * If the candidate has succeeded the {@link ModCandidate#isAcceptable()} phase
+     * If the candidate has succeeded the {@link ModCandidate#isResolvable()} phase
      * you can now continue onto retrieving the vessel and loading it.
      *
      * @return ModVessel
@@ -35,14 +38,14 @@ public interface ModCandidate {
      * @return Whether the given candidate should be accepted. You should receive the required parameters
      * to perform this check via the constructor of your ModCandidate implementation.
      */
-    boolean isAcceptable();
+    boolean isResolvable();
 
     /**
      * Invoked directly before the vessel is registered to add the candidate to the classpath. In some cases
-     * such as {@link org.bookmc.loader.impl.discoverer.DevelopmentModDiscoverer} or {@link org.bookmc.loader.impl.discoverer.ClasspathModDiscoverer}
+     * such as {@link DevelopmentModResolver} or {@link ClasspathModResolver}
      * this method may not be needed at all as the mod candidates should already be present on the classpath or something is going wrong!
      *
-     * @param appender A custom class to abstract appending to the current URLClassLoader. (Currently {@link LaunchClassLoader})
+     * @param appender A custom class to abstract appending to the current URLClassLoader. (Read more about this at {@link org.bookmc.loader.impl.Loader#sortClassLoaders(List)}
      */
     void addToClasspath(ClassLoaderURLAppender appender);
 }

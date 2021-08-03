@@ -13,17 +13,32 @@ import java.net.URLClassLoader;
  * @author ChachyDev 0.3.0
  */
 public class ClassLoaderURLAppender {
+    private static Method addURL;
+
+    static {
+        try {
+            addURL = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
+            addURL.setAccessible(true);
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        }
+    }
+
     private final URLClassLoader classLoader;
 
-    private Method addURL;
-
     public ClassLoaderURLAppender(URLClassLoader classLoader) {
-        this.classLoader = classLoader;
+        String name = classLoader.getClass().getName();
+        if (name.startsWith("jdk.internal.loader.ClassLoaders$")) {
+            throw new IllegalStateException("To avoid issues with later JREs we simple do not allow use of addURL for the AppClassLoader. Rethink your logic");
+        }
 
+        this.classLoader = classLoader;
+    }
+
+    public static void add(URLClassLoader classLoader, URL url) {
         try {
-            this.addURL = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
-            this.addURL.setAccessible(true);
-        } catch (NoSuchMethodException e) {
+            addURL.invoke(classLoader, url);
+        } catch (IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
         }
     }

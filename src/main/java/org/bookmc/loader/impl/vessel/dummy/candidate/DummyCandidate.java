@@ -17,7 +17,7 @@ public class DummyCandidate implements ModCandidate {
     }
 
     @Override
-    public boolean isAcceptable() {
+    public boolean isResolvable() {
         return true;
     }
 
