@@ -1,12 +1,12 @@
 package org.bookmc.loader.api.vessel;
 
-import net.minecraft.launchwrapper.LaunchClassLoader;
 import org.bookmc.loader.api.classloader.IQuiltClassLoader;
 import org.bookmc.loader.api.vessel.author.Author;
 import org.bookmc.loader.api.vessel.dependency.ModDependency;
 import org.bookmc.loader.api.vessel.entrypoint.Entrypoint;
 import org.bookmc.loader.api.vessel.entrypoint.MixinEntrypoint;
 import org.bookmc.loader.api.vessel.environment.Environment;
+import org.bookmc.loader.impl.launch.transform.QuiltClassLoader;
 
 import java.io.File;
 import java.net.URL;
@@ -58,6 +58,6 @@ public interface ModVessel {
     void setClassLoader(IQuiltClassLoader classLoader);
 
     default boolean isInternal() {
-        return getAbstractedClassLoader().getClassLoader() instanceof LaunchClassLoader;
+        return getAbstractedClassLoader().getClassLoader() instanceof QuiltClassLoader;
     }
 }

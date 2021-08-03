@@ -17,6 +17,10 @@ public class ModClassLoader extends URLClassLoader implements IQuiltClassLoader 
 
     @Override
     public byte[] getClassBytes(String name, boolean transform) {
+        if (transform) {
+            throw new UnsupportedOperationException("This feature is currently not supported by mod classloaders!");
+        }
+
         InputStream resource = getResourceAsStream(name.replace(".", "/").concat(".class"));
 
         if (resource == null) {

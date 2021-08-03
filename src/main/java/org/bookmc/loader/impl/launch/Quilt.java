@@ -35,7 +35,7 @@ public class Quilt {
         Launcher.setGameProvider(GameProvider.findService());
 
         String target = handler.get("target")
-            .orElse(Launcher.getGameProvidier().getLaunchTarget());
+            .orElse(Launcher.getGameProvider().getLaunchTarget());
 
         boostrapMixin();
 
@@ -50,7 +50,7 @@ public class Quilt {
         }
 
 
-        Loader.registerCandidate(new DummyCandidate(new ModVessel[]{new MinecraftModVessel(Launcher.getGameProvidier().getLaunchedVersion()), new JavaModVessel(), new BookLoaderVessel()}));
+        Loader.registerCandidate(new DummyCandidate(new ModVessel[]{new MinecraftModVessel(Launcher.getGameProvider().getLaunchedVersion()), new JavaModVessel(), new BookLoaderVessel()}));
 
         try {
             Loader.discoverAndLoad(modsDirectory, Launcher.getEnvironment());
@@ -58,9 +58,9 @@ public class Quilt {
             e.printStackTrace();
         }
 
-        if (Launcher.getGameProvidier().getLaunchedVersion() != null) {
+        if (Launcher.getGameProvider().getLaunchedVersion() != null) {
             try {
-                Loader.discoverAndLoad(new File(modsDirectory, Launcher.getGameProvidier().getLaunchedVersion()), Launcher.getEnvironment());
+                Loader.discoverAndLoad(new File(modsDirectory, Launcher.getGameProvider().getLaunchedVersion()), Launcher.getEnvironment());
             } catch (IllegalDependencyException e) {
                 e.printStackTrace();
             }

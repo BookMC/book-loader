@@ -1,7 +1,5 @@
 package org.bookmc.loader.impl;
 
-import net.minecraft.launchwrapper.Launch;
-import net.minecraft.launchwrapper.LaunchClassLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bookmc.loader.api.ModResolver;
@@ -16,6 +14,8 @@ import org.bookmc.loader.api.vessel.entrypoint.Entrypoint;
 import org.bookmc.loader.api.vessel.entrypoint.MixinEntrypoint;
 import org.bookmc.loader.api.vessel.environment.Environment;
 import org.bookmc.loader.impl.candidate.ZipModCandidate;
+import org.bookmc.loader.impl.launch.Launcher;
+import org.bookmc.loader.impl.launch.transform.QuiltClassLoader;
 import org.bookmc.loader.impl.resolve.BookModResolver;
 import org.bookmc.loader.impl.resolve.ClasspathModResolver;
 import org.bookmc.loader.impl.resolve.DevelopmentModResolver;
@@ -135,7 +135,7 @@ public class Loader {
         return false;
     }
 
-    public static void loadCompatibilityLayers(LaunchClassLoader classLoader) {
+    public static void loadCompatibilityLayers(QuiltClassLoader classLoader) {
         for (ModVessel vessel : getModVessels()) {
             if (!isModLoaded(vessel.getId())) {
                 loadCompatibilityLayer(vessel, classLoader);
@@ -229,7 +229,7 @@ public class Loader {
         ArrayList<String> missingDeps = missingDependencies.getOrDefault(vessel.getId(), new ArrayList<>());
 
         for (URL url : vessel.getExternalDependencies()) {
-            File file = DownloadUtils.downloadFile(url, new File(Launch.minecraftHome, "libraries/" + url.getPath()));
+            File file = DownloadUtils.downloadFile(url, new File(Launcher.getGameProvider().getGameDirectory(), "libraries/" + url.getPath()));
             logger.info("Downloaded an external dependency (" + file.getName() + ") from " + vessel.getName() + ".");
 
             if (ZipUtils.isZipFile(file)) {
@@ -367,6 +367,15 @@ public class Loader {
         return false;
     }
 
+    /**
+     * This is the main system to sort dependencies into different classloaders
+     * It recursively calls the method {@link Loader#sortClassLoader(ModVessel)}
+     * to check if it has any dependencies and if it does add the dependencies and itself to the classpath
+     * if not stay on it's own classpath.
+     *
+     * This was quite mentally exhausting to plan out how to make :)
+     * @param vessels The vessels to have their classloaders sorted.
+     */
     public static void sortClassLoaders(List<ModVessel> vessels) {
         for (ModVessel vessel : vessels) {
             sortClassLoader(vessel);

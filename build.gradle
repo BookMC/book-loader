@@ -34,7 +34,9 @@ dependencies {
     // Libraries to be downloaded via the installer
     api group: "org.apache.logging.log4j", name: "log4j-api", version: "2.0-beta9"
     api group: "org.apache.logging.log4j", name: "log4j-core", version: "2.0-beta9"
-    api "com.github.BookMC:LegacyLauncher:2cbe27165a"
+
+    // Directly in Minecraft
+    compileOnly "com.google.code.gson:gson:2.2.4" // BookMC/minecraft#28
 
     // Shaded libraries
     include("org.spongepowered:mixin:0.7.11-SNAPSHOT") {
@@ -50,15 +52,7 @@ dependencies {
     include "org.ow2.asm:asm-commons:9.2"
 
     include "com.github.BookMC:srg-processor:3721e9bb0c"
-
-    compileOnly "com.google.code.gson:gson:2.2.4" // BookMC/minecraft#28
-
-    testImplementation "org.junit.jupiter:junit-jupiter-api:5.7.0"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.7.0"
-
     include "com.github.zafarkhaja:java-semver:0.9.0"
-
-    testRuntimeOnly "com.google.code.gson:gson:2.2.4" // BookMC/minecraft#28
 }
 
 test {
@@ -82,7 +76,7 @@ jar {
     }
 
     duplicatesStrategy DuplicatesStrategy.EXCLUDE
-    exclude "module-info.class", "LICENSE.*", "META-INF/*.RSA", "META-INF/*.SF", "META-INF/*.DSA", ""
+    exclude "module-info.class", "LICENSE.*", "META-INF/*.RSA", "META-INF/*.SF", "META-INF/*.DSA"
 }
 
 publishing {
