@@ -7,7 +7,7 @@ import com.google.gson.JsonParser;
 import org.bookmc.loader.api.candidate.ModCandidate;
 import org.bookmc.loader.api.classloader.ClassLoaderURLAppender;
 import org.bookmc.loader.api.vessel.ModVessel;
-import org.bookmc.loader.impl.BookLauncherBase;
+import org.bookmc.loader.impl.launch.Launcher;
 import org.bookmc.loader.impl.vessel.JsonModVessel;
 import org.bookmc.loader.shared.Constants;
 
@@ -36,14 +36,14 @@ public class LocalClassLoaderModCandidate implements ModCandidate {
                 JsonElement json = parser.parse(reader);
 
                 if (json.isJsonObject()) {
-                    vessels.add(new JsonModVessel(json.getAsJsonObject(), null, BookLauncherBase.getTransformationClassLoader()));
+                    vessels.add(new JsonModVessel(json.getAsJsonObject(), null, Launcher.getQuiltClassLoader()));
                     return true;
                 } else if (json.isJsonArray()) {
                     JsonArray mods = json.getAsJsonArray();
                     for (int i = 0; i < mods.size(); i++) {
                         JsonObject mod = mods.get(i).getAsJsonObject();
                         // TODO: Use CodeSource to get the location
-                        vessels.add(new JsonModVessel(mod, null, BookLauncherBase.getTransformationClassLoader()));
+                        vessels.add(new JsonModVessel(mod, null, Launcher.getQuiltClassLoader()));
                     }
                     return true;
                 }

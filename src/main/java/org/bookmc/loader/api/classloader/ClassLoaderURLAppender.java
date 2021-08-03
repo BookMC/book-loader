@@ -13,8 +13,6 @@ import java.net.URLClassLoader;
  * @author ChachyDev 0.3.0
  */
 public class ClassLoaderURLAppender {
-    private final URLClassLoader classLoader;
-
     private static Method addURL;
 
     static {
@@ -26,6 +24,8 @@ public class ClassLoaderURLAppender {
         }
     }
 
+    private final URLClassLoader classLoader;
+
     public ClassLoaderURLAppender(URLClassLoader classLoader) {
         String name = classLoader.getClass().getName();
         if (name.startsWith("jdk.internal.loader.ClassLoaders$")) {
@@ -33,6 +33,14 @@ public class ClassLoaderURLAppender {
         }
 
         this.classLoader = classLoader;
+    }
+
+    public static void add(URLClassLoader classLoader, URL url) {
+        try {
+            addURL.invoke(classLoader, url);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -45,14 +53,6 @@ public class ClassLoaderURLAppender {
      * @since 0.3.0
      */
     public void add(URL url) {
-        try {
-            addURL.invoke(classLoader, url);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void add(URLClassLoader classLoader, URL url) {
         try {
             addURL.invoke(classLoader, url);
         } catch (IllegalAccessException | InvocationTargetException e) {

@@ -1,16 +1,16 @@
 package org.bookmc.loader.impl.vessel.dummy;
 
-import net.minecraft.launchwrapper.Launch;
+import org.bookmc.loader.api.classloader.IQuiltClassLoader;
 import org.bookmc.loader.api.vessel.ModVessel;
 import org.bookmc.loader.api.vessel.author.Author;
 import org.bookmc.loader.api.vessel.dependency.ModDependency;
 import org.bookmc.loader.api.vessel.entrypoint.Entrypoint;
 import org.bookmc.loader.api.vessel.entrypoint.MixinEntrypoint;
 import org.bookmc.loader.api.vessel.environment.Environment;
+import org.bookmc.loader.impl.launch.Launcher;
 
 import java.io.File;
 import java.net.URL;
-import java.net.URLClassLoader;
 
 public class MinecraftModVessel implements ModVessel {
     private final String version;
@@ -96,12 +96,12 @@ public class MinecraftModVessel implements ModVessel {
     }
 
     @Override
-    public URLClassLoader getClassLoader() {
-        return Launch.classLoader;
+    public IQuiltClassLoader getAbstractedClassLoader() {
+        return Launcher.getQuiltClassLoader();
     }
 
     @Override
-    public void setClassLoader(URLClassLoader classLoader) {
+    public void setClassLoader(IQuiltClassLoader classLoader) {
 
     }
 }
