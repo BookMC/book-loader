@@ -7,6 +7,7 @@ import org.bookmc.loader.api.vessel.ModVessel;
 import org.bookmc.loader.api.vessel.environment.Environment;
 import org.bookmc.loader.impl.Loader;
 import org.bookmc.loader.impl.launch.provider.ArgumentHandler;
+import org.bookmc.loader.impl.launch.provider.DefaultGameProvider;
 import org.bookmc.loader.impl.launch.provider.GameProvider;
 import org.bookmc.loader.impl.launch.transform.QuiltClassLoader;
 import org.bookmc.loader.impl.vessel.dummy.BookLoaderVessel;
@@ -32,7 +33,7 @@ public class Quilt {
     }
 
     private void launch(String[] args, ArgumentHandler handler) throws Throwable {
-        Launcher.setGameProvider(GameProvider.findService());
+        Launcher.setGameProvider(new DefaultGameProvider(handler));
 
         String target = handler.get("target")
             .orElse(Launcher.getGameProvider().getLaunchTarget());
