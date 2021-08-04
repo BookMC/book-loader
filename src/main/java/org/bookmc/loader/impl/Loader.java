@@ -3,6 +3,7 @@ package org.bookmc.loader.impl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bookmc.loader.api.ModResolver;
+import org.bookmc.loader.api.adapter.BookLanguageAdapter;
 import org.bookmc.loader.api.candidate.ModCandidate;
 import org.bookmc.loader.api.classloader.IQuiltClassLoader;
 import org.bookmc.loader.api.classloader.ModClassLoader;
@@ -307,10 +308,22 @@ public class Loader {
             try {
                 if (entryClass != null) {
                     logger.debug("Loading " + vessel.getName() + " from " + entrypoint.getOwner());
-                    entryClass.getDeclaredMethod(entrypoint.getMethod()).invoke(entryClass.getConstructor().newInstance());
+
+                    Class<?> adapter = classLoader.loadClass(vessel.getLanguageAdapter());
+
+                    // We do this to double check it actually implements what BookLanguageAdapter
+                    adapter.asSubclass(classLoader.loadClass(BookLanguageAdapter.class.getName()));
+
+                    BookLanguageAdapter adapterInstance = (BookLanguageAdapter) adapter.newInstance();
+
+
+                    entryClass.getDeclaredMethod(entrypoint.getMethod())
+                        .invoke(adapterInstance.createInstance(entryClass));
                 }
-            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException | InstantiationException e) {
+            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException | InstantiationException | ClassNotFoundException e) {
                 e.printStackTrace();
+            } catch (ClassCastException e) {
+                throw new IllegalStateException("The given language adpater does not implement BookLanguageAdapter", e);
             }
         }
     }
