@@ -112,6 +112,11 @@ public class QuiltClassLoader extends URLClassLoader implements IQuiltClassLoade
         return this;
     }
 
+    @Override
+    public void addURL(URL url) {
+        super.addURL(url);
+    }
+
     public ClassNode getClassNode(String name) {
         byte[] bytes = getClassBytes(name, true);
         ClassReader reader = new ClassReader(bytes);

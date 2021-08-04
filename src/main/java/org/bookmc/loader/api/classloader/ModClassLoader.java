@@ -50,4 +50,9 @@ public class ModClassLoader extends URLClassLoader implements IQuiltClassLoader 
     public URLClassLoader getClassLoader() {
         return this;
     }
+
+    @Override
+    public void addURL(URL url) {
+        super.addURL(url);
+    }
 }

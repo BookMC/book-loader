@@ -2,6 +2,7 @@ package org.bookmc.loader.impl.vessel.dummy.candidate;
 
 import org.bookmc.loader.api.candidate.ModCandidate;
 import org.bookmc.loader.api.classloader.ClassLoaderURLAppender;
+import org.bookmc.loader.api.classloader.IQuiltClassLoader;
 import org.bookmc.loader.api.vessel.ModVessel;
 
 public class DummyCandidate implements ModCandidate {
@@ -22,7 +23,7 @@ public class DummyCandidate implements ModCandidate {
     }
 
     @Override
-    public void addToClasspath(ClassLoaderURLAppender appender) {
+    public void addToClasspath(IQuiltClassLoader classLoader) {
 
     }
 }

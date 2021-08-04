@@ -5,6 +5,7 @@ import org.apache.logging.log4j.Logger;
 import org.bookmc.loader.api.ModResolver;
 import org.bookmc.loader.api.candidate.ModCandidate;
 import org.bookmc.loader.api.classloader.ClassLoaderURLAppender;
+import org.bookmc.loader.api.classloader.IQuiltClassLoader;
 import org.bookmc.loader.api.classloader.ModClassLoader;
 import org.bookmc.loader.api.compat.CompatiblityLayer;
 import org.bookmc.loader.api.exception.IllegalDependencyException;
@@ -28,7 +29,6 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.*;
 
 public class Loader {
@@ -143,12 +143,13 @@ public class Loader {
         }
     }
 
-    public static void loadCompatibilityLayer(ModVessel vessel, URLClassLoader classLoader) {
+    public static void loadCompatibilityLayer(ModVessel vessel, IQuiltClassLoader classLoader) {
         Entrypoint[] entrypoints = vessel.getEntrypoints();
         for (Entrypoint entrypoint : entrypoints) {
             try {
-                Class<?> compatClass = classLoader.loadClass(CompatiblityLayer.class.getName());
-                Class<?> clazz = Class.forName(entrypoint.getOwner(), false, classLoader);
+                Class<?> compatClass = classLoader.getClassLoader()
+                    .loadClass(CompatiblityLayer.class.getName());
+                Class<?> clazz = Class.forName(entrypoint.getOwner(), false, classLoader.getClassLoader());
 
                 if (clazz.isAssignableFrom(compatClass)) {
                     if (vessel.getDependsOn().length != 0) {
@@ -157,7 +158,7 @@ public class Loader {
 
                     loaded.add(vessel); // Trick BookModLoader#load to believe we have "loaded" our "mod".
                     CompatiblityLayer layer = (CompatiblityLayer) clazz.newInstance();
-                    layer.init(new ClassLoaderURLAppender(classLoader));
+                    layer.init(classLoader);
                 }
             } catch (ClassCastException e) {
                 throw new IllegalStateException("The entrypoint (" + entrypoint + ") does not implement CompatibilityLayer");
@@ -189,7 +190,7 @@ public class Loader {
         loadCandidates();
 
         for (ModVessel vessel : Loader.getModVessels()) {
-            Loader.loadCompatibilityLayer(vessel, vessel.getAbstractedClassLoader().getClassLoader());
+            Loader.loadCompatibilityLayer(vessel, vessel.getAbstractedClassLoader());
             Loader.loadMixin(vessel, environment);
         }
     }
@@ -352,7 +353,7 @@ public class Loader {
         sortClassLoaders(Loader.getModVessels());
         for (ModCandidate candidate : Loader.getCandidates()) {
             for (ModVessel vessel : candidate.getVessels()) {
-                candidate.addToClasspath(new ClassLoaderURLAppender(vessel.getAbstractedClassLoader().getClassLoader()));
+                candidate.addToClasspath(vessel.getAbstractedClassLoader());
             }
         }
     }
@@ -372,8 +373,9 @@ public class Loader {
      * It recursively calls the method {@link Loader#sortClassLoader(ModVessel)}
      * to check if it has any dependencies and if it does add the dependencies and itself to the classpath
      * if not stay on it's own classpath.
-     *
+     * <p>
      * This was quite mentally exhausting to plan out how to make :)
+     *
      * @param vessels The vessels to have their classloaders sorted.
      */
     public static void sortClassLoaders(List<ModVessel> vessels) {

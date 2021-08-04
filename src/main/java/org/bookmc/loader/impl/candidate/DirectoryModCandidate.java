@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.bookmc.loader.api.candidate.ModCandidate;
 import org.bookmc.loader.api.classloader.ClassLoaderURLAppender;
+import org.bookmc.loader.api.classloader.IQuiltClassLoader;
 import org.bookmc.loader.api.vessel.ModVessel;
 import org.bookmc.loader.impl.launch.Launcher;
 import org.bookmc.loader.impl.vessel.JsonModVessel;
@@ -71,9 +72,9 @@ public class DirectoryModCandidate implements ModCandidate {
     }
 
     @Override
-    public void addToClasspath(ClassLoaderURLAppender appender) {
+    public void addToClasspath(IQuiltClassLoader classLoader) {
         try {
-            appender.add(file.toURI().toURL());
+            classLoader.addURL(file.toURI().toURL());
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
