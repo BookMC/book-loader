@@ -4,7 +4,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bookmc.loader.api.ModResolver;
 import org.bookmc.loader.api.candidate.ModCandidate;
-import org.bookmc.loader.api.classloader.ClassLoaderURLAppender;
 import org.bookmc.loader.api.classloader.IQuiltClassLoader;
 import org.bookmc.loader.api.classloader.ModClassLoader;
 import org.bookmc.loader.api.compat.CompatiblityLayer;
@@ -415,7 +414,7 @@ public class Loader {
             if (dependencyVessel.getAbstractedClassLoader() != vessel.getAbstractedClassLoader() && !dependencyVessel.isInternal()) {
                 URL[] urls = dependencyVessel.getAbstractedClassLoader().getClassLoader().getURLs();
                 for (URL url : urls) {
-                    ClassLoaderURLAppender.add(vessel.getAbstractedClassLoader().getClassLoader(), url);
+                    vessel.getAbstractedClassLoader().addURL(url);
                 }
                 dependencyVessel.setClassLoader(vessel.getAbstractedClassLoader());
                 for (ModDependency modDependency : dependencyVessel.getDependsOn()) {
@@ -431,7 +430,7 @@ public class Loader {
             if (dependencyVessel.getAbstractedClassLoader() != vessel.getAbstractedClassLoader()) {
                 URL[] urls = dependencyVessel.getAbstractedClassLoader().getClassLoader().getURLs();
                 for (URL url : urls) {
-                    ClassLoaderURLAppender.add(vessel.getAbstractedClassLoader().getClassLoader(), url);
+                    vessel.getAbstractedClassLoader().addURL(url);
                 }
                 dependencyVessel.setClassLoader(vessel.getAbstractedClassLoader());
                 for (ModDependency modDependency : dependencyVessel.getSuggestions()) {

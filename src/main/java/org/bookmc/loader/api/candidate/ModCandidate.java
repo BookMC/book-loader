@@ -1,6 +1,5 @@
 package org.bookmc.loader.api.candidate;
 
-import org.bookmc.loader.api.classloader.ClassLoaderURLAppender;
 import org.bookmc.loader.api.classloader.IQuiltClassLoader;
 import org.bookmc.loader.api.vessel.ModVessel;
 import org.bookmc.loader.impl.candidate.ZipModCandidate;

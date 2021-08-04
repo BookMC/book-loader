@@ -8,7 +8,6 @@ import org.bookmc.loader.api.vessel.environment.Environment;
 import org.bookmc.loader.impl.Loader;
 import org.bookmc.loader.impl.launch.provider.ArgumentHandler;
 import org.bookmc.loader.impl.launch.provider.DefaultGameProvider;
-import org.bookmc.loader.impl.launch.provider.GameProvider;
 import org.bookmc.loader.impl.launch.transform.QuiltClassLoader;
 import org.bookmc.loader.impl.vessel.dummy.BookLoaderVessel;
 import org.bookmc.loader.impl.vessel.dummy.JavaModVessel;

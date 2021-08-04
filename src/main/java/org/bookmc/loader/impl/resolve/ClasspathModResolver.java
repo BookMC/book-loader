@@ -17,31 +17,6 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 
 public class ClasspathModResolver implements ModResolver {
-    @Override
-    public void resolve(File[] files) {
-        URL[] classpath = getClasspathURLs();
-        if (classpath == null) {
-            return;
-        }
-
-        for (URL url : classpath) {
-            try {
-                File file = new File(url.toURI());
-                String name = file.getName();
-
-                if (!name.endsWith(Constants.DISABLED_SUFFIX)) {
-                    if (ZipUtils.isZipFile(file)) {
-                        Loader.registerCandidate(new ZipModCandidate(new File(url.toURI())));
-                    } else if (file.isDirectory()) {
-                        Loader.registerCandidate(new DirectoryModCandidate(file));
-                    }
-                }
-            } catch (URISyntaxException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
     @SuppressWarnings("unchecked")
     public static URL[] getClasspathURLs() {
         ClassLoader classLoader = Quilt.class.getClassLoader();
@@ -77,5 +52,30 @@ public class ClasspathModResolver implements ModResolver {
             }
         }
         return null;
+    }
+
+    @Override
+    public void resolve(File[] files) {
+        URL[] classpath = getClasspathURLs();
+        if (classpath == null) {
+            return;
+        }
+
+        for (URL url : classpath) {
+            try {
+                File file = new File(url.toURI());
+                String name = file.getName();
+
+                if (!name.endsWith(Constants.DISABLED_SUFFIX)) {
+                    if (ZipUtils.isZipFile(file)) {
+                        Loader.registerCandidate(new ZipModCandidate(new File(url.toURI())));
+                    } else if (file.isDirectory()) {
+                        Loader.registerCandidate(new DirectoryModCandidate(file));
+                    }
+                }
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

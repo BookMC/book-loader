@@ -12,7 +12,7 @@ ext {
 }
 
 group "org.bookmc"
-version "0.6.0${local ? "+local" : ""}"
+version "0.6.1${local ? "+local" : ""}"
 
 repositories {
     mavenCentral()

@@ -68,6 +68,7 @@ public class Launcher {
      * We first use the parent ({@link QuiltClassLoader}) to check for the resource.
      * If it's not available we then iterate through our vessels and ask them for the
      * resource and if they return the resource when use that.
+     *
      * @param name The name of the resource to look for.
      * @return The looked up resource.
      */
@@ -103,6 +104,7 @@ public class Launcher {
      * If they were to exist then we are simply not in the development
      * environment because they would be deobfuscated in the development
      * environment.
+     *
      * @return Whether we are in the development environment or not
      */
     public static boolean isDevelopment() {
@@ -116,7 +118,8 @@ public class Launcher {
      * We first use the parent {@link QuiltClassLoader} and search for the class. If it isn't available there
      * when then move onto our mod vessels and we iterate through them to try find the resource
      * through their classloaders.
-     * @param name The name of the class we want to locate
+     *
+     * @param name      The name of the class we want to locate
      * @param transform Whether we want the transformed version or not of the class
      * @return The bytes of the discovered class.
      */
