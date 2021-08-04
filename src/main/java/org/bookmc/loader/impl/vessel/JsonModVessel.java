@@ -3,7 +3,6 @@ package org.bookmc.loader.impl.vessel;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import org.bookmc.loader.api.adapter.BookLanguageAdapter;
 import org.bookmc.loader.api.adapter.java.JavaLanguageAdapter;
 import org.bookmc.loader.api.classloader.IQuiltClassLoader;
 import org.bookmc.loader.api.vessel.ModVessel;
@@ -200,6 +199,12 @@ public class JsonModVessel implements ModVessel {
     @Override
     public String getLanguageAdapter() {
         return object.has("adapter") ? object.get("adapater").getAsString() : JavaLanguageAdapter.class.getName();
+    }
+
+    @Override
+    public String[] getTransformers() {
+        if (!object.has("transformers") || !object.has("asm")) return new String[0];
+        return toString(object.has("transformers") ? object.getAsJsonArray("transformers") : object.getAsJsonArray("asm"));
     }
 
     private String[] toString(JsonArray array) {

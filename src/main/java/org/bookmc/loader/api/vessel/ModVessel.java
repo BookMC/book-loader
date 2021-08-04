@@ -62,6 +62,10 @@ public interface ModVessel {
         return JavaLanguageAdapter.class.getName();
     }
 
+    default String[] getTransformers() {
+        return new String[0];
+    }
+
     default boolean isInternal() {
         return getAbstractedClassLoader().getClassLoader() instanceof QuiltClassLoader;
     }

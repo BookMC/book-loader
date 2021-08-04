@@ -9,6 +9,7 @@ import org.bookmc.loader.api.classloader.IQuiltClassLoader;
 import org.bookmc.loader.api.classloader.ModClassLoader;
 import org.bookmc.loader.api.compat.CompatiblityLayer;
 import org.bookmc.loader.api.exception.IllegalDependencyException;
+import org.bookmc.loader.api.launch.transform.QuiltTransformer;
 import org.bookmc.loader.api.vessel.ModVessel;
 import org.bookmc.loader.api.vessel.dependency.ModDependency;
 import org.bookmc.loader.api.vessel.entrypoint.Entrypoint;
@@ -181,6 +182,27 @@ public class Loader {
             if (environment.allows(entrypoint.getEnvironment())) {
                 Mixins.addConfiguration(entrypoint.getMixinFile());
             }
+        }
+    }
+
+
+    public static void loadTransformers(List<ModVessel> vessels) {
+        for (ModVessel vessel : vessels) {
+            try {
+                loadTransformer(vessel);
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static void loadTransformer(ModVessel vessel) throws ClassNotFoundException {
+        for (String transformer : vessel.getTransformers()) {
+            Class<?> clazz = vessel.getAbstractedClassLoader()
+                .getClassLoader()
+                .loadClass(transformer);
+            Class<? extends QuiltTransformer> transformerClass = clazz.asSubclass(QuiltTransformer.class);
+            Launcher.getQuiltClassLoader().registerTransformer(transformerClass);
         }
     }
 
