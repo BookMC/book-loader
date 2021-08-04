@@ -37,10 +37,6 @@ public class Quilt {
         String target = handler.get("target")
             .orElse(Launcher.getGameProvider().getLaunchTarget());
 
-        boostrapMixin();
-
-        MixinEnvironment mixinEnvironment = MixinEnvironment.getDefaultEnvironment();
-
         File modsDirectory = Launcher.getModsFolder();
 
         if (!modsDirectory.exists()) {
@@ -67,6 +63,14 @@ public class Quilt {
         } else {
             LOGGER.error("Failed to detect the game version! Mods inside the game version's mod folder will not be loaded!");
         }
+
+        // We have to bootstrap mixin after all the mods have been discovered
+        // so that mods can have their mixin files discovered.
+        boostrapMixin();
+
+        MixinEnvironment mixinEnvironment = MixinEnvironment.getDefaultEnvironment();
+
+        Loader.loadMixins(Launcher.getEnvironment());
 
         if (mixinEnvironment.getObfuscationContext() == null) {
             mixinEnvironment.setObfuscationContext("notch"); // Switch's to notch mappings

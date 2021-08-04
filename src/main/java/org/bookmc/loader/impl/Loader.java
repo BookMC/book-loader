@@ -213,7 +213,6 @@ public class Loader {
 
         for (ModVessel vessel : Loader.getModVessels()) {
             Loader.loadCompatibilityLayer(vessel, vessel.getAbstractedClassLoader());
-            Loader.loadMixin(vessel, environment);
         }
     }
 

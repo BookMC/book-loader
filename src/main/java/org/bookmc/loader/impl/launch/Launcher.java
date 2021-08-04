@@ -7,11 +7,14 @@ import org.bookmc.loader.impl.Loader;
 import org.bookmc.loader.impl.launch.provider.GameProvider;
 import org.bookmc.loader.impl.launch.transform.QuiltClassLoader;
 import org.bookmc.loader.shared.utils.ClassUtils;
+import org.spongepowered.asm.lib.ClassReader;
+import org.spongepowered.asm.lib.tree.ClassNode;
 
 import java.io.File;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.*;
 
 public class Launcher {
     private static final Map<String, Object> properties = new HashMap<>();
@@ -127,23 +130,159 @@ public class Launcher {
         IQuiltClassLoader classLoader = getQuiltClassLoader();
         byte[] classBytes = classLoader.getClassBytes(name, transform);
 
-        if (classBytes != null) {
-            return classBytes;
-        }
-
-        for (ModVessel vessel : Loader.getModVessels()) {
-            IQuiltClassLoader loader = vessel.getAbstractedClassLoader();
-            // Mod classloaders are currently unable to provide transformed classes
-            // therefore they should never in reality be returning transformed classes
-            // If we ask for a transformed class it will throw an exception so we must
-            // purposely disallow usage of this.
-            byte[] vesselResolved = loader.getClassBytes(name, false);
-            if (vesselResolved != null) {
-                // If we have resolved the resoucrce return it back.
-                return vesselResolved;
+        if (classBytes == null) {
+            for (ModVessel vessel : Loader.getModVessels()) {
+                IQuiltClassLoader loader = vessel.getAbstractedClassLoader();
+                // Mod classloaders are currently unable to provide transformed classes
+                // therefore they should never in reality be returning transformed classes
+                // If we ask for a transformed class it will throw an exception so we must
+                // purposely disallow usage of this.
+                byte[] vesselResolved = loader.getClassBytes(name, false);
+                if (vesselResolved != null) {
+                    // If we have resolved the resoucrce return it back.
+                    classBytes = vesselResolved;
+                    break;
+                }
             }
         }
 
-        return null; // Mission imppossible
+        return classBytes;// Mission imppossible
+    }
+
+    /**
+     * Resolves a mixin classnode, please don't use this if you're not the loader itself
+     * you'll put yourself into a massive Mixin mess...
+     *
+     * @param name The name of the class to find
+     * @return The resolved classnode as an ASM ClassNode
+     */
+    public static ClassNode getMixinClassNode(String name) {
+        byte[] clazz = getClassBytes(name, true);
+        if (clazz == null) {
+            return null;
+        }
+
+        ClassNode node = new ClassNode();
+        ClassReader reader = new ClassReader(clazz);
+        reader.accept(node, ClassReader.EXPAND_FRAMES);
+        return node;
+    }
+
+    public static boolean isClassLoaded(String name) {
+        QuiltClassLoader classLoader = getQuiltClassLoader();
+        boolean loaded = classLoader.isClassLoaded(name);
+
+        // If we know the class is loaded on the parent classloader
+        // lets use it! However if it isn't then instead let's give
+        // the little guys (the ModClassLoaders) search for it.
+        if (loaded) {
+            return true;
+        }
+
+        for (ModVessel vessel : Loader.getModVessels()) {
+            // If the mod finds the class then let's send the good news
+            if (vessel.getAbstractedClassLoader().isClassLoaded(name)) {
+                return true;
+            }
+        }
+
+        // Give up on the operation
+        return false;
+    }
+
+    /**
+     * This function grabs all the available URLs to Quilt. These include
+     * the URLs on the main classloader {@link QuiltClassLoader} and on
+     * classloaders such as the {@link org.bookmc.loader.api.classloader.ModClassLoader}s.
+     * @return All available URLs
+     */
+    public static URL[] getURLs() {
+        List<URL> urls = new ArrayList<>(Arrays.asList(getQuiltClassLoader().getURLs()));
+
+        for (ModVessel vessel : Loader.getModVessels()) {
+            urls.addAll(Arrays.asList(vessel.getAbstractedClassLoader().getClassLoader().getURLs()));
+        }
+
+        return urls.toArray(new URL[0]);
+    }
+
+    /**
+     * This method is quite a messy function but goes through each vessel
+     * and attempts to load a class until it succeeds. If the class is never
+     * found we just give up and throw an exception instead.
+     * @param name The name of the class we are trying to load.
+     * @param tryMainClassLoader Whether we should also include the main classloader in the hunt.
+     * @throws ClassNotFoundException We could not locate the class anywhere!
+     * @return The discovered class.
+     */
+    public static Class<?> loadClass(String name, boolean tryMainClassLoader) throws ClassNotFoundException {
+        if (tryMainClassLoader) {
+            try {
+                QuiltClassLoader mainClassLoader = getQuiltClassLoader();
+                return mainClassLoader.loadClass(name);
+            } catch (Throwable ignored) {
+                // Failed to get it from the parent, let's try another route.
+                // >:)
+            }
+        }
+
+        for (ModVessel vessel : Loader.getModVessels()) {
+            try {
+                URLClassLoader classLoader = vessel.getAbstractedClassLoader()
+                    .getClassLoader();
+
+                // Avoid a StackOverflow
+                if (classLoader instanceof QuiltClassLoader) continue;
+
+                // Attempt to load the class
+                // If we can't find the class
+                // we should throw an excep-
+                // tion and continue to sea-
+                // rch for the class.
+                return classLoader.loadClass(name);
+            } catch (Throwable ignored) {
+                // Failed to find the class from this classloader.
+                // Deciding to continue and check the others...
+            }
+        }
+
+        throw new ClassNotFoundException(name);
+    }
+
+    /**
+     * Searches through all the classloaders available to us and tries to find a class from it.
+     * @param name The class we are trying to find
+     * @param initialize Whether we should initialize the located class
+     * @return The located class
+     * @throws ClassNotFoundException The class has not been located
+     */
+    public static Class<?> findClass(String name, boolean initialize) throws ClassNotFoundException {
+        try {
+            return Class.forName(name, initialize, getQuiltClassLoader());
+        } catch (ClassNotFoundException e) {
+            for (ModVessel vessel : Loader.getModVessels()) {
+                try {
+                    return Class.forName(name, initialize, vessel.getAbstractedClassLoader().getClassLoader());
+                } catch (ClassNotFoundException ignored) {
+
+                }
+            }
+        }
+
+        throw new ClassNotFoundException(name);
+    }
+
+    /**
+     * !! FOR DEVELOPMENT USE ONLY !!
+     * Grabs the GradleStart property given to use at launch via ForgeGradle and gives
+     * us an exact location of where the mappings are!
+     * @return A file instance of the Notch to MCP mappings.
+     */
+    public static File getMappings() {
+        String gradleStartProp = System.getProperty("net.minecraftforge.gradle.GradleStart.srg.notch-mcp");
+        if (gradleStartProp == null) {
+            return null;
+        }
+        return new File(gradleStartProp);
     }
 }
