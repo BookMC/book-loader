@@ -66,6 +66,10 @@ public interface ModVessel {
         return new String[0];
     }
 
+    default String[] getRemappers() {
+        return new String[0];
+    }
+
     default boolean isInternal() {
         return getAbstractedClassLoader().getClassLoader() instanceof QuiltClassLoader;
     }

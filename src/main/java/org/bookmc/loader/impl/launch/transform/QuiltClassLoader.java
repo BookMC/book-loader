@@ -1,6 +1,7 @@
 package org.bookmc.loader.impl.launch.transform;
 
 import org.bookmc.loader.api.classloader.IQuiltClassLoader;
+import org.bookmc.loader.api.launch.transform.QuiltRemapper;
 import org.bookmc.loader.api.launch.transform.QuiltTransformer;
 import org.bookmc.loader.impl.launch.Launcher;
 
@@ -10,7 +11,8 @@ import java.util.*;
 
 public class QuiltClassLoader extends URLClassLoader implements IQuiltClassLoader {
     private final Map<String, byte[]> classCache = new HashMap<>();
-    private final List<QuiltTransformer> transformers = new ArrayList<>();
+    private final Map<String, QuiltTransformer> transformers = new HashMap<>();
+    private final Map<String, QuiltRemapper> quiltRemappers = new HashMap<>();
     private final List<String> exclusions = new ArrayList<>();
 
     public QuiltClassLoader() {
@@ -20,6 +22,7 @@ public class QuiltClassLoader extends URLClassLoader implements IQuiltClassLoade
         addClassLoaderExclusion("java.");
         addClassLoaderExclusion("javax.");
         addClassLoaderExclusion("org.lwjgl.");
+        addClassLoaderExclusion("org.objectweb.");
         addClassLoaderExclusion("org.apache.logging.");
         addClassLoaderExclusion("org.bookmc.loader.");
     }
@@ -102,11 +105,27 @@ public class QuiltClassLoader extends URLClassLoader implements IQuiltClassLoade
         }
     }
 
-    public void registerTransformer(Class<? extends QuiltTransformer> transformer) {
+    public void registerTransformer(Class<? extends QuiltTransformer> clazz) {
         try {
-            transformers.add((QuiltTransformer) loadClass(transformer.getName()).newInstance());
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-            e.printStackTrace();
+            String name = clazz.getName();
+            QuiltTransformer transformer = (QuiltTransformer) loadClass(name).newInstance();
+            if (!transformers.containsKey(name)) {
+                transformers.put(name, transformer);
+            }
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+    }
+
+    public void registerRemapper(Class<? extends QuiltRemapper> clazz) {
+        try {
+            String name = clazz.getName();
+            QuiltRemapper remapper = (QuiltRemapper) loadClass(name).newInstance();
+            if (!quiltRemappers.containsKey(name)) {
+                quiltRemappers.put(name, remapper);
+            }
+        } catch (Throwable t) {
+            t.printStackTrace();
         }
     }
 
@@ -115,10 +134,14 @@ public class QuiltClassLoader extends URLClassLoader implements IQuiltClassLoade
     }
 
     public List<QuiltTransformer> getTransformers() {
-        return Collections.unmodifiableList(transformers);
+        return Collections.unmodifiableList(new ArrayList<>(transformers.values()));
     }
 
     public List<String> getExclusions() {
         return Collections.unmodifiableList(exclusions);
+    }
+
+    public List<QuiltRemapper> getRemappers() {
+        return Collections.unmodifiableList(new ArrayList<>(quiltRemappers.values()));
     }
 }

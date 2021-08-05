@@ -2,7 +2,6 @@ package org.bookmc.loader.impl.launch.transform.mixin;
 
 import org.bookmc.loader.impl.launch.Launcher;
 import org.bookmc.loader.impl.launch.Quilt;
-import org.bookmc.loader.shared.utils.ClassUtils;
 import org.spongepowered.asm.lib.tree.ClassNode;
 import org.spongepowered.asm.mixin.MixinEnvironment;
 import org.spongepowered.asm.service.IClassBytecodeProvider;

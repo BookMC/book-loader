@@ -203,8 +203,14 @@ public class JsonModVessel implements ModVessel {
 
     @Override
     public String[] getTransformers() {
-        if (!object.has("transformers") || !object.has("asm")) return new String[0];
+        if (!object.has("transformers") && !object.has("asm")) return new String[0];
         return toString(object.has("transformers") ? object.getAsJsonArray("transformers") : object.getAsJsonArray("asm"));
+    }
+
+    @Override
+    public String[] getRemappers() {
+        if (!object.has("remappers")) return new String[0];
+        return toString(object.getAsJsonArray("remappers"));
     }
 
     private String[] toString(JsonArray array) {

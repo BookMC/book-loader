@@ -9,6 +9,7 @@ import org.bookmc.loader.api.classloader.IQuiltClassLoader;
 import org.bookmc.loader.api.classloader.ModClassLoader;
 import org.bookmc.loader.api.compat.CompatiblityLayer;
 import org.bookmc.loader.api.exception.IllegalDependencyException;
+import org.bookmc.loader.api.launch.transform.QuiltRemapper;
 import org.bookmc.loader.api.launch.transform.QuiltTransformer;
 import org.bookmc.loader.api.vessel.ModVessel;
 import org.bookmc.loader.api.vessel.dependency.ModDependency;
@@ -35,6 +36,7 @@ import java.util.*;
 
 public class Loader {
     public static final List<ModVessel> loaded = new ArrayList<>();
+    private static final Logger LOGGER = LogManager.getLogger(Loader.class);
     private static final List<ModResolver> resolvers = new ArrayList<>();
     private static final Map<String, ModVessel> modVessels = new HashMap<>();
     private static final List<ModCandidate> candidates = new ArrayList<>();
@@ -214,6 +216,25 @@ public class Loader {
 
         for (ModVessel vessel : Loader.getModVessels()) {
             Loader.loadCompatibilityLayer(vessel, vessel.getAbstractedClassLoader());
+            for (String transformer : vessel.getTransformers()) {
+                try {
+                    Class<? extends QuiltTransformer> clazz = Launcher.loadClass(transformer, true)
+                        .asSubclass(QuiltTransformer.class);
+                    Launcher.getQuiltClassLoader().registerTransformer(clazz);
+                } catch (Exception e) {
+                    LOGGER.error("Could not load transformer {}", transformer, e);
+                }
+            }
+
+            for (String remapper : vessel.getRemappers()) {
+                try {
+                    Class<? extends QuiltRemapper> clazz = Launcher.loadClass(remapper, true)
+                        .asSubclass(QuiltRemapper.class);
+                    Launcher.getQuiltClassLoader().registerRemapper(clazz);
+                } catch (Exception e) {
+                    LOGGER.error("Could not load remapper {}", remapper, e);
+                }
+            }
         }
     }
 

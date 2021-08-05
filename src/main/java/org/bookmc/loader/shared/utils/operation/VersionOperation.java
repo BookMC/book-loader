@@ -3,7 +3,7 @@ package org.bookmc.loader.shared.utils.operation;
 import com.github.zafarkhaja.semver.Version;
 
 public enum VersionOperation {
-    GREATER {
+    GREATER_THAN {
         @Override
         public boolean allow(Version required, Version other) {
             return required.greaterThan(other);
@@ -34,12 +34,10 @@ public enum VersionOperation {
         }
     };
 
-    public abstract boolean allow(Version required, Version other);
-
     public static VersionOperation of(String required) {
-        if (required.startsWith(">")) return GREATER;
         if (required.startsWith(">=")) return GREATER_THAN_OR_EQUAL_TO;
         if (required.startsWith("<=")) return LESS_THAN_OR_EQUAL_TO;
+        if (required.startsWith(">")) return GREATER_THAN;
         if (required.startsWith("<")) return LESS_THAN;
         return EQUALS;
     }
@@ -50,4 +48,6 @@ public enum VersionOperation {
             .replace(">", "")
             .replace(">", "");
     }
+
+    public abstract boolean allow(Version required, Version other);
 }

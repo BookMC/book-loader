@@ -7,7 +7,6 @@ import org.bookmc.loader.api.vessel.ModVessel;
 import org.bookmc.loader.api.vessel.environment.Environment;
 import org.bookmc.loader.impl.Loader;
 import org.bookmc.loader.impl.launch.Launcher;
-import org.bookmc.loader.impl.launch.Quilt;
 import org.bookmc.loader.impl.vessel.dummy.BookLoaderVessel;
 import org.bookmc.loader.impl.vessel.dummy.JavaModVessel;
 import org.bookmc.loader.impl.vessel.dummy.MinecraftModVessel;
@@ -48,7 +47,6 @@ public class QuiltBootstrap {
         } else {
             LOGGER.error("Failed to detect the game version! Mods inside the game version's mod folder will not be loaded!");
         }
-
         // We have to bootstrap mixin after all the mods have been discovered
         // so that mods can have their mixin files discovered.
         boostrapMixin();
