@@ -23,6 +23,7 @@ import org.bookmc.loader.impl.resolve.ClasspathModResolver;
 import org.bookmc.loader.impl.resolve.DevelopmentModResolver;
 import org.bookmc.loader.impl.ui.MissingDependencyUI;
 import org.bookmc.loader.shared.utils.DownloadUtils;
+import org.bookmc.loader.shared.utils.VersionUtil;
 import org.bookmc.loader.shared.utils.ZipUtils;
 import org.spongepowered.asm.mixin.Mixins;
 
@@ -250,12 +251,15 @@ public class Loader {
     private static void loadDependencies(ModVessel vessel, Environment environment) {
         ArrayList<String> missingDeps = missingDependencies.getOrDefault(vessel.getId(), new ArrayList<>());
 
+        boolean reload = false;
+
         for (URL url : vessel.getExternalDependencies()) {
             File file = DownloadUtils.downloadFile(url, new File(Launcher.getGameProvider().getGameDirectory(), "libraries/" + url.getPath()));
             logger.info("Downloaded an external dependency (" + file.getName() + ") from " + vessel.getName() + ".");
 
             if (ZipUtils.isZipFile(file)) {
                 Loader.registerCandidate(new ZipModCandidate(file));
+                reload = true;
             } else {
                 logger.error("The external library (" + file.getName() + ") is not a jar/zip! Ignoring and deleteing...");
                 if (!file.delete()) {
@@ -264,7 +268,9 @@ public class Loader {
             }
         }
 
-        loadCandidates(); // Reload our candidates since we added new stuff
+        if (reload) {
+            loadCandidates(); // Reload our candidates since we added new stuff
+        }
 
         for (ModDependency dependency : vessel.getDependsOn()) {
             ModVessel dependencyVessel = Loader.getModVesselsMap().get(dependency.getId());
@@ -274,8 +280,9 @@ public class Loader {
                 continue;
             }
 
-            // TODO: Replace with semver checking and >=/<=/>/< support
-            if (!dependency.getVersion().equals("*") && !dependencyVessel.getVersion().equals(vessel.getVersion())) {
+            String requiredVersion = dependency.getVersion();
+
+            if (!dependency.getVersion().equals("*") && !VersionUtil.checkVersion(requiredVersion, dependencyVessel.getVersion())) {
                 missingDeps.add("The dependency " + dependency.getId() + " was located! However " + vessel.getName() + " requires " + dependency.getVersion() + " but " + dependencyVessel.getVersion() + " was given");
                 continue;
             }
@@ -306,7 +313,7 @@ public class Loader {
             }
         }
 
-        if (!missingDependencies.isEmpty()) {
+        if (!missingDeps.isEmpty()) {
             missingDependencies.put(vessel.getId(), missingDeps);
         }
     }

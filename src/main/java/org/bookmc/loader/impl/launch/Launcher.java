@@ -194,6 +194,7 @@ public class Launcher {
      * This function grabs all the available URLs to Quilt. These include
      * the URLs on the main classloader {@link QuiltClassLoader} and on
      * classloaders such as the {@link org.bookmc.loader.api.classloader.ModClassLoader}s.
+     *
      * @return All available URLs
      */
     public static URL[] getURLs() {
@@ -210,10 +211,11 @@ public class Launcher {
      * This method is quite a messy function but goes through each vessel
      * and attempts to load a class until it succeeds. If the class is never
      * found we just give up and throw an exception instead.
-     * @param name The name of the class we are trying to load.
+     *
+     * @param name               The name of the class we are trying to load.
      * @param tryMainClassLoader Whether we should also include the main classloader in the hunt.
-     * @throws ClassNotFoundException We could not locate the class anywhere!
      * @return The discovered class.
+     * @throws ClassNotFoundException We could not locate the class anywhere!
      */
     public static Class<?> loadClass(String name, boolean tryMainClassLoader) throws ClassNotFoundException {
         if (tryMainClassLoader) {
@@ -222,7 +224,6 @@ public class Launcher {
                 return mainClassLoader.loadClass(name);
             } catch (Throwable ignored) {
                 // Failed to get it from the parent, let's try another route.
-                // >:)
             }
         }
 
@@ -251,7 +252,8 @@ public class Launcher {
 
     /**
      * Searches through all the classloaders available to us and tries to find a class from it.
-     * @param name The class we are trying to find
+     *
+     * @param name       The class we are trying to find
      * @param initialize Whether we should initialize the located class
      * @return The located class
      * @throws ClassNotFoundException The class has not been located
@@ -276,6 +278,7 @@ public class Launcher {
      * !! FOR DEVELOPMENT USE ONLY !!
      * Grabs the GradleStart property given to use at launch via ForgeGradle and gives
      * us an exact location of where the mappings are!
+     *
      * @return A file instance of the Notch to MCP mappings.
      */
     public static File getMappings() {

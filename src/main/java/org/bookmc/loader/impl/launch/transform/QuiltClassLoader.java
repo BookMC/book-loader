@@ -16,8 +16,9 @@ public class QuiltClassLoader extends URLClassLoader implements IQuiltClassLoade
     public QuiltClassLoader() {
         super(new URL[0], QuiltClassLoader.class.getClassLoader());
 
+        addClassLoaderExclusion("sun.");
         addClassLoaderExclusion("java.");
-        addClassLoaderExclusion("sun");
+        addClassLoaderExclusion("javax.");
         addClassLoaderExclusion("org.lwjgl.");
         addClassLoaderExclusion("org.apache.logging.");
         addClassLoaderExclusion("org.bookmc.loader.");
