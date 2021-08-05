@@ -2,18 +2,11 @@ package org.bookmc.loader.impl.launch.transform;
 
 import org.bookmc.loader.api.classloader.IQuiltClassLoader;
 import org.bookmc.loader.api.launch.transform.QuiltTransformer;
-import org.spongepowered.asm.lib.ClassReader;
-import org.spongepowered.asm.lib.tree.ClassNode;
+import org.bookmc.loader.impl.launch.Launcher;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class QuiltClassLoader extends URLClassLoader implements IQuiltClassLoader {
     private final Map<String, byte[]> classCache = new HashMap<>();
@@ -23,8 +16,9 @@ public class QuiltClassLoader extends URLClassLoader implements IQuiltClassLoade
     public QuiltClassLoader() {
         super(new URL[0], QuiltClassLoader.class.getClassLoader());
 
+        addClassLoaderExclusion("sun.");
         addClassLoaderExclusion("java.");
-        addClassLoaderExclusion("sun");
+        addClassLoaderExclusion("javax.");
         addClassLoaderExclusion("org.lwjgl.");
         addClassLoaderExclusion("org.apache.logging.");
         addClassLoaderExclusion("org.bookmc.loader.");
@@ -61,7 +55,8 @@ public class QuiltClassLoader extends URLClassLoader implements IQuiltClassLoade
         byte[] bytes = getClassBytes(name, true);
 
         if (bytes == null) {
-            throw new ClassNotFoundException(name);
+            // Last resort, this also throws an exception if it can't find it
+            return Launcher.loadClass(name, false);
         }
 
         return defineClass(name, bytes, 0, bytes.length);
@@ -75,36 +70,13 @@ public class QuiltClassLoader extends URLClassLoader implements IQuiltClassLoade
     }
 
     @Override
-    public byte[] getClassBytes(String name, boolean transformed) {
-        InputStream resource = getResourceAsStream(name.replace(".", "/").concat(".class"));
+    public byte[] getCachedClass(String name) {
+        return classCache.get(name);
+    }
 
-        if (resource == null) {
-            return null;
-        }
-
-        byte[] classBytes = classCache.get(name);
-
-        if (classBytes == null) {
-            try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-                int read;
-                byte[] buffer = new byte[1024];
-                while ((read = resource.read(buffer, 0, buffer.length)) != -1) {
-                    baos.write(buffer, 0, read);
-                }
-                classBytes = baos.toByteArray();
-                classCache.put(name, classBytes);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        if (transformed) {
-            for (QuiltTransformer transformer : transformers) {
-                classBytes = transformer.transform(name, classBytes);
-            }
-        }
-
-        return classBytes;
+    @Override
+    public void putCachedClass(String name, byte[] bytes) {
+        classCache.put(name, bytes);
     }
 
     @Override
@@ -117,14 +89,7 @@ public class QuiltClassLoader extends URLClassLoader implements IQuiltClassLoade
         super.addURL(url);
     }
 
-    public ClassNode getClassNode(String name) {
-        byte[] bytes = getClassBytes(name, true);
-        ClassReader reader = new ClassReader(bytes);
-        ClassNode node = new ClassNode();
-        reader.accept(node, ClassReader.EXPAND_FRAMES);
-        return node;
-    }
-
+    @Override
     public boolean isClassLoaded(String name) {
         synchronized (getClassLoadingLock(name)) {
             return findLoadedClass(name) != null;
@@ -147,5 +112,13 @@ public class QuiltClassLoader extends URLClassLoader implements IQuiltClassLoade
 
     public void addClassLoaderExclusion(String exclusion) {
         exclusions.add(exclusion);
+    }
+
+    public List<QuiltTransformer> getTransformers() {
+        return Collections.unmodifiableList(transformers);
+    }
+
+    public List<String> getExclusions() {
+        return Collections.unmodifiableList(exclusions);
     }
 }

@@ -3,11 +3,13 @@ package org.bookmc.loader.impl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bookmc.loader.api.ModResolver;
+import org.bookmc.loader.api.adapter.BookLanguageAdapter;
 import org.bookmc.loader.api.candidate.ModCandidate;
 import org.bookmc.loader.api.classloader.IQuiltClassLoader;
 import org.bookmc.loader.api.classloader.ModClassLoader;
 import org.bookmc.loader.api.compat.CompatiblityLayer;
 import org.bookmc.loader.api.exception.IllegalDependencyException;
+import org.bookmc.loader.api.launch.transform.QuiltTransformer;
 import org.bookmc.loader.api.vessel.ModVessel;
 import org.bookmc.loader.api.vessel.dependency.ModDependency;
 import org.bookmc.loader.api.vessel.entrypoint.Entrypoint;
@@ -21,6 +23,7 @@ import org.bookmc.loader.impl.resolve.ClasspathModResolver;
 import org.bookmc.loader.impl.resolve.DevelopmentModResolver;
 import org.bookmc.loader.impl.ui.MissingDependencyUI;
 import org.bookmc.loader.shared.utils.DownloadUtils;
+import org.bookmc.loader.shared.utils.VersionUtil;
 import org.bookmc.loader.shared.utils.ZipUtils;
 import org.spongepowered.asm.mixin.Mixins;
 
@@ -183,6 +186,27 @@ public class Loader {
         }
     }
 
+
+    public static void loadTransformers(List<ModVessel> vessels) {
+        for (ModVessel vessel : vessels) {
+            try {
+                loadTransformer(vessel);
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static void loadTransformer(ModVessel vessel) throws ClassNotFoundException {
+        for (String transformer : vessel.getTransformers()) {
+            Class<?> clazz = vessel.getAbstractedClassLoader()
+                .getClassLoader()
+                .loadClass(transformer);
+            Class<? extends QuiltTransformer> transformerClass = clazz.asSubclass(QuiltTransformer.class);
+            Launcher.getQuiltClassLoader().registerTransformer(transformerClass);
+        }
+    }
+
     public static void discoverAndLoad(File modsDirectory, Environment environment) throws
         IllegalDependencyException {
         Loader.discover(modsDirectory);
@@ -190,7 +214,6 @@ public class Loader {
 
         for (ModVessel vessel : Loader.getModVessels()) {
             Loader.loadCompatibilityLayer(vessel, vessel.getAbstractedClassLoader());
-            Loader.loadMixin(vessel, environment);
         }
     }
 
@@ -228,12 +251,15 @@ public class Loader {
     private static void loadDependencies(ModVessel vessel, Environment environment) {
         ArrayList<String> missingDeps = missingDependencies.getOrDefault(vessel.getId(), new ArrayList<>());
 
+        boolean reload = false;
+
         for (URL url : vessel.getExternalDependencies()) {
             File file = DownloadUtils.downloadFile(url, new File(Launcher.getGameProvider().getGameDirectory(), "libraries/" + url.getPath()));
             logger.info("Downloaded an external dependency (" + file.getName() + ") from " + vessel.getName() + ".");
 
             if (ZipUtils.isZipFile(file)) {
                 Loader.registerCandidate(new ZipModCandidate(file));
+                reload = true;
             } else {
                 logger.error("The external library (" + file.getName() + ") is not a jar/zip! Ignoring and deleteing...");
                 if (!file.delete()) {
@@ -242,7 +268,9 @@ public class Loader {
             }
         }
 
-        loadCandidates(); // Reload our candidates since we added new stuff
+        if (reload) {
+            loadCandidates(); // Reload our candidates since we added new stuff
+        }
 
         for (ModDependency dependency : vessel.getDependsOn()) {
             ModVessel dependencyVessel = Loader.getModVesselsMap().get(dependency.getId());
@@ -252,8 +280,9 @@ public class Loader {
                 continue;
             }
 
-            // TODO: Replace with semver checking and >=/<=/>/< support
-            if (!dependency.getVersion().equals("*") && !dependencyVessel.getVersion().equals(vessel.getVersion())) {
+            String requiredVersion = dependency.getVersion();
+
+            if (!dependency.getVersion().equals("*") && !VersionUtil.checkVersion(requiredVersion, dependencyVessel.getVersion())) {
                 missingDeps.add("The dependency " + dependency.getId() + " was located! However " + vessel.getName() + " requires " + dependency.getVersion() + " but " + dependencyVessel.getVersion() + " was given");
                 continue;
             }
@@ -284,7 +313,7 @@ public class Loader {
             }
         }
 
-        if (!missingDependencies.isEmpty()) {
+        if (!missingDeps.isEmpty()) {
             missingDependencies.put(vessel.getId(), missingDeps);
         }
     }
@@ -307,10 +336,22 @@ public class Loader {
             try {
                 if (entryClass != null) {
                     logger.debug("Loading " + vessel.getName() + " from " + entrypoint.getOwner());
-                    entryClass.getDeclaredMethod(entrypoint.getMethod()).invoke(entryClass.getConstructor().newInstance());
+
+                    Class<?> adapter = classLoader.loadClass(vessel.getLanguageAdapter());
+
+                    // We do this to double check it actually implements what BookLanguageAdapter
+                    adapter.asSubclass(classLoader.loadClass(BookLanguageAdapter.class.getName()));
+
+                    BookLanguageAdapter adapterInstance = (BookLanguageAdapter) adapter.newInstance();
+
+
+                    entryClass.getDeclaredMethod(entrypoint.getMethod())
+                        .invoke(adapterInstance.createInstance(entryClass));
                 }
-            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException | InstantiationException e) {
+            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException | InstantiationException | ClassNotFoundException e) {
                 e.printStackTrace();
+            } catch (ClassCastException e) {
+                throw new IllegalStateException("The given language adpater does not implement BookLanguageAdapter", e);
             }
         }
     }

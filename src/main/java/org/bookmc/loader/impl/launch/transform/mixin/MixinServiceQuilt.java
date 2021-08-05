@@ -2,6 +2,7 @@ package org.bookmc.loader.impl.launch.transform.mixin;
 
 import org.bookmc.loader.impl.launch.Launcher;
 import org.bookmc.loader.impl.launch.Quilt;
+import org.bookmc.loader.shared.utils.ClassUtils;
 import org.spongepowered.asm.lib.tree.ClassNode;
 import org.spongepowered.asm.mixin.MixinEnvironment;
 import org.spongepowered.asm.service.IClassBytecodeProvider;
@@ -30,22 +31,22 @@ public class MixinServiceQuilt implements IMixinService, IClassProvider, IClassB
 
     @Override
     public ClassNode getClassNode(String name) {
-        return Launcher.getQuiltClassLoader().getClassNode(name);
+        return Launcher.getMixinClassNode(name);
     }
 
     @Override
     public URL[] getClassPath() {
-        return Launcher.getQuiltClassLoader().getURLs();
+        return Launcher.getURLs();
     }
 
     @Override
     public Class<?> findClass(String name) throws ClassNotFoundException {
-        return Launcher.getQuiltClassLoader().loadClass(name);
+        return Launcher.loadClass(name, true);
     }
 
     @Override
     public Class<?> findClass(String name, boolean initialize) throws ClassNotFoundException {
-        return Class.forName(name, initialize, Launcher.getQuiltClassLoader());
+        return Launcher.findClass(name, initialize);
     }
 
     @Override
@@ -119,7 +120,7 @@ public class MixinServiceQuilt implements IMixinService, IClassProvider, IClassB
 
     @Override
     public boolean isClassLoaded(String className) {
-        return Launcher.getQuiltClassLoader().isClassLoaded(className);
+        return Launcher.isClassLoaded(className);
     }
 
     @Override

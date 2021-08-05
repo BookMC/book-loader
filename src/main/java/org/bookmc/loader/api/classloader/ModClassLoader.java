@@ -1,49 +1,86 @@
 package org.bookmc.loader.api.classloader;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import org.bookmc.loader.impl.launch.Launcher;
+
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ModClassLoader extends URLClassLoader implements IQuiltClassLoader {
     private final Map<String, byte[]> classCache = new HashMap<>();
+    private final List<String> exclusions = new ArrayList<>();
 
     public ModClassLoader(URL[] urls) {
-        super(urls, ModClassLoader.class.getClassLoader());
+        super(urls, Launcher.getQuiltClassLoader());
+
+        addClassLoaderExclusion("net.minecraft."); // We don't want minecraft on our classloader!
     }
 
     @Override
-    public byte[] getClassBytes(String name, boolean transform) {
-        if (transform) {
-            throw new UnsupportedOperationException("This feature is currently not supported by mod classloaders!");
+    protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+        synchronized (getClassLoadingLock(name)) {
+            Class<?> c = findLoadedClass(name);
+
+            if (c != null) {
+                return c;
+            }
+
+            try {
+                return findClass(name);
+            } catch (ClassNotFoundException ignored) {
+                throw new ClassNotFoundException(name);
+            }
         }
+    }
 
-        InputStream resource = getResourceAsStream(name.replace(".", "/").concat(".class"));
-
-        if (resource == null) {
-            return null;
-        }
-
-        byte[] classBytes = classCache.get(name);
-
-        if (classBytes == null) {
-            try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-                int read;
-                byte[] buffer = new byte[1024];
-                while ((read = resource.read(buffer, 0, buffer.length)) != -1) {
-                    baos.write(buffer, 0, read);
-                }
-                classBytes = baos.toByteArray();
-                classCache.put(name, classBytes);
-            } catch (IOException e) {
-                e.printStackTrace();
+    @Override
+    protected Class<?> findClass(String name) throws ClassNotFoundException {
+        for (String exclusion : Launcher.getQuiltClassLoader().getExclusions()) {
+            if (name.startsWith(exclusion)) {
+                return getParent().loadClass(name);
             }
         }
 
-        return classBytes;
+        for (String exclusion : exclusions) {
+            if (name.startsWith(exclusion)) {
+                return getParent().loadClass(name);
+            }
+        }
+
+        synchronized (getClassLoadingLock(name)) {
+            Class<?> clazz = findLoadedClass(name);
+            if (clazz != null) {
+                return clazz;
+            }
+        }
+
+        byte[] bytes = getClassBytes(name, true);
+
+        if (bytes == null) {
+            throw new ClassNotFoundException(name);
+        }
+
+        return defineClass(name, bytes, 0, bytes.length);
+    }
+
+    @Override
+    public byte[] getCachedClass(String name) {
+        return classCache.get(name);
+    }
+
+    @Override
+    public void putCachedClass(String name, byte[] bytes) {
+        classCache.put(name, bytes);
+    }
+
+    @Override
+    public boolean isClassLoaded(String name) {
+        synchronized (getClassLoadingLock(name)) {
+            return findLoadedClass(name) != null;
+        }
     }
 
     @Override
@@ -54,5 +91,9 @@ public class ModClassLoader extends URLClassLoader implements IQuiltClassLoader 
     @Override
     public void addURL(URL url) {
         super.addURL(url);
+    }
+
+    private void addClassLoaderExclusion(String toExclude) {
+        exclusions.add(toExclude);
     }
 }
