@@ -22,10 +22,15 @@ public class QuiltClassLoader extends URLClassLoader implements IQuiltClassLoade
         addClassLoaderExclusion("java.");
         addClassLoaderExclusion("javax.");
         addClassLoaderExclusion("org.xml.");
+        addClassLoaderExclusion("org.w3c.");
         addClassLoaderExclusion("org.lwjgl.");
         addClassLoaderExclusion("org.objectweb.");
         addClassLoaderExclusion("org.apache.logging.");
         addClassLoaderExclusion("org.bookmc.loader.");
+
+        for (String exclusion : System.getProperty("quilt.classloader.exclusions", "").split(",")) {
+            addClassLoaderExclusion(exclusion);
+        }
     }
 
     @Override
