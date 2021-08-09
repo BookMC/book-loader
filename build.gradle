@@ -8,11 +8,15 @@ plugins {
 
 ext {
     def env = System.getenv()
-    local = !(env.GITHUB_ACTIONS || env.JITPACK)
+    local = !env.GITHUB_ACTIONS
+    jdk = JavaVersion.current().getMajorVersion()
 }
 
 group "org.bookmc"
-version "0.7.3${local ? "+local" : ""}"
+
+// We add the suffix for (our) non-lts support.
+// Java 8 support will be removed in the future however.
+version "0.7.3${local ? ".local" : ""}${JavaVersion.current() != JavaVersion.VERSION_1_8 ? "+jdk.$jdk" : ""}"
 
 repositories {
     mavenCentral()
@@ -81,7 +85,18 @@ jar {
 publishing {
     repositories {
         maven {
-            url = "$buildDir/repository"
+            def env = System.getenv()
+
+            boolean isEnvVarsAvailable = env.containsKey("MAVEN_USER") && env.containsKey("MAVEN_PASSWORD")
+
+            if (isEnvVarsAvailable) {
+                credentials {
+                    username env.get("MAVEN_USER")
+                    password env.get("MAVEN_PASSWORD")
+                }
+            }
+
+            url = local || !isEnvVarsAvailable ? "$buildDir/repository" : "https://maven.bookmc.org/releases/"
         }
     }
 

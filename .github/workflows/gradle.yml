@@ -2,10 +2,8 @@ name: Build and test
 
 on:
   push:
-  pull_request:
-
 jobs:
-  build_and_test_jdk8:
+  build_test_and_publish_jdk8:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -17,9 +15,12 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Build with Gradle
-        run: ./gradlew test build
+        run: ./gradlew test build publish
+        env:
+          MAVEN_USER: ${{ secrets.MAVEN_USER }}
+          MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
 
-  build_and_test_jdk11:
+  build_test_and_publish_jdk11:
     runs-on: ubuntu-latest
 
     steps:
@@ -32,9 +33,12 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Build with Gradle
-        run: ./gradlew test build
+        run: ./gradlew test build publish
+        env:
+          MAVEN_USER: ${{ secrets.MAVEN_USER }}
+          MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
 
-  build_and_test_jdk16:
+  build_test_and_publish_jdk16:
     runs-on: ubuntu-latest
 
     steps:
@@ -47,4 +51,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Build with Gradle
-        run: ./gradlew test build
+        run: ./gradlew test build publish
+        env:
+          MAVEN_USER: ${{ secrets.MAVEN_USER }}
+          MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
