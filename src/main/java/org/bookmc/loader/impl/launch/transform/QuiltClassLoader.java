@@ -27,10 +27,6 @@ public class QuiltClassLoader extends URLClassLoader implements IQuiltClassLoade
         addClassLoaderExclusion("org.objectweb.");
         addClassLoaderExclusion("org.apache.logging.");
         addClassLoaderExclusion("org.bookmc.loader.");
-
-        for (String exclusion : System.getProperty("quilt.classloader.exclusions", "").split(",")) {
-            addClassLoaderExclusion(exclusion);
-        }
     }
 
     @Override
