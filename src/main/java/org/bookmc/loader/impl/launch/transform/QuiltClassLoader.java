@@ -11,22 +11,23 @@ import java.util.*;
 
 public class QuiltClassLoader extends URLClassLoader implements IQuiltClassLoader {
     private final Map<String, byte[]> classCache = new HashMap<>();
-    private final Map<String, QuiltTransformer> transformers = new HashMap<>();
-    private final Map<String, QuiltRemapper> quiltRemappers = new HashMap<>();
+    private final List<QuiltTransformer> transformers = new ArrayList<>();
+    private final List<QuiltRemapper> quiltRemappers = new ArrayList<>();
     private final List<String> exclusions = new ArrayList<>();
+    private final List<String> transformationExclusion = new ArrayList<>();
 
     public QuiltClassLoader() {
         super(new URL[0], QuiltClassLoader.class.getClassLoader());
 
-        addClassLoaderExclusion("sun.");
         addClassLoaderExclusion("java.");
+        addClassLoaderExclusion("sun.");
         addClassLoaderExclusion("javax.");
-        addClassLoaderExclusion("org.xml.");
-        addClassLoaderExclusion("org.w3c.");
         addClassLoaderExclusion("org.lwjgl.");
-        addClassLoaderExclusion("org.objectweb.");
-        addClassLoaderExclusion("org.apache.logging.");
         addClassLoaderExclusion("org.bookmc.loader.");
+        addClassLoaderExclusion("org.objectweb.asm.");
+        addClassLoaderExclusion("org.apache.logging.");
+
+        addTransformerExclusion("org.objectweb.asm.");
     }
 
     @Override
@@ -57,7 +58,7 @@ public class QuiltClassLoader extends URLClassLoader implements IQuiltClassLoade
         if (isClassLoaded(name)) {
             return getLoadedClass(name);
         }
-        byte[] bytes = getClassBytes(name, true);
+        byte[] bytes = getClassBytes(name, !transformationExclusion.contains(name));
 
         if (bytes == null) {
             // Last resort, this also throws an exception if it can't find it
@@ -107,25 +108,17 @@ public class QuiltClassLoader extends URLClassLoader implements IQuiltClassLoade
         }
     }
 
-    public void registerTransformer(Class<? extends QuiltTransformer> clazz) {
+    public void registerTransformer(QuiltTransformer transformer) {
         try {
-            String name = clazz.getName();
-            QuiltTransformer transformer = (QuiltTransformer) loadClass(name).newInstance();
-            if (!transformers.containsKey(name)) {
-                transformers.put(name, transformer);
-            }
+            transformers.add(transformer);
         } catch (Throwable t) {
             t.printStackTrace();
         }
     }
 
-    public void registerRemapper(Class<? extends QuiltRemapper> clazz) {
+    public void registerRemapper(QuiltRemapper remapper) {
         try {
-            String name = clazz.getName();
-            QuiltRemapper remapper = (QuiltRemapper) loadClass(name).newInstance();
-            if (!quiltRemappers.containsKey(name)) {
-                quiltRemappers.put(name, remapper);
-            }
+            quiltRemappers.add(remapper);
         } catch (Throwable t) {
             t.printStackTrace();
         }
@@ -136,7 +129,7 @@ public class QuiltClassLoader extends URLClassLoader implements IQuiltClassLoade
     }
 
     public List<QuiltTransformer> getTransformers() {
-        return Collections.unmodifiableList(new ArrayList<>(transformers.values()));
+        return Collections.unmodifiableList(transformers);
     }
 
     public List<String> getExclusions() {
@@ -144,6 +137,14 @@ public class QuiltClassLoader extends URLClassLoader implements IQuiltClassLoade
     }
 
     public List<QuiltRemapper> getRemappers() {
-        return Collections.unmodifiableList(new ArrayList<>(quiltRemappers.values()));
+        return Collections.unmodifiableList(quiltRemappers);
+    }
+
+    public List<String> getTransformationExclusion() {
+        return Collections.unmodifiableList(transformationExclusion);
+    }
+
+    public void addTransformerExclusion(String toExclude) {
+        transformationExclusion.add(toExclude);
     }
 }

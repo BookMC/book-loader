@@ -37,8 +37,11 @@ public interface IQuiltClassLoader {
                 e.printStackTrace();
             }
 
-            for (QuiltRemapper remapper : Launcher.getQuiltClassLoader().getRemappers()) {
-                classBytes = remapper.transform(name, classBytes);
+            // The remappers most likely use asm so lets fix the chance of a ClassCircularityError
+            if (!name.startsWith("org.objectweb.asm.")) {
+                for (QuiltRemapper remapper : Launcher.getQuiltClassLoader().getRemappers()) {
+                    classBytes = remapper.transform(name, classBytes);
+                }
             }
 
             if (transform) {

@@ -79,7 +79,7 @@ public class MixinServiceQuilt implements IMixinService, IClassProvider, IClassB
 
     @Override
     public void beginPhase() {
-        Launcher.getQuiltClassLoader().registerTransformer(QuiltMixinProxy.class);
+        Launcher.getQuiltClassLoader().registerTransformer(new QuiltMixinProxy());
     }
 
     @Override

@@ -193,34 +193,52 @@ public class Loader {
         for (ModVessel vessel : vessels) {
             try {
                 loadTransformer(vessel);
-            } catch (ClassNotFoundException e) {
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    public static void loadTransformer(ModVessel vessel) throws ClassNotFoundException {
+    public static void loadTransformer(ModVessel vessel) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+        ClassLoader classLoader = vessel.getAbstractedClassLoader().getClassLoader();
+        Class<?> transformerClass = classLoader.loadClass(QuiltTransformer.class.getName());
+
         for (String transformer : vessel.getTransformers()) {
-            Class<?> clazz = vessel.getAbstractedClassLoader()
-                .getClassLoader()
-                .loadClass(transformer);
-            Class<? extends QuiltTransformer> transformerClass = clazz.asSubclass(QuiltTransformer.class);
-            Launcher.getQuiltClassLoader().registerTransformer(transformerClass);
+            Class<?> clazz = Class.forName(transformer, false, classLoader);
+
+            if (clazz.isAssignableFrom(transformerClass)) {
+                QuiltTransformer quiltTransformer = (QuiltTransformer) clazz.newInstance();
+                Launcher.getQuiltClassLoader().registerTransformer(quiltTransformer);
+            }
+        }
+    }
+
+    public static void loadRemapper(ModVessel vessel) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+        ClassLoader classLoader = vessel.getAbstractedClassLoader().getClassLoader();
+        Class<?> remapperClass = classLoader.loadClass(QuiltRemapper.class.getName());
+
+
+        for (String remapper : vessel.getRemappers()) {
+            Class<?> clazz = Class.forName(remapper, false, classLoader);
+
+            if (clazz.isAssignableFrom(remapperClass)) {
+                QuiltRemapper quiltRemapper = (QuiltRemapper) clazz.newInstance();
+                Launcher.getQuiltClassLoader().registerRemapper(quiltRemapper);
+            }
         }
     }
 
     public static void discoverAndLoad(File modsDirectory, Environment environment) throws
         IllegalDependencyException {
-        Loader.discover(modsDirectory);
+        discover(modsDirectory);
         loadCandidates();
 
-        for (ModVessel vessel : Loader.getModVessels()) {
-            Loader.loadCompatibilityLayer(vessel, vessel.getAbstractedClassLoader());
+        for (ModVessel vessel : getModVessels()) {
+            loadCompatibilityLayer(vessel, vessel.getAbstractedClassLoader());
+
             for (String transformer : vessel.getTransformers()) {
                 try {
-                    Class<? extends QuiltTransformer> clazz = Launcher.loadClass(transformer, true)
-                        .asSubclass(QuiltTransformer.class);
-                    Launcher.getQuiltClassLoader().registerTransformer(clazz);
+                   loadTransformer(vessel);
                 } catch (Exception e) {
                     LOGGER.error("Could not load transformer {}", transformer, e);
                 }
@@ -228,9 +246,7 @@ public class Loader {
 
             for (String remapper : vessel.getRemappers()) {
                 try {
-                    Class<? extends QuiltRemapper> clazz = Launcher.loadClass(remapper, true)
-                        .asSubclass(QuiltRemapper.class);
-                    Launcher.getQuiltClassLoader().registerRemapper(clazz);
+                    loadRemapper(vessel);
                 } catch (Exception e) {
                     LOGGER.error("Could not load remapper {}", remapper, e);
                 }

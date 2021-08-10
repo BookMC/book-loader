@@ -29,7 +29,6 @@ public class QuiltBootstrap {
             }
         }
 
-
         Loader.registerCandidate(new DummyCandidate(new ModVessel[]{new MinecraftModVessel(Launcher.getGameProvider().getLaunchedVersion()), new JavaModVessel(), new BookLoaderVessel()}));
 
         try {
