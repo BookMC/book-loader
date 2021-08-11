@@ -1,12 +1,10 @@
-import club.chachy.repackage.MixinRepackage
-
 //file:noinspection GroovyAssignabilityCheck
 plugins {
     id "java"
     id "java-library"
     id "maven-publish"
-    id "base"
     id "net.kyori.blossom" version "1.2.0"
+    id "com.github.johnrengelman.shadow" version "7.0.0"
 }
 
 ext {
@@ -30,32 +28,6 @@ repositories {
     }
 }
 
-def artifactType = Attribute.of("artifactType", String)
-def repackaged = Attribute.of("repackaged", Boolean)
-
-dependencies {
-    attributesSchema {
-        attribute(repackaged)
-    }
-    artifactTypes.getByName("jar") {
-        attributes.attribute(repackaged, false)
-    }
-}
-
-configurations.all {
-    afterEvaluate {
-        if (canBeResolved) {
-            attributes.attribute(repackaged, true)
-        }
-    }
-}
-
-dependencies {
-    registerTransform(MixinRepackage) {
-        from.attribute(repackaged, false).attribute(artifactType, "jar")
-        to.attribute(repackaged, true).attribute(artifactType, "jar")
-    }
-}
 
 configurations {
     include
@@ -73,6 +45,7 @@ dependencies {
 
     // Shaded libraries
     include "org.spongepowered:mixin:0.8.3-SNAPSHOT"
+    include "com.google.guava:guava:30.1.1-jre"
 
     include "org.ow2.asm:asm:9.2"
     include "org.ow2.asm:asm-tree:9.2"
@@ -94,16 +67,19 @@ blossom {
     replaceToken("%LOADER_VERSION%", project.version)
 }
 
-jar {
-    from {
-        configurations.include.collect {
-            it.isDirectory() ? it : zipTree(it)
-        }
-    }
-
+shadowJar {
+    configurations = [project.configurations.include]
+    archiveClassifier.set("")
     duplicatesStrategy DuplicatesStrategy.EXCLUDE
     exclude "module-info.class", "LICENSE.*", "META-INF/*.RSA", "META-INF/*.SF", "META-INF/*.DSA"
+
+    relocate "com.google.common", "org.bookmc.loader.libs.guava.common"
+    relocate "com.google.errorprone", "org.bookmc.loader.libs.guava.errorprone"
+    relocate "com.google.j2objc", "org.bookmc.loader.libs.guava.j2objc"
+    relocate "com.google.thirdparty", "org.bookmc.loader.libs.guava.thirdparty"
 }
+
+tasks.build.dependsOn(tasks.shadowJar)
 
 publishing {
     repositories {
