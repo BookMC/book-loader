@@ -7,8 +7,8 @@ import org.bookmc.loader.impl.Loader;
 import org.bookmc.loader.impl.launch.provider.GameProvider;
 import org.bookmc.loader.impl.launch.transform.QuiltClassLoader;
 import org.bookmc.loader.shared.utils.ClassUtils;
-import org.spongepowered.asm.lib.ClassReader;
-import org.spongepowered.asm.lib.tree.ClassNode;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.tree.ClassNode;
 
 import java.io.File;
 import java.io.InputStream;
@@ -156,8 +156,8 @@ public class Launcher {
      * @param name The name of the class to find
      * @return The resolved classnode as an ASM ClassNode
      */
-    public static ClassNode getMixinClassNode(String name) {
-        byte[] clazz = getClassBytes(name, true);
+    public static ClassNode getMixinClassNode(String name, boolean transform) {
+        byte[] clazz = getClassBytes(name, transform);
         if (clazz == null) {
             return null;
         }
