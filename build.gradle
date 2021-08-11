@@ -72,8 +72,6 @@ jar {
     manifest.attributes "Premain-Class" : "org.spongepowered.tools.agent.MixinAgent"
     manifest.attributes "Can-Redefine-Classes" : true
     manifest.attributes "Can-Retransform-Classes" : true
-
-    enabled = false
 }
 
 shadowJar {
