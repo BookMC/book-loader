@@ -16,7 +16,7 @@ ext {
 group "org.bookmc"
 // We add the suffix for (our) non-lts support.
 // Java 8 support will be removed in the future however.
-version "0.8.1${local ? "-local" : ""}${JavaVersion.current() != JavaVersion.VERSION_1_8 ? "+jdk.$jdk" : ""}"
+version "0.8.2${local ? "-local" : ""}${JavaVersion.current() != JavaVersion.VERSION_1_8 ? "+jdk.$jdk" : ""}"
 
 repositories {
     mavenCentral()
@@ -65,6 +65,15 @@ java {
 
 blossom {
     replaceToken("%LOADER_VERSION%", project.version)
+}
+
+jar {
+    manifest.attributes "Agent-Class" : "org.spongepowered.tools.agent.MixinAgent"
+    manifest.attributes "Premain-Class" : "org.spongepowered.tools.agent.MixinAgent"
+    manifest.attributes "Can-Redefine-Classes" : true
+    manifest.attributes "Can-Retransform-Classes" : true
+
+    enabled = false
 }
 
 shadowJar {
