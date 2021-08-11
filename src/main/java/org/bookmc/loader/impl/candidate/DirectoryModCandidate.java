@@ -16,6 +16,13 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A custom candidate which takes a folder which has been classed as a candidate
+ * and if it contains the requirements to be classed as a Book mod allows it to continue
+ * it's journey by keeping it in the candidates position instead of moving it to rejection
+ *
+ * @author ChachyDev
+ */
 public class DirectoryModCandidate implements ModCandidate {
     private final List<ModVessel> vessels = new ArrayList<>();
     private final JsonParser parser = new JsonParser();

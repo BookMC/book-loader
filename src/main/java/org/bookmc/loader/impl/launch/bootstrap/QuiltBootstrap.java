@@ -17,6 +17,14 @@ import org.spongepowered.asm.mixin.MixinEnvironment;
 import java.io.File;
 import java.lang.reflect.Method;
 
+/**
+ * The Quilt Bootstrap allows is the biggest part of the loader.
+ * It holds the code to successfully start mod loading by bootstrapping
+ * libraries such as Mixin and discovering mods. It also allows external
+ * developers to bootstrap the loader without making errors trying to abstract
+ * code baked into {@link org.bookmc.loader.impl.launch.Quilt} and without using
+ * {@link org.bookmc.loader.impl.launch.Quilt} itself.
+ */
 public class QuiltBootstrap {
     private static final Logger LOGGER = LogManager.getLogger(QuiltBootstrap.class);
 

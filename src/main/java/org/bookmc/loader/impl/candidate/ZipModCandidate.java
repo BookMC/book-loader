@@ -20,6 +20,10 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+/**
+ * Takes provided zip files and determines whether they fit the standards to be a mod.
+ * If it does then it turns it away from rejection so it can be loaded.
+ */
 public class ZipModCandidate implements ModCandidate {
     private final File file;
 

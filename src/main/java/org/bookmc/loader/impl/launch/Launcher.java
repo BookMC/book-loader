@@ -150,13 +150,13 @@ public class Launcher {
     }
 
     /**
-     * Resolves a mixin classnode, please don't use this if you're not the loader itself
-     * you'll put yourself into a massive Mixin mess...
+     * Resolves a ClassNode
      *
      * @param name The name of the class to find
+     * @param transform Whether the classnode should be transformed
      * @return The resolved classnode as an ASM ClassNode
      */
-    public static ClassNode getMixinClassNode(String name, boolean transform) {
+    public static ClassNode getClassNode(String name, boolean transform) {
         byte[] clazz = getClassBytes(name, transform);
         if (clazz == null) {
             return null;

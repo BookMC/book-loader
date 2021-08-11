@@ -17,6 +17,12 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Uses mods discovered by the current classloader and applies
+ * them if they are deemed as a Book mod
+ *
+ * @author ChachyDev
+ */
 public class LocalClassLoaderModCandidate implements ModCandidate {
     private final JsonParser parser = new JsonParser();
 

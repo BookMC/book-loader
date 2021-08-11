@@ -25,7 +25,7 @@ public class MixinServiceQuilt implements IMixinService, IClassProvider, IClassB
 
     @Override
     public ClassNode getClassNode(String name, boolean runTransformers) {
-        return Launcher.getMixinClassNode(name, runTransformers);
+        return Launcher.getClassNode(name, runTransformers);
     }
 
     @Override
