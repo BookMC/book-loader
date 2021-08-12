@@ -18,8 +18,6 @@ import org.bookmc.loader.api.vessel.entrypoint.MixinEntrypoint;
 import org.bookmc.loader.api.vessel.environment.Environment;
 import org.bookmc.loader.impl.candidate.ZipModCandidate;
 import org.bookmc.loader.impl.launch.Launcher;
-import org.bookmc.loader.impl.launch.transform.QuiltClassLoader;
-import org.bookmc.loader.impl.resolve.BookModResolver;
 import org.bookmc.loader.impl.resolve.ClasspathModResolver;
 import org.bookmc.loader.impl.resolve.DevelopmentModResolver;
 import org.bookmc.loader.impl.ui.MissingDependencyUI;
@@ -46,11 +44,8 @@ public class Loader {
 
     private static final Object object = new Object();
 
-    private static Environment environment = Environment.UNKNOWN;
-
     static {
-        // Register default mod loader.
-        Loader.registerResolver(new BookModResolver());
+        // Register default resolvers
         Loader.registerResolver(new ClasspathModResolver());
         Loader.registerResolver(new DevelopmentModResolver());
     }
@@ -78,15 +73,9 @@ public class Loader {
         return Collections.unmodifiableMap(modVessels);
     }
 
-    public static void discover(File modsDirectory) {
+    public static void discover() {
         for (ModResolver discoverer : Loader.getModResolvers()) {
-            File[] files = modsDirectory.listFiles();
-
-            if (files == null) {
-                files = new File[0];
-            }
-
-            discoverer.resolve(files);
+            discoverer.resolve();
         }
     }
 
@@ -139,14 +128,6 @@ public class Loader {
         return false;
     }
 
-    public static void loadCompatibilityLayers(QuiltClassLoader classLoader) {
-        for (ModVessel vessel : getModVessels()) {
-            if (!isModLoaded(vessel.getId())) {
-                loadCompatibilityLayer(vessel, classLoader);
-            }
-        }
-    }
-
     public static void loadCompatibilityLayer(ModVessel vessel, IQuiltClassLoader classLoader) {
         Entrypoint[] entrypoints = vessel.getEntrypoints();
         for (Entrypoint entrypoint : entrypoints) {
@@ -188,49 +169,32 @@ public class Loader {
         }
     }
 
-
-    public static void loadTransformers(List<ModVessel> vessels) {
-        for (ModVessel vessel : vessels) {
-            try {
-                loadTransformer(vessel);
-            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public static void loadTransformer(ModVessel vessel) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+    public static void loadTransformer(ModVessel vessel, String transformer) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         ClassLoader classLoader = vessel.getAbstractedClassLoader().getClassLoader();
-        Class<?> transformerClass = classLoader.loadClass(QuiltTransformer.class.getName());
+        Launcher.getQuiltClassLoader().addClassLoaderExclusion(transformer);
+        Class<?> clazz = Class.forName(transformer, false, classLoader);
 
-        for (String transformer : vessel.getTransformers()) {
-            Class<?> clazz = Class.forName(transformer, false, classLoader);
-
-            if (clazz.isAssignableFrom(transformerClass)) {
-                QuiltTransformer quiltTransformer = (QuiltTransformer) clazz.newInstance();
-                Launcher.getQuiltClassLoader().registerTransformer(quiltTransformer);
-            }
+        try {
+            Launcher.getQuiltClassLoader().registerTransformer((QuiltTransformer) clazz.newInstance());
+        } catch (ClassCastException e) {
+            LOGGER.error("{} defined a transformer ({}) but does not implement QuiltTransformer", vessel.getId(), transformer, e);
         }
     }
 
-    public static void loadRemapper(ModVessel vessel) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+    public static void loadRemapper(ModVessel vessel, String remapper) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         ClassLoader classLoader = vessel.getAbstractedClassLoader().getClassLoader();
-        Class<?> remapperClass = classLoader.loadClass(QuiltRemapper.class.getName());
+        Launcher.getQuiltClassLoader().addClassLoaderExclusion(remapper);
 
-
-        for (String remapper : vessel.getRemappers()) {
-            Class<?> clazz = Class.forName(remapper, false, classLoader);
-
-            if (clazz.isAssignableFrom(remapperClass)) {
-                QuiltRemapper quiltRemapper = (QuiltRemapper) clazz.newInstance();
-                Launcher.getQuiltClassLoader().registerRemapper(quiltRemapper);
-            }
+        Class<?> clazz = Class.forName(remapper, false, classLoader);
+        try {
+            Launcher.getQuiltClassLoader().registerRemapper((QuiltRemapper) clazz.newInstance());
+        } catch (ClassCastException e) {
+            LOGGER.error("{} defined a remapper ({}) but does not implement QuiltReampper", vessel.getId(), remapper, e);
         }
     }
 
-    public static void discoverAndLoad(File modsDirectory, Environment environment) throws
-        IllegalDependencyException {
-        discover(modsDirectory);
+    public static void discoverAndLoad() throws IllegalDependencyException {
+        discover();
         loadCandidates();
 
         for (ModVessel vessel : getModVessels()) {
@@ -238,7 +202,7 @@ public class Loader {
 
             for (String transformer : vessel.getTransformers()) {
                 try {
-                   loadTransformer(vessel);
+                    loadTransformer(vessel, transformer);
                 } catch (Exception e) {
                     LOGGER.error("Could not load transformer {}", transformer, e);
                 }
@@ -246,7 +210,7 @@ public class Loader {
 
             for (String remapper : vessel.getRemappers()) {
                 try {
-                    loadRemapper(vessel);
+                    loadRemapper(vessel, remapper);
                 } catch (Exception e) {
                     LOGGER.error("Could not load remapper {}", remapper, e);
                 }
@@ -255,8 +219,6 @@ public class Loader {
     }
 
     public static void load(Environment environment) {
-        Loader.environment = environment;
-
         for (ModVessel vessel : Loader.getModVessels()) {
             if (loaded.contains(vessel)) {
                 continue;
@@ -391,13 +353,6 @@ public class Loader {
                 throw new IllegalStateException("The given language adpater does not implement BookLanguageAdapter", e);
             }
         }
-    }
-
-    public static void reload(File directory) {
-        Loader.discover(directory);
-        loadCandidates();
-
-        load(environment);
     }
 
     public static void loadCandidates() {

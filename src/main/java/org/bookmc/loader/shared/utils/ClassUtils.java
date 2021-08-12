@@ -1,5 +1,7 @@
 package org.bookmc.loader.shared.utils;
 
+import org.bookmc.loader.impl.launch.Launcher;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,7 +14,7 @@ public class ClassUtils {
         }
 
         try {
-            Class.forName(name);
+            Launcher.getQuiltClassLoader().loadClass(name);
             availableMap.put(name, true);
             return true;
         } catch (ClassNotFoundException e) {

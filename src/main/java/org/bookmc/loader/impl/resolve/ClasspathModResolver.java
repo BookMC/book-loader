@@ -55,7 +55,7 @@ public class ClasspathModResolver implements ModResolver {
     }
 
     @Override
-    public void resolve(File[] files) {
+    public void resolve() {
         URL[] classpath = getClasspathURLs();
         if (classpath == null) {
             return;

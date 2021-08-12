@@ -7,6 +7,7 @@ import org.bookmc.loader.api.vessel.ModVessel;
 import org.bookmc.loader.api.vessel.environment.Environment;
 import org.bookmc.loader.impl.Loader;
 import org.bookmc.loader.impl.launch.Launcher;
+import org.bookmc.loader.impl.resolve.BookModResolver;
 import org.bookmc.loader.impl.vessel.dummy.BookLoaderVessel;
 import org.bookmc.loader.impl.vessel.dummy.JavaModVessel;
 import org.bookmc.loader.impl.vessel.dummy.MinecraftModVessel;
@@ -37,23 +38,19 @@ public class QuiltBootstrap {
             }
         }
 
-        Loader.registerCandidate(new DummyCandidate(new ModVessel[]{new MinecraftModVessel(Launcher.getGameProvider().getLaunchedVersion()), new JavaModVessel(), new BookLoaderVessel()}));
+        String version = Launcher.getGameProvider().getLaunchedVersion();
+
+        Loader.registerResolver(new BookModResolver(new File(modsDirectory, "mods")));
+        Loader.registerResolver(new BookModResolver(new File(modsDirectory, "mods/" + version)));
+
+        Loader.registerCandidate(new DummyCandidate(new ModVessel[]{new MinecraftModVessel(version), new JavaModVessel(), new BookLoaderVessel()}));
 
         try {
-            Loader.discoverAndLoad(modsDirectory, Launcher.getEnvironment());
+            Loader.discoverAndLoad();
         } catch (IllegalDependencyException e) {
             e.printStackTrace();
         }
 
-        if (Launcher.getGameProvider().getLaunchedVersion() != null) {
-            try {
-                Loader.discoverAndLoad(new File(modsDirectory, Launcher.getGameProvider().getLaunchedVersion()), Launcher.getEnvironment());
-            } catch (IllegalDependencyException e) {
-                e.printStackTrace();
-            }
-        } else {
-            LOGGER.error("Failed to detect the game version! Mods inside the game version's mod folder will not be loaded!");
-        }
         // We have to bootstrap mixin after all the mods have been discovered
         // so that mods can have their mixin files discovered.
         boostrapMixin();
@@ -62,8 +59,10 @@ public class QuiltBootstrap {
 
         Loader.loadMixins(Launcher.getEnvironment());
 
-        if (mixinEnvironment.getObfuscationContext() == null) {
-            mixinEnvironment.setObfuscationContext("notch"); // Switch's to notch mappings
+        if (!Launcher.isDevelopment()) {
+            if (mixinEnvironment.getObfuscationContext() == null) {
+                mixinEnvironment.setObfuscationContext("notch"); // Switch's to notch mappings
+            }
         }
 
         mixinEnvironment.setSide(Environment.toMixin(Launcher.getEnvironment()));

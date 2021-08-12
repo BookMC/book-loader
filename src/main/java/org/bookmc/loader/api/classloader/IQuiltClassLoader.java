@@ -4,9 +4,7 @@ import org.bookmc.loader.api.launch.transform.QuiltRemapper;
 import org.bookmc.loader.api.launch.transform.QuiltTransformer;
 import org.bookmc.loader.impl.launch.Launcher;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URL;
 import java.net.URLClassLoader;
 

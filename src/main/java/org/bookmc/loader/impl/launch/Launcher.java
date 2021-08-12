@@ -152,7 +152,7 @@ public class Launcher {
     /**
      * Resolves a ClassNode
      *
-     * @param name The name of the class to find
+     * @param name      The name of the class to find
      * @param transform Whether the classnode should be transformed
      * @return The resolved classnode as an ASM ClassNode
      */

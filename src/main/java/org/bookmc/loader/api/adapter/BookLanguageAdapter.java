@@ -12,11 +12,11 @@ public interface BookLanguageAdapter {
     /**
      * Asks the language adapter to use the given {@link Class} instance and
      * conjour an instance of that class out of it.
+     *
      * @param clazz The class to initialize
      * @return The initialized class
      * @throws InstantiationException Failed to initialize the class
      * @throws IllegalAccessException The class is most likely not public and we tried to access it
-     *
      * @author ChachyDev
      */
     Object createInstance(Class<?> clazz) throws InstantiationException, IllegalAccessException;
