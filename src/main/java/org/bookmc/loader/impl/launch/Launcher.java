@@ -135,7 +135,7 @@ public class Launcher {
                 // therefore they should never in reality be returning transformed classes
                 // If we ask for a transformed class it will throw an exception so we must
                 // purposely disallow usage of this.
-                byte[] vesselResolved = loader.getClassBytes(name, false);
+                byte[] vesselResolved = loader.getClassBytes(name, transform);
                 if (vesselResolved != null) {
                     // If we have resolved the resoucrce return it back.
                     classBytes = vesselResolved;
@@ -152,9 +152,10 @@ public class Launcher {
      *
      * @param name      The name of the class to find
      * @param transform Whether the classnode should be transformed
+     * @param flags The flags to provide to the ClassReader
      * @return The resolved classnode as an ASM ClassNode
      */
-    public static ClassNode getClassNode(String name, boolean transform) {
+    public static ClassNode getClassNode(String name, boolean transform, int flags) {
         byte[] clazz = getClassBytes(name, transform);
         if (clazz == null) {
             return null;
@@ -164,6 +165,17 @@ public class Launcher {
         ClassReader reader = new ClassReader(clazz);
         reader.accept(node, ClassReader.EXPAND_FRAMES);
         return node;
+    }
+
+    /**
+     * Resolves a ClassNode
+     *
+     * @param name      The name of the class to find
+     * @param transform Whether the classnode should be transformed
+     * @return The resolved classnode as an ASM ClassNode
+     */
+    public static ClassNode getClassNode(String name, boolean transform) {
+        return getClassNode(name, transform, ClassReader.EXPAND_FRAMES);
     }
 
     public static boolean isClassLoaded(String name) {
