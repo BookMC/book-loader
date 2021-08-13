@@ -51,11 +51,11 @@ public class Launcher {
     }
 
     public static Environment getEnvironment() {
-        if (environment == null) {
-            environment = ClassUtils.isClassAvailable(System.getProperty("book.launcher.obfuscatedGameClass", "ave")) || ClassUtils.isClassAvailable("GradleStart") ? Environment.CLIENT : Environment.SERVER;
-        }
-
         return environment;
+    }
+
+    public static void setEnvironment(Environment environment) {
+        Launcher.environment = environment;
     }
 
     public static File getModsFolder() {
