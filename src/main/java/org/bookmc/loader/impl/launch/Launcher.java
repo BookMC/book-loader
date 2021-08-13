@@ -157,6 +157,7 @@ public class Launcher {
      */
     public static ClassNode getClassNode(String name, boolean transform, int flags) {
         byte[] clazz = getClassBytes(name, transform);
+
         if (clazz == null) {
             return null;
         }
@@ -292,7 +293,7 @@ public class Launcher {
      * @return A file instance of the Notch to MCP mappings.
      */
     public static File getMappings() {
-        String gradleStartProp = System.getProperty("net.minecraftforge.gradle.GradleStart.srg.notch-mcp");
+        String gradleStartProp = System.getProperty("net.minecraftforge.gradle.GradleStart.srg.srg-mcp");
         if (gradleStartProp == null) {
             return null;
         }

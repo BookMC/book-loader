@@ -27,19 +27,19 @@ public final class QuiltMixinProxy implements QuiltTransformer, ILegacyClassTran
     private boolean isActive = true;
 
     public QuiltMixinProxy() {
-        for (QuiltMixinProxy hook : QuiltMixinProxy.proxies) {
+        for (QuiltMixinProxy hook : proxies) {
             hook.isActive = false;
         }
 
-        QuiltMixinProxy.proxies.add(this);
+        proxies.add(this);
         LogManager.getLogger("mixin")
             .debug("Adding new mixin transformer proxy #{}", QuiltMixinProxy.proxies.size());
     }
 
     @Override
     public byte[] transform(String name, byte[] basicClass) {
-        if (this.isActive) {
-            return QuiltMixinProxy.transformer.transformClass(name, name, basicClass);
+        if (isActive) {
+            return transformer.transformClass(name, name, basicClass);
         }
 
         return basicClass;
@@ -57,8 +57,8 @@ public final class QuiltMixinProxy implements QuiltTransformer, ILegacyClassTran
 
     @Override
     public byte[] transformClassBytes(String name, String transformedName, byte[] basicClass) {
-        if (this.isActive) {
-            return QuiltMixinProxy.transformer.transformClass(name, transformedName, basicClass);
+        if (isActive) {
+            return transformer.transformClass(name, transformedName, basicClass);
         }
 
         return basicClass;

@@ -3,6 +3,7 @@ package org.bookmc.loader.api.classloader;
 import org.bookmc.loader.api.launch.transform.QuiltRemapper;
 import org.bookmc.loader.api.launch.transform.QuiltTransformer;
 import org.bookmc.loader.impl.launch.Launcher;
+import org.bookmc.loader.impl.launch.transform.mixin.QuiltMixinProxy;
 
 import java.io.*;
 import java.net.URL;
@@ -44,6 +45,7 @@ public interface IQuiltClassLoader {
 
             if (transform) {
                 for (QuiltTransformer transformer : Launcher.getQuiltClassLoader().getTransformers()) {
+                    if (transformer instanceof QuiltMixinProxy) continue;
                     classBytes = transformer.transform(name, classBytes);
                 }
             }
