@@ -113,7 +113,7 @@ public class Launcher {
     public static boolean isDevelopment() {
         // ave = Minecraft
         // ko = DedicatedServer
-        return !ClassUtils.isClassAvailable("ave") || !ClassUtils.isClassAvailable("ko");
+        return !ClassUtils.isClassAvailable("ave") && !ClassUtils.isClassAvailable("ko");
     }
 
     /**
