@@ -103,17 +103,15 @@ public class Launcher {
     }
 
     /**
-     * This check simply checks if two obfuscated classes don't exist.
-     * If they were to exist then we are simply not in the development
-     * environment because they would be deobfuscated in the development
-     * environment.
+     * This check simply checks if GradleStart exists
+     * GradleStart comes from ForgeGradle as it adds
+     * arguments and then launches the "bounce class"
+     * (Quilt).
      *
      * @return Whether we are in the development environment or not
      */
     public static boolean isDevelopment() {
-        // ave = Minecraft
-        // ko = DedicatedServer
-        return !(ClassUtils.isClassAvailable("ave") && ClassUtils.isClassAvailable("ko"));
+        return ClassUtils.isClassAvailable("GradleStart");
     }
 
     /**
