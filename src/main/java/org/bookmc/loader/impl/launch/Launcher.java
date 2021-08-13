@@ -163,7 +163,7 @@ public class Launcher {
 
         ClassNode node = new ClassNode();
         ClassReader reader = new ClassReader(clazz);
-        reader.accept(node, ClassReader.EXPAND_FRAMES);
+        reader.accept(node, flags);
         return node;
     }
 
