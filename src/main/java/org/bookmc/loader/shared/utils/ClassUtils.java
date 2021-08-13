@@ -14,7 +14,7 @@ public class ClassUtils {
         }
 
         try {
-            Launcher.getQuiltClassLoader().loadClass(name);
+            Launcher.findClass(name, false);
             availableMap.put(name, true);
             return true;
         } catch (ClassNotFoundException e) {
