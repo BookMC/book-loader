@@ -287,6 +287,7 @@ public class Launcher {
 
     /**
      * !! FOR DEVELOPMENT USE ONLY !!
+     *
      * Grabs the GradleStart property given to use at launch via ForgeGradle and gives
      * us an exact location of where the mappings are!
      *
