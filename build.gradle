@@ -67,13 +67,6 @@ blossom {
     replaceToken("%LOADER_VERSION%", project.version)
 }
 
-jar {
-    manifest.attributes "Agent-Class" : "org.spongepowered.tools.agent.MixinAgent"
-    manifest.attributes "Premain-Class" : "org.spongepowered.tools.agent.MixinAgent"
-    manifest.attributes "Can-Redefine-Classes" : true
-    manifest.attributes "Can-Retransform-Classes" : true
-}
-
 shadowJar {
     configurations = [project.configurations.include]
     archiveClassifier.set("")
