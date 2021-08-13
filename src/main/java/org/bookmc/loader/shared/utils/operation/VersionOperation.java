@@ -6,13 +6,13 @@ public enum VersionOperation {
     GREATER_THAN {
         @Override
         public boolean allow(Version required, Version other) {
-            return required.greaterThan(other);
+            return other.greaterThan(required);
         }
     },
     GREATER_THAN_OR_EQUAL_TO {
         @Override
         public boolean allow(Version required, Version other) {
-            return required.greaterThanOrEqualTo(other);
+            return other.greaterThanOrEqualTo(required);
         }
     },
     LESS_THAN {
