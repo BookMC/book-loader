@@ -3,9 +3,10 @@ package org.bookmc.loader.api.classloader;
 import org.bookmc.loader.api.launch.transform.QuiltRemapper;
 import org.bookmc.loader.api.launch.transform.QuiltTransformer;
 import org.bookmc.loader.impl.launch.Launcher;
-import org.bookmc.loader.impl.launch.transform.mixin.QuiltMixinProxy;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
 
@@ -37,15 +38,12 @@ public interface IQuiltClassLoader {
             }
 
             // The remappers most likely use asm so lets fix the chance of a ClassCircularityError
-            if (!name.startsWith("org.objectweb.asm.")) {
-                for (QuiltRemapper remapper : Launcher.getQuiltClassLoader().getRemappers()) {
-                    classBytes = remapper.transform(name, classBytes);
-                }
+            for (QuiltRemapper remapper : Launcher.getQuiltClassLoader().getRemappers()) {
+                classBytes = remapper.transform(name, classBytes);
             }
 
             if (transform) {
                 for (QuiltTransformer transformer : Launcher.getQuiltClassLoader().getTransformers()) {
-                    if (transformer instanceof QuiltMixinProxy) continue;
                     classBytes = transformer.transform(name, classBytes);
                 }
             }

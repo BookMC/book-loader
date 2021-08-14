@@ -38,11 +38,7 @@ public final class QuiltMixinProxy implements QuiltTransformer, ILegacyClassTran
 
     @Override
     public byte[] transform(String name, byte[] basicClass) {
-        if (isActive) {
-            return transformer.transformClass(name, name, basicClass);
-        }
-
-        return basicClass;
+        return isActive ? transformer.transformClass(name, name, basicClass) : basicClass;
     }
 
     @Override
@@ -57,11 +53,6 @@ public final class QuiltMixinProxy implements QuiltTransformer, ILegacyClassTran
 
     @Override
     public byte[] transformClassBytes(String name, String transformedName, byte[] basicClass) {
-        if (isActive) {
-            return transformer.transformClass(name, transformedName, basicClass);
-        }
-
-        return basicClass;
+        return isActive ? transformer.transformClass(name, transformedName, basicClass) : basicClass;
     }
-
 }
