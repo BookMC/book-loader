@@ -303,12 +303,17 @@ public class Launcher {
                 }
             } else {
                 File directory = new File(getGameProvider().getGameDirectory(), ".book");
-                directory.mkdir();
-                try {
-                    MappingUtils.downloadSearge(getGameProvider().getLaunchedVersion(), directory);
-                } catch (IOException e) {
-                    e.printStackTrace();
+                File location = new File(directory, "searge-mappings.bookmc.srg");
+                if (!location.exists()) {
+                    directory.mkdir();
+                    try {
+                        MappingUtils.downloadSearge(getGameProvider().getLaunchedVersion(), directory);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
+
+                mappings = location;
             }
         }
 
