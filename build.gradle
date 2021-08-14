@@ -17,12 +17,15 @@ ext {
 group "org.bookmc"
 // We add the suffix for (our) non-lts support.
 // Java 8 support will be removed in the future however.
-version "0.8.11${local ? "-local" : branch == "main" ? branch : ""}${JavaVersion.current() != JavaVersion.VERSION_1_8 ? "+jdk.$jdk" : ""}"
+version "0.8.12${local ? "-local" : ""}${JavaVersion.current() != JavaVersion.VERSION_1_8 ? "+jdk.$jdk" : ""}${branch == "main" ? "" : "+$branch"}"
 
 repositories {
     mavenCentral()
     maven {
         url "https://repo.spongepowered.org/repository/maven-public/"
+    }
+    maven {
+        url "https://maven.bookmc.org"
     }
     maven {
         url "https://jitpack.io"
@@ -46,6 +49,7 @@ dependencies {
 
     // Shaded libraries
     include "org.spongepowered:mixin:0.8.3-SNAPSHOT"
+    include "org.bookmc:install:0.1.0"
 
     // Minecraft (1.8.9) bundles an earlier version of Guava
     // so to main compatibility we must shade and relocate it

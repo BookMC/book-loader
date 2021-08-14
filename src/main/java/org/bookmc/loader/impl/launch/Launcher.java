@@ -1,5 +1,6 @@
 package org.bookmc.loader.impl.launch;
 
+import org.bookmc.api.install.utils.MappingUtils;
 import org.bookmc.loader.api.classloader.IQuiltClassLoader;
 import org.bookmc.loader.api.vessel.ModVessel;
 import org.bookmc.loader.api.vessel.environment.Environment;
@@ -11,6 +12,7 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.ClassNode;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -22,6 +24,7 @@ public class Launcher {
     private static File modsFolder;
     private static File configDir;
     private static GameProvider provider;
+    private static File mappings;
 
     public static File getConfigDirectory() {
         if (configDir == null) {
@@ -152,7 +155,7 @@ public class Launcher {
      *
      * @param name      The name of the class to find
      * @param transform Whether the classnode should be transformed
-     * @param flags The flags to provide to the ClassReader
+     * @param flags     The flags to provide to the ClassReader
      * @return The resolved classnode as an ASM ClassNode
      */
     public static ClassNode getClassNode(String name, boolean transform, int flags) {
@@ -286,18 +289,33 @@ public class Launcher {
     }
 
     /**
-     * !! FOR DEVELOPMENT USE ONLY !!
-     *
-     * Grabs the GradleStart property given to use at launch via ForgeGradle and gives
-     * us an exact location of where the mappings are!
+     * Grabs the mappings provided to us either via the installer
+     * or by whoever downloads it before it is called
      *
      * @return A file instance of the Searge to MCP mappings.
      */
     public static File getMappings() {
-        String gradleStartProp = System.getProperty("net.minecraftforge.gradle.GradleStart.srg.srg-mcp");
-        if (gradleStartProp == null) {
-            return null;
+        if (mappings == null) {
+            if (Launcher.isDevelopment()) {
+                String gradleStartProp = System.getProperty("net.minecraftforge.gradle.GradleStart.srg.srg-mcp");
+                if (gradleStartProp != null) {
+                    mappings = new File(gradleStartProp);
+                }
+            } else {
+                File directory = new File(getGameProvider().getGameDirectory(), ".book");
+                directory.mkdir();
+                try {
+                    MappingUtils.downloadSearge(getGameProvider().getLaunchedVersion(), directory);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
-        return new File(gradleStartProp);
+
+        return mappings;
+    }
+
+    public static void setMappings(File mappings) {
+        Launcher.mappings = mappings;
     }
 }
