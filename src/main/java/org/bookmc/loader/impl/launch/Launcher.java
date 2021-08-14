@@ -291,7 +291,7 @@ public class Launcher {
      * Grabs the GradleStart property given to use at launch via ForgeGradle and gives
      * us an exact location of where the mappings are!
      *
-     * @return A file instance of the Notch to MCP mappings.
+     * @return A file instance of the Searge to MCP mappings.
      */
     public static File getMappings() {
         String gradleStartProp = System.getProperty("net.minecraftforge.gradle.GradleStart.srg.srg-mcp");

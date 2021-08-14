@@ -25,6 +25,7 @@ public class QuiltClassLoader extends URLClassLoader implements IQuiltClassLoade
         addClassLoaderExclusion("com.sun.");
 
         addClassLoaderExclusion("jdk.internal.");
+        addClassLoaderExclusion("org.spongepowered.");
 
         addClassLoaderExclusion("org.bookmc.loader.");
         addClassLoaderExclusion("org.apache.logging.");

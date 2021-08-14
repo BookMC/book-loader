@@ -61,7 +61,7 @@ public class QuiltBootstrap {
 
         if (!Launcher.isDevelopment()) {
             if (mixinEnvironment.getObfuscationContext() == null) {
-                mixinEnvironment.setObfuscationContext("notch"); // Switch's to notch mappings
+                mixinEnvironment.setObfuscationContext("searge"); // Switch's to notch mappings
             }
         }
 
