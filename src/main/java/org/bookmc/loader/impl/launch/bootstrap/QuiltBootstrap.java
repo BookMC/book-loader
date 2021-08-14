@@ -7,7 +7,6 @@ import org.bookmc.loader.api.vessel.ModVessel;
 import org.bookmc.loader.api.vessel.environment.Environment;
 import org.bookmc.loader.impl.Loader;
 import org.bookmc.loader.impl.launch.Launcher;
-import org.bookmc.loader.impl.launch.transform.mixin.QuiltMixinProxyManager;
 import org.bookmc.loader.impl.resolve.BookModResolver;
 import org.bookmc.loader.impl.vessel.dummy.BookLoaderVessel;
 import org.bookmc.loader.impl.vessel.dummy.JavaModVessel;

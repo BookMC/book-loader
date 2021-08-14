@@ -11,7 +11,7 @@ package org.bookmc.loader.api.adapter;
 public interface BookLanguageAdapter {
     /**
      * Asks the language adapter to use the given {@link Class} instance and
-     * conjour an instance of that class out of it.
+     * conjure an instance of that class out of it.
      *
      * @param clazz The class to initialize
      * @return The initialized class

@@ -64,10 +64,6 @@ dependencies {
         exclude module: "guava"
         exclude module: "gson"
     }
-    include("org.bookmc:install:0.1.0") {
-        exclude module: "log4j-api"
-        exclude module: "log4j-core"
-    }
 
     // Minecraft (1.8.9) bundles an earlier version of Guava
     // so to main compatibility we must shade and relocate it
