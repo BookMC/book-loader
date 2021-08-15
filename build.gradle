@@ -17,7 +17,7 @@ ext {
 group "org.bookmc"
 // We add the suffix for (our) non-lts support.
 // Java 8 support will be removed in the future however.
-version "0.8.16${local ? "-local" : ""}${JavaVersion.current() != JavaVersion.VERSION_1_8 ? "+jdk.$jdk" : ""}"
+version "0.8.17${local ? "-local" : ""}${JavaVersion.current() != JavaVersion.VERSION_1_8 ? "+jdk.$jdk" : ""}"
 
 repositories {
     mavenCentral()
@@ -41,8 +41,7 @@ configurations {
 
 dependencies {
     // Libraries to be downloaded via the installer
-    api group: "org.apache.logging.log4j", name: "log4j-api", version: "2.0-beta9"
-    api group: "org.apache.logging.log4j", name: "log4j-core", version: "2.0-beta9"
+    include "org.apache.logging.log4j:log4j-api:2.14.1"
 
     // Directly in Minecraft
     compileOnly "com.google.code.gson:gson:2.2.4" // BookMC/minecraft#28
@@ -86,12 +85,14 @@ shadowJar {
     exclude "module-info.class", "LICENSE.*", "META-INF/*.RSA", "META-INF/*.SF", "META-INF/*.DSA"
 
     // Relocate guava
-    // Minecraft (1.8.9) bundles an earlier version of Guava
+    // Minecraft (1.8.9) bundles an earlier version of Guava & Log4j
     // so to main compatibility we must shade and relocate it
     relocate "com.google.common", "org.bookmc.loader.libs.guava.common"
     relocate "com.google.errorprone", "org.bookmc.loader.libs.guava.errorprone"
     relocate "com.google.j2objc", "org.bookmc.loader.libs.guava.j2objc"
     relocate "com.google.thirdparty", "org.bookmc.loader.libs.guava.thirdparty"
+
+    relocate "org.apache.logging", "org.bookmc.loader.libs.log4j"
 }
 
 tasks.build.dependsOn(tasks.shadowJar)
