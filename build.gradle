@@ -17,7 +17,7 @@ ext {
 group "org.bookmc"
 // We add the suffix for (our) non-lts support.
 // Java 8 support will be removed in the future however.
-version "0.8.13${local ? "-local" : ""}${JavaVersion.current() != JavaVersion.VERSION_1_8 ? "+jdk.$jdk" : ""}"
+version "0.8.14${local ? "-local" : ""}${JavaVersion.current() != JavaVersion.VERSION_1_8 ? "+jdk.$jdk" : ""}"
 
 repositories {
     mavenCentral()
@@ -51,6 +51,7 @@ dependencies {
     include "org.spongepowered:mixin:0.8.4-SNAPSHOT"
     include "org.bookmc:install:0.1.0"
     include "com.fasterxml.jackson.core:jackson-core:2.13.0-rc1"
+    include "com.fasterxml.jackson.core:jackson-databind:2.13.0-rc1"
 
     // Minecraft (1.8.9) bundles an earlier version of Guava
     // so to main compatibility we must shade and relocate it
