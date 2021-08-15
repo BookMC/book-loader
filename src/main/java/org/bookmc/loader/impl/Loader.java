@@ -39,7 +39,6 @@ public class Loader {
     private static final Map<String, ModVessel> modVessels = new HashMap<>();
     private static final List<ModCandidate> candidates = new ArrayList<>();
     private static final List<ModCandidate> rejectedCandidates = new ArrayList<>();
-    private static final Logger logger = LogManager.getLogger();
     private static final Map<String, ArrayList<String>> missingDependencies = new HashMap<>();
 
     private static final Object object = new Object();
@@ -254,15 +253,15 @@ public class Loader {
 
         for (URL url : vessel.getExternalDependencies()) {
             File file = DownloadUtils.downloadFile(url, new File(Launcher.getGameProvider().getGameDirectory(), "libraries/" + url.getPath()));
-            logger.info("Downloaded an external dependency (" + file.getName() + ") from " + vessel.getName() + ".");
+            LOGGER.info("Downloaded an external dependency (" + file.getName() + ") from " + vessel.getName() + ".");
 
             if (ZipUtils.isZipFile(file)) {
                 Loader.registerCandidate(new ZipModCandidate(file));
                 reload = true;
             } else {
-                logger.error("The external library (" + file.getName() + ") is not a jar/zip! Ignoring and deleteing...");
+                LOGGER.error("The external library (" + file.getName() + ") is not a jar/zip! Ignoring and deleteing...");
                 if (!file.delete()) {
-                    logger.fatal("Failed to delete external library!");
+                    LOGGER.fatal("Failed to delete external library!");
                 }
             }
         }
@@ -297,12 +296,12 @@ public class Loader {
             ModVessel suggestionVessel = Loader.getModVesselsMap().get(dependency.getId());
 
             if (suggestionVessel == null) {
-                logger.info("The mod " + vessel.getName() + " suggests that you should install " + dependency.getId() + ".");
+                LOGGER.info("The mod " + vessel.getName() + " suggests that you should install " + dependency.getId() + ".");
                 continue;
             }
 
             if (!dependency.getVersion().equals("*") && !suggestionVessel.getVersion().equals(vessel.getVersion())) {
-                logger.info("The dependency " + dependency.getId() + " was located! However " + vessel.getName() + " wants " + dependency.getVersion());
+                LOGGER.info("The dependency " + dependency.getId() + " was located! However " + vessel.getName() + " wants " + dependency.getVersion());
                 continue;
             }
 
@@ -334,7 +333,7 @@ public class Loader {
             loaded.add(vessel);
             try {
                 if (entryClass != null) {
-                    logger.debug("Loading " + vessel.getName() + " from " + entrypoint.getOwner());
+                    LOGGER.debug("Loading " + vessel.getName() + " from " + entrypoint.getOwner());
 
                     Class<?> adapter = classLoader.loadClass(vessel.getLanguageAdapter());
 
