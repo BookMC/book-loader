@@ -1,44 +1,19 @@
 package org.bookmc.loader.impl.launch.transform.mixin;
 
-import org.apache.logging.log4j.LogManager;
 import org.bookmc.loader.api.launch.transform.QuiltTransformer;
-import org.spongepowered.asm.mixin.transformer.QuiltMixinTransformerProxy;
 import org.spongepowered.asm.service.ILegacyClassTransformer;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public final class QuiltMixinProxy implements QuiltTransformer, ILegacyClassTransformer {
+    private final QuiltMixinProxyManager manager;
+    private boolean active = true;
 
-    /**
-     * All existing proxies
-     */
-    private static final List<QuiltMixinProxy> proxies = new ArrayList<>();
-
-    /**
-     * Actual mixin transformer instance
-     */
-    private static final QuiltMixinTransformerProxy transformer = new QuiltMixinTransformerProxy();
-
-    /**
-     * True if this is the active proxy, newer proxies disable their older
-     * siblings
-     */
-    private boolean isActive = true;
-
-    public QuiltMixinProxy() {
-        for (QuiltMixinProxy hook : proxies) {
-            hook.isActive = false;
-        }
-
-        proxies.add(this);
-        LogManager.getLogger("mixin")
-            .debug("Adding new mixin transformer proxy #{}", QuiltMixinProxy.proxies.size());
+    public QuiltMixinProxy(QuiltMixinProxyManager manager) {
+        this.manager = manager;
     }
 
     @Override
     public byte[] transform(String name, byte[] basicClass) {
-        return isActive ? transformer.transformClass(name, name, basicClass) : basicClass;
+        return active ? manager.getTransformer().transformClass(name, name, basicClass) : basicClass;
     }
 
     @Override
@@ -53,6 +28,10 @@ public final class QuiltMixinProxy implements QuiltTransformer, ILegacyClassTran
 
     @Override
     public byte[] transformClassBytes(String name, String transformedName, byte[] basicClass) {
-        return isActive ? transformer.transformClass(name, transformedName, basicClass) : basicClass;
+        return active ? manager.getTransformer().transformClass(name, transformedName, basicClass) : basicClass;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 }

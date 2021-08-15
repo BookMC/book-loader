@@ -7,6 +7,7 @@ import org.bookmc.loader.api.vessel.environment.Environment;
 import org.bookmc.loader.impl.Loader;
 import org.bookmc.loader.impl.launch.provider.GameProvider;
 import org.bookmc.loader.impl.launch.transform.QuiltClassLoader;
+import org.bookmc.loader.impl.launch.transform.mixin.QuiltMixinProxyManager;
 import org.bookmc.loader.shared.utils.ClassUtils;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.ClassNode;
@@ -25,6 +26,7 @@ public class Launcher {
     private static File configDir;
     private static GameProvider provider;
     private static File mappings;
+    private static QuiltMixinProxyManager proxyManager;
 
     public static File getConfigDirectory() {
         if (configDir == null) {
@@ -322,5 +324,13 @@ public class Launcher {
 
     public static void setMappings(File mappings) {
         Launcher.mappings = mappings;
+    }
+
+    public static QuiltMixinProxyManager getProxyManager() {
+        if (proxyManager == null) {
+            proxyManager = new QuiltMixinProxyManager();
+        }
+
+        return proxyManager;
     }
 }

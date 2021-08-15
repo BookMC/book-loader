@@ -81,7 +81,7 @@ public class MixinServiceQuilt implements IMixinService, IClassProvider, IClassB
 
     @Override
     public void beginPhase() {
-        Launcher.getQuiltClassLoader().registerTransformer(new QuiltMixinProxy());
+        Launcher.getProxyManager().createProxy();
     }
 
     @Override
@@ -185,6 +185,6 @@ public class MixinServiceQuilt implements IMixinService, IClassProvider, IClassB
 
     @Override
     public MixinEnvironment.CompatibilityLevel getMaxCompatibilityLevel() {
-        return MixinEnvironment.CompatibilityLevel.JAVA_11;
+        return MixinEnvironment.CompatibilityLevel.JAVA_18;
     }
 }
