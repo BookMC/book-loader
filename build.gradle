@@ -10,14 +10,13 @@ plugins {
 ext {
     def env = System.getenv()
     local = !env.GITHUB_ACTIONS
-    jdk = JavaVersion.current().getMajorVersion()
     branch = "git rev-parse --abbrev-ref HEAD".execute().text
 }
 
 group "org.bookmc"
 // We add the suffix for (our) non-lts support.
 // Java 8 support will be removed in the future however.
-version "0.8.18${local ? "-local" : ""}${JavaVersion.current() != JavaVersion.VERSION_1_8 ? "+jdk.$jdk" : ""}"
+version "0.8.19${local ? "-local" : ""}"
 
 repositories {
     mavenCentral()
@@ -41,14 +40,17 @@ configurations {
 
 dependencies {
     // Libraries to be downloaded via the installer
-    api "org.apache.logging.log4j:log4j-api:2.0-beta9"
-    api "org.apache.logging.log4j:log4j-core:2.0-beta9"
+    compileOnly "org.apache.logging.log4j:log4j-api:2.0-beta9"
+    compileOnly "org.apache.logging.log4j:log4j-core:2.0-beta9"
 
     // Directly in Minecraft
     compileOnly "com.google.code.gson:gson:2.2.4" // BookMC/minecraft#28
 
     // Shaded libraries
-    include "org.spongepowered:mixin:0.8.4-SNAPSHOT"
+    include("org.spongepowered:mixin:0.8.4-SNAPSHOT") {
+        exclude module: "log4j-api"
+        exclude module: "log4j-core"
+    }
     include("org.bookmc:install:0.1.0") {
         exclude module: "log4j-api"
         exclude module: "log4j-core"
