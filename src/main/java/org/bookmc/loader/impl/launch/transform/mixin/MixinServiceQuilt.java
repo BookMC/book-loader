@@ -70,11 +70,6 @@ public class MixinServiceQuilt implements IMixinService, IClassProvider, IClassB
     }
 
     @Override
-    public void offer(IMixinInternal internal) {
-
-    }
-
-    @Override
     public void init() {
 
     }
@@ -185,6 +180,6 @@ public class MixinServiceQuilt implements IMixinService, IClassProvider, IClassB
 
     @Override
     public MixinEnvironment.CompatibilityLevel getMaxCompatibilityLevel() {
-        return MixinEnvironment.CompatibilityLevel.JAVA_18;
+        return MixinEnvironment.CompatibilityLevel.JAVA_16;
     }
 }
