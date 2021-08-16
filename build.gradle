@@ -27,6 +27,9 @@ repositories {
         url "https://maven.bookmc.org"
     }
     maven {
+        url "https://maven.fabricmc.net"
+    }
+    maven {
         url "https://jitpack.io"
     }
 }
@@ -47,9 +50,11 @@ dependencies {
     compileOnly "com.google.code.gson:gson:2.2.4" // BookMC/minecraft#28
 
     // Shaded libraries
-    include("org.spongepowered:mixin:0.8.4-SNAPSHOT") {
+    include("net.fabricmc:sponge-mixin:0.9.4+mixin.0.8.2") {
         exclude module: "log4j-api"
         exclude module: "log4j-core"
+        exclude module: "guava"
+        exclude module: "gson"
     }
     include("org.bookmc:install:0.1.0") {
         exclude module: "log4j-api"
