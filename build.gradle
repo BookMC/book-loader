@@ -4,6 +4,7 @@ plugins {
     id "java-library"
     id "maven-publish"
     id "net.kyori.blossom" version "1.2.0"
+    id "org.bookmc.buildtools" version "0.3.3+build.15"
     id "com.github.johnrengelman.shadow" version "7.0.0"
 }
 
@@ -13,10 +14,16 @@ ext {
     branch = "git rev-parse --abbrev-ref HEAD".execute().text
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(16)
+    }
+}
+
 group "org.bookmc"
 // We add the suffix for (our) non-lts support.
 // Java 8 support will be removed in the future however.
-version "0.8.20${local ? "-local" : ""}"
+version "0.8.21${local ? "-local" : ""}"
 
 repositories {
     mavenCentral()

@@ -1,11 +1,16 @@
 package org.bookmc.loader.impl.launch;
 
+import com.google.common.collect.Lists;
 import org.bookmc.loader.impl.launch.bootstrap.QuiltBootstrap;
 import org.bookmc.loader.impl.launch.provider.ArgumentHandler;
 import org.bookmc.loader.impl.launch.provider.DefaultGameProvider;
+import org.bookmc.loader.impl.launch.provider.GameProvider;
 import org.bookmc.loader.impl.launch.transform.QuiltClassLoader;
 
 import java.lang.reflect.Method;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ServiceLoader;
 
 public class Quilt {
     static QuiltClassLoader classLoader;
@@ -19,7 +24,15 @@ public class Quilt {
     }
 
     private void launch(String[] args, ArgumentHandler handler) throws Throwable {
-        Launcher.setGameProvider(new DefaultGameProvider(handler));
+        List<GameProvider> providers = getGameProviders();
+        for (GameProvider provider : providers) {
+            if (providers.size() > 1 && provider instanceof DefaultGameProvider) {
+                continue;
+            }
+            provider.load(handler);
+            Launcher.setGameProvider(provider);
+            break;
+        }
         String target = handler.get("target")
             .orElse(Launcher.getGameProvider().getLaunchTarget());
 
@@ -28,5 +41,10 @@ public class Quilt {
         Class<?> clazz = Class.forName(target, false, classLoader);
         Method mainMethod = clazz.getDeclaredMethod("main", String[].class);
         mainMethod.invoke(null, (Object) args);
+    }
+
+    private List<GameProvider> getGameProviders() {
+        ServiceLoader<GameProvider> providers = ServiceLoader.load(GameProvider.class, classLoader);
+        return Lists.newArrayList(providers);
     }
 }

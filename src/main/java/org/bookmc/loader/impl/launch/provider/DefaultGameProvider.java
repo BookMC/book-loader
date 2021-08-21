@@ -3,7 +3,7 @@ package org.bookmc.loader.impl.launch.provider;
 import java.io.File;
 
 public class DefaultGameProvider implements GameProvider {
-    private final ArgumentHandler handler;
+    private ArgumentHandler handler;
 
     private String version;
 
@@ -11,7 +11,8 @@ public class DefaultGameProvider implements GameProvider {
     private File gameDirectory;
 
 
-    public DefaultGameProvider(ArgumentHandler handler) {
+    @Override
+    public void load(ArgumentHandler handler) {
         this.handler = handler;
     }
 
