@@ -57,4 +57,18 @@ public interface IQuiltClassLoader {
     URLClassLoader getClassLoader();
 
     void addURL(URL url);
+
+    /**
+     * The method checks with the implementation
+     * whether by the time we attempt to get the class if it'll be available. If it isn't then
+     * it should simply return false and we continue. This is to prevent constant try-catched
+     * exceptions which can impact on performance when constant.
+     *
+     * !! NOTE !!
+     *
+     * THIS SHOULD NEVER BE CACHED
+     * @param name The name of the class to check whether is currently existence
+     * @return Whether we'll be able to grab the class.
+     */
+    boolean isClassAvailable(String name);
 }

@@ -93,6 +93,11 @@ public class ModClassLoader extends URLClassLoader implements IQuiltClassLoader 
         super.addURL(url);
     }
 
+    @Override
+    public boolean isClassAvailable(String name) {
+        return getResourceAsStream(name.replace(".", "/").concat(".class")) != null;
+    }
+
     private void addClassLoaderExclusion(String toExclude) {
         exclusions.add(toExclude);
     }

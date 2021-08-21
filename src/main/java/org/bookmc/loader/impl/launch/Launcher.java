@@ -1,6 +1,5 @@
 package org.bookmc.loader.impl.launch;
 
-import org.bookmc.api.install.utils.MappingUtils;
 import org.bookmc.loader.api.classloader.IQuiltClassLoader;
 import org.bookmc.loader.api.vessel.ModVessel;
 import org.bookmc.loader.api.vessel.environment.Environment;
@@ -8,12 +7,10 @@ import org.bookmc.loader.impl.Loader;
 import org.bookmc.loader.impl.launch.provider.GameProvider;
 import org.bookmc.loader.impl.launch.transform.QuiltClassLoader;
 import org.bookmc.loader.impl.launch.transform.mixin.QuiltMixinProxyManager;
-import org.bookmc.loader.shared.utils.ClassUtils;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.ClassNode;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -25,7 +22,6 @@ public class Launcher {
     private static File modsFolder;
     private static File configDir;
     private static GameProvider provider;
-    private static File mappings;
     private static QuiltMixinProxyManager proxyManager;
 
     public static File getConfigDirectory() {
@@ -95,7 +91,7 @@ public class Launcher {
                 .getClassLoader()
                 .getResourceAsStream(name);
             if (vesselResolved != null) {
-                // If we have resolved the resoucrce return it back.
+                // If we have resolved the resource return it back.
                 return vesselResolved;
             }
         }
@@ -116,7 +112,7 @@ public class Launcher {
      * @return Whether we are in the development environment or not
      */
     public static boolean isDevelopment() {
-        return ClassUtils.isClassAvailable("GradleStart");
+        return System.getenv("PG_MAIN_CLASS") != null;
     }
 
     /**
@@ -142,23 +138,23 @@ public class Launcher {
                 // purposely disallow usage of this.
                 byte[] vesselResolved = loader.getClassBytes(name, transform);
                 if (vesselResolved != null) {
-                    // If we have resolved the resoucrce return it back.
+                    // If we have resolved the resource return it back.
                     classBytes = vesselResolved;
                     break;
                 }
             }
         }
 
-        return classBytes;// Mission imppossible
+        return classBytes;// Mission impossible
     }
 
     /**
      * Resolves a ClassNode
      *
      * @param name      The name of the class to find
-     * @param transform Whether the classnode should be transformed
+     * @param transform Whether the ClassNode should be transformed
      * @param flags     The flags to provide to the ClassReader
-     * @return The resolved classnode as an ASM ClassNode
+     * @return The resolved ClassNode as an ASM ClassNode
      */
     public static ClassNode getClassNode(String name, boolean transform, int flags) {
         byte[] clazz = getClassBytes(name, transform);
@@ -177,8 +173,8 @@ public class Launcher {
      * Resolves a ClassNode
      *
      * @param name      The name of the class to find
-     * @param transform Whether the classnode should be transformed
-     * @return The resolved classnode as an ASM ClassNode
+     * @param transform Whether the ClassNode should be transformed
+     * @return The resolved ClassNode as an ASM ClassNode
      */
     public static ClassNode getClassNode(String name, boolean transform) {
         return getClassNode(name, transform, ClassReader.EXPAND_FRAMES);
@@ -235,11 +231,9 @@ public class Launcher {
      */
     public static Class<?> loadClass(String name, boolean tryMainClassLoader) throws ClassNotFoundException {
         if (tryMainClassLoader) {
-            try {
-                QuiltClassLoader mainClassLoader = getQuiltClassLoader();
+            QuiltClassLoader mainClassLoader = getQuiltClassLoader();
+            if (mainClassLoader.isClassAvailable(name)) {
                 return mainClassLoader.loadClass(name);
-            } catch (Throwable ignored) {
-                // Failed to get it from the parent, let's try another route.
             }
         }
 
@@ -251,12 +245,9 @@ public class Launcher {
                 // Avoid a StackOverflow
                 if (classLoader instanceof QuiltClassLoader) continue;
 
-                // Attempt to load the class
-                // If we can't find the class
-                // we should throw an excep-
-                // tion and continue to sea-
-                // rch for the class.
-                return classLoader.loadClass(name);
+                if (vessel.getAbstractedClassLoader().isClassAvailable(name)) {
+                    return classLoader.loadClass(name);
+                }
             } catch (Throwable ignored) {
                 // Failed to find the class from this classloader.
                 // Deciding to continue and check the others...
@@ -291,46 +282,14 @@ public class Launcher {
     }
 
     /**
-     * Grabs the mappings provided to us either via the installer
-     * or by whoever downloads it before it is called
+     * !! FOR DEVELOPMENT USE ONLY !!
+     * <p>
+     * Grabs the GradleStart property given to use at launch via ForgeGradle and gives
+     * us an exact location of where the mappings are!
      *
-     * @return A file instance of the Searge to MCP mappings.
+     * @return A file instance of the Notch to MCP mappings.
      */
     public static File getMappings() {
-        if (mappings == null) {
-            if (Launcher.isDevelopment()) {
-                String gradleStartProp = System.getProperty("net.minecraftforge.gradle.GradleStart.srg.srg-mcp");
-                if (gradleStartProp != null) {
-                    mappings = new File(gradleStartProp);
-                }
-            } else {
-                File directory = new File(getGameProvider().getGameDirectory(), ".book");
-                File location = new File(directory, "searge-mappings.bookmc.srg");
-                if (!location.exists()) {
-                    directory.mkdir();
-                    try {
-                        MappingUtils.downloadSearge(getGameProvider().getLaunchedVersion(), directory);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                mappings = location;
-            }
-        }
-
-        return mappings;
-    }
-
-    public static void setMappings(File mappings) {
-        Launcher.mappings = mappings;
-    }
-
-    public static QuiltMixinProxyManager getProxyManager() {
-        if (proxyManager == null) {
-            proxyManager = new QuiltMixinProxyManager();
-        }
-
-        return proxyManager;
+        throw new UnsupportedOperationException("Not implemented");
     }
 }

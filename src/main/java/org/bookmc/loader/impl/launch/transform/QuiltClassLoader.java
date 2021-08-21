@@ -98,6 +98,11 @@ public class QuiltClassLoader extends URLClassLoader implements IQuiltClassLoade
     }
 
     @Override
+    public boolean isClassAvailable(String name) {
+        return getResourceAsStream(name.replace(".", "/").concat(".class")) != null;
+    }
+
+    @Override
     public boolean isClassLoaded(String name) {
         synchronized (getClassLoadingLock(name)) {
             return findLoadedClass(name) != null;
