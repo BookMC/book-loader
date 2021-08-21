@@ -292,4 +292,8 @@ public class Launcher {
     public static File getMappings() {
         throw new UnsupportedOperationException("Not implemented");
     }
+
+    public static QuiltMixinProxyManager getProxyManager() {
+        return proxyManager;
+    }
 }
