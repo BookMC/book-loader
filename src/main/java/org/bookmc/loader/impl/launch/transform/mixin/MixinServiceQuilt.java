@@ -194,7 +194,7 @@ public class MixinServiceQuilt implements IMixinService, IClassProvider, IClassB
     @Override
     public ILogger getLogger(String name) {
         // Ignore the name given and get a good one
-        name = StackWalker.getInstance().getCallerClass().getName();
+        name = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).getCallerClass().getName();
         return new LoggerAdapterLog4j2(name);
     }
 }
