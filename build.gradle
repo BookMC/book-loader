@@ -12,7 +12,7 @@ ext {
     def env = System.getenv()
     buildNumber = env.BUILD_NUMBER
     local = buildNumber == null
-    branch = "git rev-parse --abbrev-ref HEAD".execute().text
+    branch = "git rev-parse --abbrev-ref HEAD".execute().text.trim()
 }
 
 java {
@@ -24,7 +24,7 @@ java {
 group "org.bookmc"
 // We add the suffix for (our) non-lts support.
 // Java 8 support will be removed in the future however.
-version "0.8.23+${buildNumber ? "build.$buildNumber" : "local"}"
+version "0.8.24${branch != "main" ? "-$branch" : ""}+${buildNumber ? "build.$buildNumber" : "local"}"
 
 repositories {
     mavenCentral()
