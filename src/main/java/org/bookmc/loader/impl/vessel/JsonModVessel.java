@@ -198,7 +198,7 @@ public class JsonModVessel implements ModVessel {
 
     @Override
     public String getLanguageAdapter() {
-        return object.has("adapter") ? object.get("adapater").getAsString() : JavaLanguageAdapter.class.getName();
+        return object.has("adapter") ? object.get("adapter").getAsString() : JavaLanguageAdapter.class.getName();
     }
 
     @Override

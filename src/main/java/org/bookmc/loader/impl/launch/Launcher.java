@@ -294,6 +294,18 @@ public class Launcher {
     }
 
     public static QuiltMixinProxyManager getProxyManager() {
+        if (proxyManager == null) {
+            setProxyManager(new QuiltMixinProxyManager());
+        }
+
         return proxyManager;
+    }
+
+    public static void setProxyManager(QuiltMixinProxyManager proxyManager) {
+        if (Launcher.proxyManager == null) {
+            Launcher.proxyManager = proxyManager;
+        } else {
+            throw new UnsupportedOperationException();
+        }
     }
 }
