@@ -5,8 +5,10 @@ import org.bookmc.loader.impl.launch.Quilt;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.launch.platform.container.ContainerHandleURI;
 import org.spongepowered.asm.launch.platform.container.IContainerHandle;
+import org.spongepowered.asm.logging.ILogger;
 import org.spongepowered.asm.mixin.MixinEnvironment;
 import org.spongepowered.asm.service.*;
+import org.spongepowered.asm.service.mojang.LoggerAdapterLog4j2;
 import org.spongepowered.asm.util.ReEntranceLock;
 
 import java.io.InputStream;
@@ -67,6 +69,11 @@ public class MixinServiceQuilt implements IMixinService, IClassProvider, IClassB
     @Override
     public MixinEnvironment.Phase getInitialPhase() {
         return MixinEnvironment.Phase.PREINIT;
+    }
+
+    @Override
+    public void offer(IMixinInternal internal) {
+
     }
 
     @Override
@@ -175,11 +182,19 @@ public class MixinServiceQuilt implements IMixinService, IClassProvider, IClassB
 
     @Override
     public MixinEnvironment.CompatibilityLevel getMinCompatibilityLevel() {
-        return MixinEnvironment.CompatibilityLevel.JAVA_8;
+        // Goodbye Java 8 :)
+        return MixinEnvironment.CompatibilityLevel.JAVA_16;
     }
 
     @Override
     public MixinEnvironment.CompatibilityLevel getMaxCompatibilityLevel() {
-        return MixinEnvironment.CompatibilityLevel.JAVA_16;
+        return MixinEnvironment.CompatibilityLevel.JAVA_18;
+    }
+
+    @Override
+    public ILogger getLogger(String name) {
+        // Ignore the name given and get a good one
+        name = StackWalker.getInstance().getCallerClass().getName();
+        return new LoggerAdapterLog4j2(name);
     }
 }
