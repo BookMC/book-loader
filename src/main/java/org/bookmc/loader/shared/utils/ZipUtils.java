@@ -2,6 +2,7 @@ package org.bookmc.loader.shared.utils;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,6 +32,8 @@ public class ZipUtils {
                     return false;
                 }
             }
+        } catch (FileNotFoundException ignored) {
+
         } catch (IOException e) {
             e.printStackTrace();
             return false;
