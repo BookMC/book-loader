@@ -33,7 +33,8 @@ public class ZipUtils {
                 }
             }
         } catch (FileNotFoundException ignored) {
-
+            zipCache.put(file.getAbsolutePath(), false);
+            return false;
         } catch (IOException e) {
             e.printStackTrace();
             return false;

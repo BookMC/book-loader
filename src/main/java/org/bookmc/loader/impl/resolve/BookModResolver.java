@@ -7,13 +7,7 @@ import org.bookmc.loader.shared.Constants;
 
 import java.io.File;
 
-public class BookModResolver implements ModResolver {
-    private final File directory;
-
-    public BookModResolver(File directory) {
-        this.directory = directory;
-    }
-
+public record BookModResolver(File directory) implements ModResolver {
     @Override
     public void resolve() {
         File[] candidates = directory.listFiles();
