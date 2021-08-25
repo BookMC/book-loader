@@ -22,7 +22,7 @@ public class MixinServiceQuilt implements IMixinService, IClassProvider, IClassB
 
     @Override
     public ClassNode getClassNode(String name) {
-        return getClassNode(name, true);
+        return getClassNode(name, false);
     }
 
     @Override
