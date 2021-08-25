@@ -20,5 +20,19 @@ public class MixinServiceQuiltBootstrap implements IMixinServiceBootstrap {
             // Have a break, have a kitkat Mixin
             System.setProperty("mixin.env.disableRefMap", "true");
         }
+
+        String[] exclusions = new String[]{
+            "org.spongepowered.asm.service.",
+            "org.spongepowered.asm.launch.",
+            "org.spongepowered.asm.logging.",
+            "org.spongepowered.asm.util.",
+            "org.spongepowered.asm.lib.",
+            "org.objectweb.asm.",
+            "org.spongepowered.asm.mixin."
+        };
+
+        for (String exclusion : exclusions) {
+            Launcher.getQuiltClassLoader().addClassLoaderExclusion(exclusion);
+        }
     }
 }
