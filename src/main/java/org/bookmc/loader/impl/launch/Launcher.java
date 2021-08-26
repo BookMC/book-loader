@@ -149,6 +149,39 @@ public class Launcher {
     }
 
     /**
+     * This method uses all our available classloaders to search for class bytes via {@link IQuiltClassLoader}.
+     * We first use the parent {@link QuiltClassLoader} and search for the class. If it isn't available there
+     * when then move onto our mod vessels and we iterate through them to try find the resource
+     * through their classloaders. This also excludes Mixin proxies. Beware!
+     *
+     * @param name      The name of the class we want to locate
+     * @param transform Whether we want the transformed version or not of the class
+     * @return The bytes of the discovered class.
+     */
+    public static byte[] getClassBytesMixin(String name, boolean transform) {
+        IQuiltClassLoader classLoader = getQuiltClassLoader();
+        byte[] classBytes = classLoader.getClassBytes(name, transform);
+
+        if (classBytes == null) {
+            for (ModVessel vessel : Loader.getModVessels()) {
+                IQuiltClassLoader loader = vessel.getAbstractedClassLoader();
+                // Mod classloaders are currently unable to provide transformed classes
+                // therefore they should never in reality be returning transformed classes
+                // If we ask for a transformed class it will throw an exception so we must
+                // purposely disallow usage of this.
+                byte[] vesselResolved = loader.getClassBytesMixin(name, transform);
+                if (vesselResolved != null) {
+                    // If we have resolved the resource return it back.
+                    classBytes = vesselResolved;
+                    break;
+                }
+            }
+        }
+
+        return classBytes;// Mission impossible
+    }
+
+    /**
      * Resolves a ClassNode
      *
      * @param name      The name of the class to find
@@ -158,6 +191,27 @@ public class Launcher {
      */
     public static ClassNode getClassNode(String name, boolean transform, int flags) {
         byte[] clazz = getClassBytes(name, transform);
+
+        if (clazz == null) {
+            return null;
+        }
+
+        ClassNode node = new ClassNode();
+        ClassReader reader = new ClassReader(clazz);
+        reader.accept(node, flags);
+        return node;
+    }
+
+    /**
+     * Resolves a ClassNode but with Mixin proxy exclusions
+     *
+     * @param name      The name of the class to find
+     * @param transform Whether the ClassNode should be transformed
+     * @param flags     The flags to provide to the ClassReader
+     * @return The resolved ClassNode as an ASM ClassNode
+     */
+    public static ClassNode getClassNodeMixin(String name, boolean transform, int flags) {
+        byte[] clazz = getClassBytesMixin(name, transform);
 
         if (clazz == null) {
             return null;
