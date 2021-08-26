@@ -17,35 +17,32 @@ public interface IQuiltClassLoader {
     void putCachedClass(String name, byte[] bytes);
 
     default byte[] getClassBytes(String name, boolean transform) {
-        InputStream resource = getClassLoader().getResourceAsStream(name.replace(".", "/").concat(".class"));
-
-        if (resource == null) {
-            return null;
-        }
-
         byte[] classBytes = getCachedClass(name);
 
         if (classBytes == null) {
-            try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-                int read;
-                byte[] buffer = new byte[1024];
-                while ((read = resource.read(buffer, 0, buffer.length)) != -1) {
-                    baos.write(buffer, 0, read);
+            try {
+                try (InputStream stream = getClassLoader().getResourceAsStream(name.replace(".", "/").concat(".class"))) {
+                    if (stream != null) {
+                        classBytes = stream.readAllBytes();
+                        // Cached class data should always be clean...
+                        putCachedClass(name, classBytes);
+                    } else {
+                        // No point in giving transformers/remappers null bytes just return.
+                        return null;
+                    }
                 }
-                classBytes = baos.toByteArray();
-                putCachedClass(name, classBytes);
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
 
-            for (QuiltRemapper remapper : Launcher.getQuiltClassLoader().getRemappers()) {
-                classBytes = remapper.transform(name, classBytes);
-            }
+        for (QuiltRemapper remapper : Launcher.getQuiltClassLoader().getRemappers()) {
+            classBytes = remapper.transform(name, classBytes);
+        }
 
-            if (transform) {
-                for (QuiltTransformer transformer : Launcher.getQuiltClassLoader().getTransformers()) {
-                    classBytes = transformer.transform(name, classBytes);
-                }
+        if (transform) {
+            for (QuiltTransformer transformer : Launcher.getQuiltClassLoader().getTransformers()) {
+                classBytes = transformer.transform(name, classBytes);
             }
         }
 
