@@ -160,7 +160,7 @@ public class Launcher {
      */
     public static byte[] getClassBytesMixin(String name, boolean transform) {
         IQuiltClassLoader classLoader = getQuiltClassLoader();
-        byte[] classBytes = classLoader.getClassBytes(name, transform);
+        byte[] classBytes = classLoader.getClassBytesMixin(name, transform);
 
         if (classBytes == null) {
             for (ModVessel vessel : Loader.getModVessels()) {

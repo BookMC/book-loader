@@ -8,7 +8,6 @@ import org.bookmc.loader.impl.launch.provider.GameProvider;
 import org.bookmc.loader.impl.launch.transform.QuiltClassLoader;
 
 import java.lang.reflect.Method;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ServiceLoader;
 
