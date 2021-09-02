@@ -2,12 +2,12 @@ package org.bookmc.loader.impl;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bookmc.external.compat.CompatiblityLayer;
 import org.bookmc.loader.api.ModResolver;
 import org.bookmc.loader.api.adapter.BookLanguageAdapter;
 import org.bookmc.loader.api.candidate.ModCandidate;
 import org.bookmc.loader.api.classloader.IQuiltClassLoader;
 import org.bookmc.loader.api.classloader.ModClassLoader;
-import org.bookmc.external.compat.CompatiblityLayer;
 import org.bookmc.loader.api.exception.IllegalDependencyException;
 import org.bookmc.loader.api.launch.transform.QuiltRemapper;
 import org.bookmc.loader.api.launch.transform.QuiltTransformer;
@@ -137,26 +137,26 @@ public class Loader {
         }
 
         if (compatClass != null) {
-        Entrypoint[] entrypoints = vessel.getEntrypoints();
-        for (Entrypoint entrypoint : entrypoints) {
-            try {
-                Class<?> clazz = Class.forName(entrypoint.getOwner(), false, classLoader.getClassLoader());
+            Entrypoint[] entrypoints = vessel.getEntrypoints();
+            for (Entrypoint entrypoint : entrypoints) {
+                try {
+                    Class<?> clazz = Class.forName(entrypoint.getOwner(), false, classLoader.getClassLoader());
 
-                if (clazz.isAssignableFrom(compatClass)) {
-                    if (vessel.getDependsOn().length != 0) {
-                        throw new IllegalDependencyException(vessel);
+                    if (compatClass.isAssignableFrom(clazz)) {
+                        if (vessel.getDependsOn().length != 0) {
+                            throw new IllegalDependencyException(vessel);
+                        }
+
+                        loaded.add(vessel); // Trick BookModLoader#load to believe we have "loaded" our "mod".
+                        CompatiblityLayer layer = (CompatiblityLayer) clazz.getConstructor().newInstance();
+                        layer.init(classLoader);
                     }
+                } catch (ClassCastException ignored) {
 
-                    loaded.add(vessel); // Trick BookModLoader#load to believe we have "loaded" our "mod".
-                    CompatiblityLayer layer = (CompatiblityLayer) clazz.getConstructor().newInstance();
-                    layer.init(classLoader);
+                } catch (Throwable t) {
+                    t.printStackTrace();
                 }
-            } catch (ClassCastException ignored) {
-
-            } catch (Throwable t) {
-                t.printStackTrace();
             }
-        }
         }
     }
 
