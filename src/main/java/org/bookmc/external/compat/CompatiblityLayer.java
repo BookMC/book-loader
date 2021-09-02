@@ -1,4 +1,4 @@
-package org.bookmc.loader.api.compat;
+package org.bookmc.external.compat;
 
 import org.bookmc.loader.api.classloader.IQuiltClassLoader;
 

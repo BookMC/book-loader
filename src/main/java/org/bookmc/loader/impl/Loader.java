@@ -7,7 +7,7 @@ import org.bookmc.loader.api.adapter.BookLanguageAdapter;
 import org.bookmc.loader.api.candidate.ModCandidate;
 import org.bookmc.loader.api.classloader.IQuiltClassLoader;
 import org.bookmc.loader.api.classloader.ModClassLoader;
-import org.bookmc.loader.api.compat.CompatiblityLayer;
+import org.bookmc.external.compat.CompatiblityLayer;
 import org.bookmc.loader.api.exception.IllegalDependencyException;
 import org.bookmc.loader.api.launch.transform.QuiltRemapper;
 import org.bookmc.loader.api.launch.transform.QuiltTransformer;
@@ -65,7 +65,7 @@ public class Loader {
     }
 
     public static List<ModVessel> getModVessels() {
-        return Collections.unmodifiableList(new ArrayList<>(modVessels.values()));
+        return List.copyOf(modVessels.values());
     }
 
     public static Map<String, ModVessel> getModVesselsMap() {
@@ -128,11 +128,18 @@ public class Loader {
     }
 
     public static void loadCompatibilityLayer(ModVessel vessel, IQuiltClassLoader classLoader) {
+        Class<?> compatClass = null;
+        try {
+            compatClass = classLoader.getClassLoader()
+                .loadClass(CompatiblityLayer.class.getName());
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        if (compatClass != null) {
         Entrypoint[] entrypoints = vessel.getEntrypoints();
         for (Entrypoint entrypoint : entrypoints) {
             try {
-                Class<?> compatClass = classLoader.getClassLoader()
-                    .loadClass(CompatiblityLayer.class.getName());
                 Class<?> clazz = Class.forName(entrypoint.getOwner(), false, classLoader.getClassLoader());
 
                 if (clazz.isAssignableFrom(compatClass)) {
@@ -141,14 +148,15 @@ public class Loader {
                     }
 
                     loaded.add(vessel); // Trick BookModLoader#load to believe we have "loaded" our "mod".
-                    CompatiblityLayer layer = (CompatiblityLayer) clazz.newInstance();
+                    CompatiblityLayer layer = (CompatiblityLayer) clazz.getConstructor().newInstance();
                     layer.init(classLoader);
                 }
-            } catch (ClassCastException e) {
-                throw new IllegalStateException("The entrypoint (" + entrypoint + ") does not implement CompatibilityLayer");
+            } catch (ClassCastException ignored) {
+
             } catch (Throwable t) {
                 t.printStackTrace();
             }
+        }
         }
     }
 
@@ -174,8 +182,8 @@ public class Loader {
         Class<?> clazz = Class.forName(transformer, false, classLoader);
 
         try {
-            Launcher.getQuiltClassLoader().registerTransformer((QuiltTransformer) clazz.newInstance());
-        } catch (ClassCastException e) {
+            Launcher.getQuiltClassLoader().registerTransformer((QuiltTransformer) clazz.getConstructor().newInstance());
+        } catch (ClassCastException | NoSuchMethodException | InvocationTargetException e) {
             LOGGER.error("{} defined a transformer ({}) but does not implement QuiltTransformer", vessel.getId(), transformer, e);
         }
     }
@@ -186,8 +194,8 @@ public class Loader {
 
         Class<?> clazz = Class.forName(remapper, false, classLoader);
         try {
-            Launcher.getQuiltClassLoader().registerRemapper((QuiltRemapper) clazz.newInstance());
-        } catch (ClassCastException e) {
+            Launcher.getQuiltClassLoader().registerRemapper((QuiltRemapper) clazz.getConstructor().newInstance());
+        } catch (ClassCastException | NoSuchMethodException | InvocationTargetException e) {
             LOGGER.error("{} defined a remapper ({}) but does not implement QuiltReampper", vessel.getId(), remapper, e);
         }
     }
@@ -340,8 +348,7 @@ public class Loader {
                     // We do this to double check it actually implements what BookLanguageAdapter
                     adapter.asSubclass(classLoader.loadClass(BookLanguageAdapter.class.getName()));
 
-                    BookLanguageAdapter adapterInstance = (BookLanguageAdapter) adapter.newInstance();
-
+                    BookLanguageAdapter adapterInstance = (BookLanguageAdapter) adapter.getConstructor().newInstance();
 
                     entryClass.getDeclaredMethod(entrypoint.getMethod())
                         .invoke(adapterInstance.createInstance(entryClass));
