@@ -148,8 +148,9 @@ public class Loader {
                         }
 
                         loaded.add(vessel); // Trick BookModLoader#load to believe we have "loaded" our "mod".
-                        CompatiblityLayer layer = (CompatiblityLayer) clazz.getConstructor().newInstance();
-                        layer.init(classLoader);
+                        Object layer = clazz.getConstructor().newInstance();
+                        clazz.getDeclaredMethod("init", IQuiltClassLoader.class)
+                            .invoke(layer, classLoader);
                     }
                 } catch (ClassCastException ignored) {
 
