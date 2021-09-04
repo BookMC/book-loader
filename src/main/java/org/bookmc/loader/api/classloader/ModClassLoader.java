@@ -100,11 +100,11 @@ public class ModClassLoader extends URLClassLoader implements IQuiltClassLoader 
         return getResourceAsStream(name.replace(".", "/").concat(".class")) != null;
     }
 
-    private void addClassLoaderExclusion(String toExclude) {
+    public void addClassLoaderExclusion(String toExclude) {
         exclusions.add(toExclude);
     }
 
-    private void addClassLoaderExclusionExclusion(String toExclude) {
+    public void addClassLoaderExclusionExclusion(String toExclude) {
         exclusionExclusions.add(toExclude);
     }
 }
