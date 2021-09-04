@@ -32,8 +32,7 @@ public class Quilt {
             Launcher.setGameProvider(provider);
             break;
         }
-        String target = handler.get("target")
-            .orElse(Launcher.getGameProvider().getLaunchTarget());
+        String target = Launcher.getGameProvider().getLaunchTarget();
 
         QuiltBootstrap.plug();
 

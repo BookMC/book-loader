@@ -12,6 +12,8 @@ import java.util.Map;
 public class ModClassLoader extends URLClassLoader implements IQuiltClassLoader {
     private final Map<String, byte[]> classCache = new HashMap<>();
     private final List<String> exclusions = new ArrayList<>();
+    // Bit confusing but excludes exclusions (net.minecraft. is a big wildcard and some people still want that on their modclassloader)
+    private final List<String> exclusionExclusions = new ArrayList<>();
 
     public ModClassLoader(URL[] urls) {
         super(urls, Launcher.getQuiltClassLoader());
@@ -45,7 +47,7 @@ public class ModClassLoader extends URLClassLoader implements IQuiltClassLoader 
         }
 
         for (String exclusion : exclusions) {
-            if (name.startsWith(exclusion)) {
+            if (name.startsWith(exclusion) && !exclusionExclusions.contains(exclusion)) {
                 return getParent().loadClass(name);
             }
         }
@@ -100,5 +102,9 @@ public class ModClassLoader extends URLClassLoader implements IQuiltClassLoader 
 
     private void addClassLoaderExclusion(String toExclude) {
         exclusions.add(toExclude);
+    }
+
+    private void addClassLoaderExclusionExclusion(String toExclude) {
+        exclusionExclusions.add(toExclude);
     }
 }
