@@ -1,7 +1,7 @@
 package org.bookmc.loader.api.classloader;
 
-import org.bookmc.loader.api.launch.transform.QuiltRemapper;
-import org.bookmc.loader.api.launch.transform.QuiltTransformer;
+import org.bookmc.external.transformer.QuiltRemapper;
+import org.bookmc.external.transformer.QuiltTransformer;
 import org.bookmc.loader.impl.launch.Launcher;
 import org.bookmc.loader.impl.launch.transform.mixin.QuiltMixinProxy;
 
