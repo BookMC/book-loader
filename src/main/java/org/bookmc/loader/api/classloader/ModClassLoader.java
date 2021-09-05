@@ -2,8 +2,10 @@ package org.bookmc.loader.api.classloader;
 
 import org.bookmc.loader.impl.launch.Launcher;
 
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,11 +32,7 @@ public class ModClassLoader extends URLClassLoader implements IQuiltClassLoader 
                 return c;
             }
 
-            try {
-                return findClass(name);
-            } catch (ClassNotFoundException ignored) {
-                throw new ClassNotFoundException(name);
-            }
+            return findClass(name);
         }
     }
 
@@ -63,13 +61,19 @@ public class ModClassLoader extends URLClassLoader implements IQuiltClassLoader 
             }
         }
 
-        byte[] bytes = getClassBytes(name, true);
+        try {
+            CodeSource source = getCodeSource(name);
+            byte[] bytes = getClassBytes(name, true);
 
-        if (bytes == null) {
-            throw new ClassNotFoundException(name);
+            if (bytes == null) {
+                throw new ClassNotFoundException(name);
+            }
+
+
+            return defineClass(name, bytes, 0, bytes.length, source);
+        } catch (IOException e) {
+            throw new ClassNotFoundException(name, e);
         }
-
-        return defineClass(name, bytes, 0, bytes.length);
     }
 
     @Override

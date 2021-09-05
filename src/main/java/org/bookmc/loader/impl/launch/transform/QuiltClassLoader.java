@@ -5,8 +5,10 @@ import org.bookmc.loader.api.launch.transform.QuiltRemapper;
 import org.bookmc.loader.api.launch.transform.QuiltTransformer;
 import org.bookmc.loader.impl.launch.Launcher;
 
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.security.CodeSource;
 import java.util.*;
 
 public class QuiltClassLoader extends URLClassLoader implements IQuiltClassLoader {
@@ -60,14 +62,20 @@ public class QuiltClassLoader extends URLClassLoader implements IQuiltClassLoade
         if (isClassLoaded(name)) {
             return getLoadedClass(name);
         }
-        byte[] bytes = getClassBytes(name, !transformationExclusion.contains(name));
+        try {
+            CodeSource source = getCodeSource(name);
 
-        if (bytes == null) {
-            // Last resort, this also throws an exception if it can't find it
-            return Launcher.loadClass(name, false);
+            byte[] bytes = getClassBytes(name, !transformationExclusion.contains(name));
+
+            if (bytes == null) {
+                // Last resort, this also throws an exception if it can't find it
+                return Launcher.loadClass(name, false);
+            }
+
+            return defineClass(name, bytes, 0, bytes.length, source);
+        } catch (IOException e) {
+            throw new ClassNotFoundException(name, e);
         }
-
-        return defineClass(name, bytes, 0, bytes.length);
     }
 
     @Override

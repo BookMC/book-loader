@@ -297,7 +297,7 @@ public class Launcher {
                     .getClassLoader();
 
                 // Avoid a StackOverflow
-                if (classLoader instanceof QuiltClassLoader) continue;
+                if (!tryMainClassLoader && classLoader instanceof QuiltClassLoader) continue;
 
                 if (vessel.getAbstractedClassLoader().isClassAvailable(name)) {
                     return classLoader.loadClass(name);
