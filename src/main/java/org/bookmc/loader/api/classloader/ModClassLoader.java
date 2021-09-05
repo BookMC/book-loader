@@ -47,8 +47,12 @@ public class ModClassLoader extends URLClassLoader implements IQuiltClassLoader 
         }
 
         for (String exclusion : exclusions) {
-            if (name.startsWith(exclusion) && !exclusionExclusions.contains(exclusion)) {
-                return getParent().loadClass(name);
+            if (name.startsWith(exclusion)) {
+                for (String ex : exclusionExclusions) {
+                    if (!ex.startsWith(exclusion)) {
+                        return getParent().loadClass(name);
+                    }
+                }
             }
         }
 
