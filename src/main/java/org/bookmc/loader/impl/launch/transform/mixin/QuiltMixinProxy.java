@@ -1,6 +1,6 @@
 package org.bookmc.loader.impl.launch.transform.mixin;
 
-import org.bookmc.external.transformer.QuiltTransformer;
+import org.bookmc.loader.api.launch.transform.QuiltTransformer;
 import org.spongepowered.asm.service.ILegacyClassTransformer;
 
 public final class QuiltMixinProxy implements QuiltTransformer, ILegacyClassTransformer {

@@ -1,8 +1,8 @@
 package org.bookmc.loader.impl.launch.transform;
 
 import org.bookmc.loader.api.classloader.IQuiltClassLoader;
-import org.bookmc.external.transformer.QuiltRemapper;
-import org.bookmc.external.transformer.QuiltTransformer;
+import org.bookmc.loader.api.launch.transform.QuiltRemapper;
+import org.bookmc.loader.api.launch.transform.QuiltTransformer;
 import org.bookmc.loader.impl.launch.Launcher;
 
 import java.io.IOException;
