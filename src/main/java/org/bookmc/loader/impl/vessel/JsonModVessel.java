@@ -3,8 +3,8 @@ package org.bookmc.loader.impl.vessel;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import org.bookmc.loader.api.adapter.java.JavaLanguageAdapter;
-import org.bookmc.loader.api.classloader.IQuiltClassLoader;
+import org.bookmc.external.adapter.java.JavaLanguageAdapter;
+import org.bookmc.loader.api.classloader.AbstractBookClassLoader;
 import org.bookmc.loader.api.vessel.ModVessel;
 import org.bookmc.loader.api.vessel.author.Author;
 import org.bookmc.loader.api.vessel.dependency.ModDependency;
@@ -23,7 +23,7 @@ import java.util.Map;
 public class JsonModVessel implements ModVessel {
     private final JsonObject object;
     private final File file;
-    private IQuiltClassLoader classLoader;
+    private AbstractBookClassLoader classLoader;
 
     public JsonModVessel(JsonObject object, File file, URLClassLoader classLoader) {
         this.object = object;
@@ -187,12 +187,12 @@ public class JsonModVessel implements ModVessel {
     }
 
     @Override
-    public IQuiltClassLoader getAbstractedClassLoader() {
+    public AbstractBookClassLoader getClassLoader() {
         return classLoader;
     }
 
     @Override
-    public void setClassLoader(IQuiltClassLoader classLoader) {
+    public void setClassLoader(AbstractBookClassLoader classLoader) {
         this.classLoader = classLoader;
     }
 

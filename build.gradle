@@ -22,7 +22,7 @@ java {
 }
 
 group "org.bookmc"
-version "0.19.0${branch != "main" && !branch.isEmpty() ? "-$branch" : ""}+${buildNumber ? "build.$buildNumber" : "local"}"
+version "0.20.0${branch != "main" && !branch.isEmpty() ? "-$branch" : ""}+${buildNumber ? "build.$buildNumber" : "local"}"
 
 repositories {
     mavenCentral()
@@ -56,7 +56,7 @@ dependencies {
     compileOnly "com.google.code.gson:gson:2.2.4" // BookMC/minecraft#28
 
     // Shaded libraries
-    include("net.fabricmc:sponge-mixin:0.10.0+mixin.0.8.4.snapshot") {
+    include("net.fabricmc:sponge-mixin:0.10.2+mixin.0.8.4") {
         exclude module: "log4j-api"
         exclude module: "log4j-core"
         exclude module: "guava"

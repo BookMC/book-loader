@@ -1,13 +1,13 @@
 package org.bookmc.loader.api.vessel;
 
-import org.bookmc.loader.api.adapter.java.JavaLanguageAdapter;
-import org.bookmc.loader.api.classloader.IQuiltClassLoader;
+import org.bookmc.external.adapter.java.JavaLanguageAdapter;
+import org.bookmc.loader.api.classloader.AbstractBookClassLoader;
 import org.bookmc.loader.api.vessel.author.Author;
 import org.bookmc.loader.api.vessel.dependency.ModDependency;
 import org.bookmc.loader.api.vessel.entrypoint.Entrypoint;
 import org.bookmc.loader.api.vessel.entrypoint.MixinEntrypoint;
 import org.bookmc.loader.api.vessel.environment.Environment;
-import org.bookmc.loader.impl.launch.transform.QuiltClassLoader;
+import org.bookmc.loader.impl.classloader.QuiltClassLoader;
 
 import java.io.File;
 import java.net.URL;
@@ -54,9 +54,9 @@ public interface ModVessel {
 
     URL[] getExternalDependencies();
 
-    IQuiltClassLoader getAbstractedClassLoader();
+    AbstractBookClassLoader getClassLoader();
 
-    void setClassLoader(IQuiltClassLoader classLoader);
+    void setClassLoader(AbstractBookClassLoader classLoader);
 
     default String getLanguageAdapter() {
         return JavaLanguageAdapter.class.getName();
@@ -71,6 +71,6 @@ public interface ModVessel {
     }
 
     default boolean isInternal() {
-        return getAbstractedClassLoader().getClassLoader() instanceof QuiltClassLoader;
+        return getClassLoader() instanceof QuiltClassLoader;
     }
 }

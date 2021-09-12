@@ -37,6 +37,7 @@ public class ZipUtils {
             return false;
         } catch (IOException e) {
             e.printStackTrace();
+            zipCache.put(file.getAbsolutePath(), false);
             return false;
         }
 

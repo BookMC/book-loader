@@ -5,9 +5,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.bookmc.loader.api.candidate.ModCandidate;
-import org.bookmc.loader.api.classloader.IQuiltClassLoader;
+import org.bookmc.loader.api.classloader.AbstractBookClassLoader;
 import org.bookmc.loader.api.vessel.ModVessel;
-import org.bookmc.loader.impl.launch.Launcher;
+import org.bookmc.loader.impl.launch.BookLauncher;
 import org.bookmc.loader.impl.vessel.JsonModVessel;
 import org.bookmc.loader.shared.Constants;
 
@@ -55,13 +55,13 @@ public class DirectoryModCandidate implements ModCandidate {
                         JsonElement json = parser.parse(reader);
 
                         if (json.isJsonObject()) {
-                            vessels.add(new JsonModVessel(json.getAsJsonObject(), file, Launcher.getQuiltClassLoader()));
+                            vessels.add(new JsonModVessel(json.getAsJsonObject(), file, BookLauncher.getQuiltClassLoader()));
                             return true;
                         } else if (json.isJsonArray()) {
                             JsonArray mods = parser.parse(reader).getAsJsonArray();
                             for (int i = 0; i < mods.size(); i++) {
                                 JsonObject mod = mods.get(i).getAsJsonObject();
-                                vessels.add(new JsonModVessel(mod, file, Launcher.getQuiltClassLoader()));
+                                vessels.add(new JsonModVessel(mod, file, BookLauncher.getQuiltClassLoader()));
                             }
                             return true;
                         }
@@ -78,7 +78,7 @@ public class DirectoryModCandidate implements ModCandidate {
     }
 
     @Override
-    public void addToClasspath(IQuiltClassLoader classLoader) {
+    public void addToClasspath(AbstractBookClassLoader classLoader) {
         try {
             classLoader.addURL(file.toURI().toURL());
         } catch (MalformedURLException e) {

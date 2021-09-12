@@ -2,33 +2,29 @@ package org.bookmc.loader.impl;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.bookmc.external.compat.CompatiblityLayer;
 import org.bookmc.loader.api.ModResolver;
-import org.bookmc.loader.api.adapter.BookLanguageAdapter;
+import org.bookmc.external.adapter.BookLanguageAdapter;
 import org.bookmc.loader.api.candidate.ModCandidate;
-import org.bookmc.loader.api.classloader.IQuiltClassLoader;
-import org.bookmc.loader.api.classloader.ModClassLoader;
 import org.bookmc.loader.api.exception.IllegalDependencyException;
-import org.bookmc.loader.api.launch.transform.QuiltRemapper;
-import org.bookmc.loader.api.launch.transform.QuiltTransformer;
 import org.bookmc.loader.api.vessel.ModVessel;
 import org.bookmc.loader.api.vessel.dependency.ModDependency;
 import org.bookmc.loader.api.vessel.entrypoint.Entrypoint;
-import org.bookmc.loader.api.vessel.entrypoint.MixinEntrypoint;
 import org.bookmc.loader.api.vessel.environment.Environment;
 import org.bookmc.loader.impl.candidate.ZipModCandidate;
-import org.bookmc.loader.impl.launch.Launcher;
+import org.bookmc.loader.impl.launch.BookLauncher;
+import org.bookmc.loader.impl.mixin.BookMixinBootstrap;
 import org.bookmc.loader.impl.resolve.ClasspathModResolver;
 import org.bookmc.loader.impl.resolve.DevelopmentModResolver;
 import org.bookmc.loader.impl.ui.MissingDependencyUI;
+import org.bookmc.loader.impl.util.CompatibilityLayerUtils;
+import org.bookmc.loader.impl.util.ModUtils;
+import org.bookmc.loader.impl.util.TransformerUtils;
 import org.bookmc.loader.shared.utils.DownloadUtils;
 import org.bookmc.loader.shared.utils.VersionUtil;
 import org.bookmc.loader.shared.utils.ZipUtils;
-import org.spongepowered.asm.mixin.Mixins;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 
@@ -72,15 +68,9 @@ public class Loader {
         return Collections.unmodifiableMap(modVessels);
     }
 
-    public static void discover() {
-        for (ModResolver discoverer : Loader.getModResolvers()) {
-            discoverer.resolve();
-        }
-    }
-
     /**
      * Registers a ModCandidate onto the mod candidate list. If it has passed the initial process time you can reinvoke
-     * {@link Loader#loadCandidates()}
+     * {@link ModUtils#loadCandidates()}
      *
      * @param candidate The ModCandidate to be registered
      */
@@ -90,18 +80,17 @@ public class Loader {
     }
 
     /**
-     * Returns the currently available candidates. If {@link Loader#loadCandidates()}
-     * has been invoekd then it will only return accepted candidates however if this had not been invoked it
+     * Returns the currently available candidates. If {@link ModUtils#loadCandidates()}
+     * has been invoked then it will only return accepted candidates however if this had not been invoked it
      * will contain rejected candidates so especially you CompatibilityLayer people beware!
      * Don't worry we've made it as safe as possible for developers to call our internals, interesting right?
-     * If another [compatibility] layer calls {@link Loader#loadCandidates()} then
+     * If another [compatibility] layer calls {@link ModUtils#loadCandidates()} then
      * it will simply skip the candidate if it has already been checked.
      *
      * @return Read note
      */
     public static List<ModCandidate> getCandidates() {
         return candidates;
-
     }
 
     /**
@@ -127,90 +116,16 @@ public class Loader {
         return false;
     }
 
-    public static void loadCompatibilityLayer(ModVessel vessel, IQuiltClassLoader classLoader) {
-        Class<?> compatClass = null;
-        try {
-            compatClass = classLoader.getClassLoader()
-                .loadClass(CompatiblityLayer.class.getName());
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        if (compatClass != null) {
-            Entrypoint[] entrypoints = vessel.getEntrypoints();
-            for (Entrypoint entrypoint : entrypoints) {
-                try {
-                    Class<?> clazz = Class.forName(entrypoint.getOwner(), false, classLoader.getClassLoader());
-
-                    if (compatClass.isAssignableFrom(clazz)) {
-                        if (vessel.getDependsOn().length != 0) {
-                            throw new IllegalDependencyException(vessel);
-                        }
-
-                        loaded.add(vessel); // Trick BookModLoader#load to believe we have "loaded" our "mod".
-                        Object layer = clazz.getConstructor().newInstance();
-                        clazz.getDeclaredMethod("init", IQuiltClassLoader.class)
-                            .invoke(layer, classLoader);
-                    }
-                } catch (ClassCastException ignored) {
-
-                } catch (Throwable t) {
-                    t.printStackTrace();
-                }
-            }
-        }
-    }
-
-    public static void loadMixins(Environment environment) {
-        for (ModVessel vessel : Loader.getModVessels()) {
-            loadMixin(vessel, environment);
-        }
-    }
-
-    public static void loadMixin(ModVessel vessel, Environment environment) {
-        MixinEntrypoint[] mixinEntrypoints = vessel.getMixinEntrypoints();
-
-        for (MixinEntrypoint entrypoint : mixinEntrypoints) {
-            if (environment.allows(entrypoint.getEnvironment())) {
-                Mixins.addConfiguration(entrypoint.getMixinFile());
-            }
-        }
-    }
-
-    public static void loadTransformer(ModVessel vessel, String transformer) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
-        ClassLoader classLoader = vessel.getAbstractedClassLoader().getClassLoader();
-        Launcher.getQuiltClassLoader().addClassLoaderExclusion(transformer);
-        Class<?> clazz = Class.forName(transformer, false, classLoader);
-
-        try {
-            Launcher.getQuiltClassLoader().registerTransformer((QuiltTransformer) clazz.getConstructor().newInstance());
-        } catch (ClassCastException | NoSuchMethodException | InvocationTargetException e) {
-            LOGGER.error("{} defined a transformer ({}) but does not implement QuiltTransformer", vessel.getId(), transformer, e);
-        }
-    }
-
-    public static void loadRemapper(ModVessel vessel, String remapper) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
-        ClassLoader classLoader = vessel.getAbstractedClassLoader().getClassLoader();
-        Launcher.getQuiltClassLoader().addClassLoaderExclusion(remapper);
-
-        Class<?> clazz = Class.forName(remapper, false, classLoader);
-        try {
-            Launcher.getQuiltClassLoader().registerRemapper((QuiltRemapper) clazz.getConstructor().newInstance());
-        } catch (ClassCastException | NoSuchMethodException | InvocationTargetException e) {
-            LOGGER.error("{} defined a remapper ({}) but does not implement QuiltReampper", vessel.getId(), remapper, e);
-        }
-    }
-
     public static void discoverAndLoad() throws IllegalDependencyException {
-        discover();
-        loadCandidates();
+        ModUtils.resolveMods();
+        ModUtils.loadCandidates();
 
         for (ModVessel vessel : getModVessels()) {
-            loadCompatibilityLayer(vessel, vessel.getAbstractedClassLoader());
+            CompatibilityLayerUtils.loadCompatibilityLayer(vessel, vessel.getClassLoader());
 
             for (String transformer : vessel.getTransformers()) {
                 try {
-                    loadTransformer(vessel, transformer);
+                    TransformerUtils.loadTransformer(vessel, transformer);
                 } catch (Exception e) {
                     LOGGER.error("Could not load transformer {}", transformer, e);
                 }
@@ -218,11 +133,13 @@ public class Loader {
 
             for (String remapper : vessel.getRemappers()) {
                 try {
-                    loadRemapper(vessel, remapper);
+                    TransformerUtils.loadRemapper(vessel, remapper);
                 } catch (Exception e) {
                     LOGGER.error("Could not load remapper {}", remapper, e);
                 }
             }
+
+            BookMixinBootstrap.loadMixins(BookLauncher.getEnvironment());
         }
     }
 
@@ -246,22 +163,22 @@ public class Loader {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                throw new IllegalStateException("Something went wrong when attempting to block the thread!");
+                throw new RuntimeException("Something went wrong when attempting to block the thread!");
             }
 
             if (!loaded.contains(vessel)) {
-                load(vessel, vessel.getAbstractedClassLoader().getClassLoader(), environment);
+                load(vessel, vessel.getClassLoader(), environment);
             }
         }
     }
 
     private static void loadDependencies(ModVessel vessel, Environment environment) {
-        ArrayList<String> missingDeps = missingDependencies.getOrDefault(vessel.getId(), new ArrayList<>());
+            ArrayList<String> missingDeps = missingDependencies.getOrDefault(vessel.getId(), new ArrayList<>());
 
         boolean reload = false;
 
         for (URL url : vessel.getExternalDependencies()) {
-            File file = DownloadUtils.downloadFile(url, new File(Launcher.getGameProvider().getGameDirectory(), "libraries/" + url.getPath()));
+            File file = DownloadUtils.downloadFile(url, new File(BookLauncher.getGameProvider().getGameDirectory(), ".book-libraries/" + url.getPath()));
             LOGGER.info("Downloaded an external dependency (" + file.getName() + ") from " + vessel.getName() + ".");
 
             if (ZipUtils.isZipFile(file)) {
@@ -276,7 +193,7 @@ public class Loader {
         }
 
         if (reload) {
-            loadCandidates(); // Reload our candidates since we added new stuff
+            ModUtils.loadCandidates(); // Reload our candidates since we added new stuff
         }
 
         for (ModDependency dependency : vessel.getDependsOn()) {
@@ -297,7 +214,7 @@ public class Loader {
 
             loadDependencies(dependencyVessel, environment);
             if (!loaded.contains(dependencyVessel)) {
-                load(dependencyVessel, dependencyVessel.getAbstractedClassLoader().getClassLoader(), environment);
+                load(dependencyVessel, dependencyVessel.getClassLoader(), environment);
             }
         }
 
@@ -305,7 +222,7 @@ public class Loader {
             ModVessel suggestionVessel = Loader.getModVesselsMap().get(dependency.getId());
 
             if (suggestionVessel == null) {
-                LOGGER.info("The mod " + vessel.getName() + " suggests that you should install " + dependency.getId() + ".");
+                LOGGER.info("The mod {} suggests that you should install {}.", vessel.getName(), dependency.getId());
                 continue;
             }
 
@@ -316,7 +233,7 @@ public class Loader {
 
             loadDependencies(suggestionVessel, environment);
             if (!loaded.contains(suggestionVessel)) {
-                load(suggestionVessel, suggestionVessel.getAbstractedClassLoader().getClassLoader(), environment);
+                load(suggestionVessel, suggestionVessel.getClassLoader(), environment);
             }
         }
 
@@ -330,7 +247,6 @@ public class Loader {
         Entrypoint[] entrypoints = vessel.getEntrypoints();
 
         for (Entrypoint entrypoint : entrypoints) {
-
             Class<?> entryClass = null;
 
             try {
@@ -346,13 +262,17 @@ public class Loader {
 
                     Class<?> adapter = classLoader.loadClass(vessel.getLanguageAdapter());
 
-                    // We do this to double check it actually implements what BookLanguageAdapter
-                    adapter.asSubclass(classLoader.loadClass(BookLanguageAdapter.class.getName()));
+                    if (!adapter.isAssignableFrom(BookLanguageAdapter.class)) {
+                        throw new ClassCastException();
+                    }
 
-                    BookLanguageAdapter adapterInstance = (BookLanguageAdapter) adapter.getConstructor().newInstance();
+                    Object adapterInstance = adapter.getConstructor().newInstance();
+
+                    Object instance = adapter.getDeclaredMethod("createInstance", Class.class)
+                        .invoke(adapterInstance, entryClass);
 
                     entryClass.getDeclaredMethod(entrypoint.getMethod())
-                        .invoke(adapterInstance.createInstance(entryClass));
+                        .invoke(instance);
                 }
             } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException | InstantiationException | ClassNotFoundException e) {
                 e.printStackTrace();
@@ -362,121 +282,7 @@ public class Loader {
         }
     }
 
-    public static void loadCandidates() {
-        // To avoid a CMFE we have to add the to-be-removed candidates
-        // to a new list and then iterate over it and remove the rejects
-        // Once we're finished processing.
-        List<ModCandidate> removeQueue = new ArrayList<>();
-
-        for (ModCandidate candidate : Loader.getCandidates()) {
-            if (candidate.isResolvable()) {
-                for (ModVessel vessel : candidate.getVessels()) {
-                    if (!Loader.isVesselDiscovered(vessel.getId())) {
-                        Loader.registerVessel(vessel);
-                    } else {
-                        removeQueue.add(candidate);
-                    }
-                }
-            } else {
-                removeQueue.add(candidate);
-                if (!Loader.getRejectedCandidates().contains(candidate)) {
-                    Loader.rejectCandidate(candidate);
-                }
-            }
-        }
-
-        for (ModCandidate candidate : removeQueue) {
-            Loader.getCandidates().remove(candidate);
-        }
-
-        sortClassLoaders(Loader.getModVessels());
-        for (ModCandidate candidate : Loader.getCandidates()) {
-            for (ModVessel vessel : candidate.getVessels()) {
-                candidate.addToClasspath(vessel.getAbstractedClassLoader());
-            }
-        }
-    }
-
     public static boolean isModLoaded(String id) {
-        for (ModVessel vessel : loaded) {
-            if (vessel.getId().equals(id)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * This is the main system to sort dependencies into different classloaders
-     * It recursively calls the method {@link Loader#sortClassLoader(ModVessel)}
-     * to check if it has any dependencies and if it does add the dependencies and itself to the classpath
-     * if not stay on it's own classpath.
-     * <p>
-     * This was quite mentally exhausting to plan out how to make :)
-     *
-     * @param vessels The vessels to have their classloaders sorted.
-     */
-    public static void sortClassLoaders(List<ModVessel> vessels) {
-        for (ModVessel vessel : vessels) {
-            sortClassLoader(vessel);
-        }
-    }
-
-    private static void sortClassLoader(ModVessel vessel) {
-        if (vessel.getAbstractedClassLoader() == null) {
-            URL[] urls = new URL[0];
-            if (vessel.getFile() != null) {
-                try {
-                    urls = new URL[]{vessel.getFile().toURI().toURL()};
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                }
-            }
-            vessel.setClassLoader(new ModClassLoader(urls));
-        }
-        for (ModDependency dependency : vessel.getDependsOn()) {
-            sortClassLoaderDependsOn(dependency, vessel);
-        }
-        for (ModDependency suggestion : vessel.getSuggestions()) {
-            sortClassLoaderSuggests(suggestion, vessel);
-        }
-    }
-
-    private static void sortClassLoaderDependsOn(ModDependency dependency, ModVessel vessel) {
-        if (Loader.getModVesselsMap().containsKey(dependency.getId())) {
-            ModVessel dependencyVessel = Loader.getModVesselsMap().get(dependency.getId());
-
-            if (dependencyVessel.getAbstractedClassLoader() == null) {
-                sortClassLoader(dependencyVessel);
-            }
-
-            if (dependencyVessel.getAbstractedClassLoader() != vessel.getAbstractedClassLoader() && !dependencyVessel.isInternal()) {
-                URL[] urls = dependencyVessel.getAbstractedClassLoader().getClassLoader().getURLs();
-                for (URL url : urls) {
-                    vessel.getAbstractedClassLoader().addURL(url);
-                }
-                dependencyVessel.setClassLoader(vessel.getAbstractedClassLoader());
-                for (ModDependency modDependency : dependencyVessel.getDependsOn()) {
-                    sortClassLoaderDependsOn(modDependency, dependencyVessel);
-                }
-            }
-        }
-    }
-
-    private static void sortClassLoaderSuggests(ModDependency dependency, ModVessel vessel) {
-        if (Loader.getModVesselsMap().containsKey(dependency.getId())) {
-            ModVessel dependencyVessel = Loader.getModVesselsMap().get(dependency.getId());
-            if (dependencyVessel.getAbstractedClassLoader() != vessel.getAbstractedClassLoader()) {
-                URL[] urls = dependencyVessel.getAbstractedClassLoader().getClassLoader().getURLs();
-                for (URL url : urls) {
-                    vessel.getAbstractedClassLoader().addURL(url);
-                }
-                dependencyVessel.setClassLoader(vessel.getAbstractedClassLoader());
-                for (ModDependency modDependency : dependencyVessel.getSuggestions()) {
-                    sortClassLoaderSuggests(modDependency, dependencyVessel);
-                }
-            }
-        }
+        return modVessels.containsKey(id);
     }
 }

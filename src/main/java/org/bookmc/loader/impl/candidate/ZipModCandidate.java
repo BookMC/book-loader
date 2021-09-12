@@ -5,7 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.bookmc.loader.api.candidate.ModCandidate;
-import org.bookmc.loader.api.classloader.IQuiltClassLoader;
+import org.bookmc.loader.api.classloader.AbstractBookClassLoader;
 import org.bookmc.loader.api.vessel.ModVessel;
 import org.bookmc.loader.impl.vessel.JsonModVessel;
 import org.bookmc.loader.shared.Constants;
@@ -83,7 +83,7 @@ public class ZipModCandidate implements ModCandidate {
     }
 
     @Override
-    public void addToClasspath(IQuiltClassLoader classLoader) {
+    public void addToClasspath(AbstractBookClassLoader classLoader) {
         try {
             classLoader.addURL(file.toURI().toURL());
         } catch (MalformedURLException e) {

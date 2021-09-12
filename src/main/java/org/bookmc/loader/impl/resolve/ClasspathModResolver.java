@@ -4,7 +4,7 @@ import org.bookmc.loader.api.ModResolver;
 import org.bookmc.loader.impl.Loader;
 import org.bookmc.loader.impl.candidate.DirectoryModCandidate;
 import org.bookmc.loader.impl.candidate.ZipModCandidate;
-import org.bookmc.loader.impl.launch.Quilt;
+import org.bookmc.loader.impl.launch.BookLoader;
 import org.bookmc.loader.shared.Constants;
 import org.bookmc.loader.shared.utils.ZipUtils;
 import sun.misc.Unsafe;
@@ -19,7 +19,7 @@ import java.util.ArrayList;
 public class ClasspathModResolver implements ModResolver {
     @SuppressWarnings("unchecked")
     public static URL[] getClasspathURLs() {
-        ClassLoader classLoader = Quilt.class.getClassLoader();
+        ClassLoader classLoader = BookLoader.class.getClassLoader();
         if (classLoader instanceof URLClassLoader) {
             return ((URLClassLoader) classLoader).getURLs();
         }

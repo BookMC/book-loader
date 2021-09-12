@@ -20,6 +20,12 @@ public enum Environment {
     UNKNOWN {
         @Override
         public boolean allows(Environment environment) {
+            // In reality we hope we never get here, because if we do we're in for some big problems
+            // sided mods and stuff won't work correctly and it'll most likely make everything burn so
+            // instead of curling up in a ball and whining over the fact we couldn't detect the environment
+            // we just attempt to shutdown the game in attempt to express that the game has not been launched
+            // correctly, if this ever occurs PLEASE report it so I can either fix the issue or HELP you fix
+            // the issue, 'ave a lovely day and thanks for reading this massive comment block for some reason :)
             throw new IllegalStateException("Failed to detect environment!");
         }
     },

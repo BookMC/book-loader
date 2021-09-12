@@ -1,6 +1,6 @@
 package org.bookmc.loader.api.candidate;
 
-import org.bookmc.loader.api.classloader.IQuiltClassLoader;
+import org.bookmc.loader.api.classloader.AbstractBookClassLoader;
 import org.bookmc.loader.api.vessel.ModVessel;
 import org.bookmc.loader.impl.candidate.ZipModCandidate;
 import org.bookmc.loader.impl.resolve.ClasspathModResolver;
@@ -45,7 +45,7 @@ public interface ModCandidate {
      * such as {@link DevelopmentModResolver} or {@link ClasspathModResolver}
      * this method may not be needed at all as the mod candidates should already be present on the classpath or something is going wrong!
      *
-     * @param classLoader A custom class to abstract appending to the current URLClassLoader. (Read more about this at {@link org.bookmc.loader.impl.Loader#sortClassLoaders(List)}
+     * @param classLoader A custom class to abstract appending to the current URLClassLoader. (Read more about this at {@link org.bookmc.loader.impl.util.ClassloaderOperationUtils#sortClassLoaders(List)}
      */
-    void addToClasspath(IQuiltClassLoader classLoader);
+    void addToClasspath(AbstractBookClassLoader classLoader);
 }

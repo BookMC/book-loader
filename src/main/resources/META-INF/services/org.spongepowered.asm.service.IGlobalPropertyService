@@ -1,1 +1,1 @@
-org.bookmc.loader.impl.launch.transform.mixin.MixinQuiltGlobalPropertyService
+org.bookmc.loader.impl.mixin.MixinBookGlobalPropertyService

@@ -1,1 +1,1 @@
-org.bookmc.loader.impl.launch.transform.mixin.MixinServiceQuilt
+org.bookmc.loader.impl.mixin.MixinServiceBook
