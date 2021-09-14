@@ -2,8 +2,8 @@ package org.bookmc.loader.impl;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.bookmc.loader.api.ModResolver;
 import org.bookmc.external.adapter.BookLanguageAdapter;
+import org.bookmc.loader.api.ModResolver;
 import org.bookmc.loader.api.candidate.ModCandidate;
 import org.bookmc.loader.api.exception.IllegalDependencyException;
 import org.bookmc.loader.api.vessel.ModVessel;
@@ -173,13 +173,13 @@ public class Loader {
     }
 
     private static void loadDependencies(ModVessel vessel, Environment environment) {
-            ArrayList<String> missingDeps = missingDependencies.getOrDefault(vessel.getId(), new ArrayList<>());
+        ArrayList<String> missingDeps = missingDependencies.getOrDefault(vessel.getId(), new ArrayList<>());
 
         boolean reload = false;
 
         for (URL url : vessel.getExternalDependencies()) {
-            File file = DownloadUtils.downloadFile(url, new File(BookLauncher.getGameProvider().getGameDirectory(), ".book-libraries/" + url.getPath()));
-            LOGGER.info("Downloaded an external dependency (" + file.getName() + ") from " + vessel.getName() + ".");
+            File file = DownloadUtils.downloadFile(url, BookLauncher.getGameProvider().getGameDirectoryPath().resolve(".book-libraries").resolve(url.getPath()));
+            LOGGER.info("Downloaded an external dependency ({}) from {}. (URL: {})", file.getName(), vessel.getName(), url);
 
             if (ZipUtils.isZipFile(file)) {
                 Loader.registerCandidate(new ZipModCandidate(file));

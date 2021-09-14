@@ -13,18 +13,20 @@ import org.objectweb.asm.tree.ClassNode;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.*;
 
 public class BookLauncher {
     private static final Map<String, Object> properties = new HashMap<>();
     private static Environment environment;
-    private static File modsFolder;
-    private static File configDir;
+    private static Path modsFolder;
+    private static Path configDir;
     private static GameProvider provider;
 
-    public static File getConfigDirectory() {
+    public static Path getConfigDirectory() {
         if (configDir == null) {
-            configDir = new File(getGameProvider().getGameDirectory(), "config");
+            configDir = getGameProvider().getGameDirectoryPath()
+                .resolve(System.getProperty("book.launcher.config", "config"));
         }
 
         return configDir;
@@ -57,9 +59,9 @@ public class BookLauncher {
         BookLauncher.environment = environment;
     }
 
-    public static File getModsFolder() {
+    public static Path getModsFolder() {
         if (modsFolder == null) {
-            modsFolder = new File(getGameProvider().getGameDirectory(), System.getProperty("book.discovery.folder", "mods"));
+            modsFolder = getGameProvider().getGameDirectoryPath().resolve(System.getProperty("book.discovery.folder", "mods"));
         }
 
         return modsFolder;

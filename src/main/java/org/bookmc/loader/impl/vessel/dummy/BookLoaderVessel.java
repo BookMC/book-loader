@@ -50,7 +50,7 @@ public class BookLoaderVessel implements ModVessel {
 
     @Override
     public String getLicense() {
-        return null;
+        return "null";
     }
 
     @Override

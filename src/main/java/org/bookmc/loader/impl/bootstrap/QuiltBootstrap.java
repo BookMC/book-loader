@@ -15,6 +15,7 @@ import org.bookmc.loader.impl.vessel.dummy.MinecraftModVessel;
 import org.bookmc.loader.impl.vessel.dummy.candidate.FakeCandidate;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -30,10 +31,11 @@ public class QuiltBootstrap {
     private static final Logger LOGGER = LogManager.getLogger(QuiltBootstrap.class);
 
     public static void plug() {
-        File modsDirectory = BookLauncher.getModsFolder();
+        Path modsDirectory = BookLauncher.getModsFolder();
+        File modDirectoryFile = modsDirectory.toFile();
 
-        if (!modsDirectory.exists()) {
-            if (!modsDirectory.mkdir()) {
+        if (!modDirectoryFile.exists()) {
+            if (!modDirectoryFile.mkdir()) {
                 LOGGER.fatal("Failed to create mods directory");
             }
         }
@@ -41,11 +43,11 @@ public class QuiltBootstrap {
         String version = BookLauncher.getGameProvider().getLaunchedVersion();
         LOGGER.info("Initializating book-loader, provided game version: {}", version);
 
-        LOGGER.info("Registered resolver for {}", modsDirectory.getAbsolutePath());
+        LOGGER.info("Registered resolver for {}", modsDirectory);
         Loader.registerResolver(new BookModResolver(modsDirectory));
-        File versionFolder = new File(modsDirectory, version);
-        LOGGER.info("Registered resolver for {}", versionFolder.getAbsolutePath());
-        Loader.registerResolver(new BookModResolver(versionFolder));
+        Path versionPath = modsDirectory.resolve(version);
+        LOGGER.info("Registered resolver for {}", versionPath.toFile().getAbsolutePath());
+        Loader.registerResolver(new BookModResolver(versionPath));
 
         ModVessel[] fakeContainers = new ModVessel[]{new MinecraftModVessel(version), new JavaModVessel(), new BookLoaderVessel()};
 

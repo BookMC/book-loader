@@ -6,11 +6,12 @@ import org.bookmc.loader.impl.candidate.ZipModCandidate;
 import org.bookmc.loader.shared.Constants;
 
 import java.io.File;
+import java.nio.file.Path;
 
-public record BookModResolver(File directory) implements ModResolver {
+public record BookModResolver(Path directoryPath) implements ModResolver {
     @Override
     public void resolve() {
-        File[] candidates = directory.listFiles();
+        File[] candidates = directoryPath.toFile().listFiles();
 
         if (candidates != null) {
             for (File file : candidates) {

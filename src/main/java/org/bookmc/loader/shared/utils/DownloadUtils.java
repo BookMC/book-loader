@@ -5,9 +5,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Path;
 
 public class DownloadUtils {
-    public static File downloadFile(URL url, File dest) {
+    public static File downloadFile(URL url, Path destPath) {
+        File dest = destPath.toFile();
         if (dest.exists()) return dest;
         File parent = dest.getParentFile();
 
