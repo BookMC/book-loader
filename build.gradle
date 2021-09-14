@@ -86,6 +86,7 @@ java {
 
 blossom {
     replaceToken("%LOADER_VERSION%", project.version)
+    replaceToken("%LICENSE%", "LGPL")
 }
 
 shadowJar {

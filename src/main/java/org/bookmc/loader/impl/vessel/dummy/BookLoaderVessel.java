@@ -45,12 +45,12 @@ public class BookLoaderVessel implements ModVessel {
 
     @Override
     public String getIcon() {
-        return null;
+        return "/assets/bookmc/icon/156x.png";
     }
 
     @Override
     public String getLicense() {
-        return "null";
+        return "%LICENSE%";
     }
 
     @Override
