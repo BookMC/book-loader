@@ -4,6 +4,12 @@ pluginManagement {
         maven {
             url "https://maven.bookmc.org"
         }
+        maven {
+            url "https://maven.fabricmc.net"
+        }
     }
 }
 rootProject.name = "book-loader"
+
+include ":test"
+include ":mixin"
