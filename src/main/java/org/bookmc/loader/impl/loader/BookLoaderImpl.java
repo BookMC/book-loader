@@ -1,6 +1,7 @@
 package org.bookmc.loader.impl.loader;
 
 import org.bookmc.loader.api.classloader.AbstractBookURLClassLoader;
+import org.bookmc.loader.api.classloader.transformers.BookTransformer;
 import org.bookmc.loader.api.config.LoaderConfig;
 import org.bookmc.loader.api.environment.GameEnvironment;
 import org.bookmc.loader.api.exception.LoaderException;
@@ -85,6 +86,14 @@ public class BookLoaderImpl extends BookLoaderBase {
                     Method entryMethod = clazz.getDeclaredMethod(entrypoint.getEntryMethod());
                     entryMethod.invoke(null);
                 } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                    throw new LoaderException("Failed to load " + container.getMetadata().getId() + " (" + entrypoint.getEntryClass() + ")", e);
+                }
+            }
+            if (entrypoint.getEntrypointType() == EntrypointType.TRANSFORMER) {
+                try {
+                    Class<?> clazz = Class.forName(entrypoint.getEntryClass(), false, container.getClassLoader());
+                    globalClassLoader.registerTransformer((BookTransformer) clazz.getConstructor().newInstance());
+                } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
                     throw new LoaderException("Failed to load " + container.getMetadata().getId() + " (" + entrypoint.getEntryClass() + ")", e);
                 }
             }
