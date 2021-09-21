@@ -15,6 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(MinecraftClient.class)
 public class MixinMinecraftClient {
     @Shadow @Final private static Logger LOGGER;
+    private final String TEST_FIELD = "why_are_you_looking_for_me?";
 
     @Inject(
         method = "<init>",
@@ -36,5 +37,9 @@ public class MixinMinecraftClient {
         } catch (LoaderException e) {
             e.printStackTrace();
         }
+    }
+
+    private void testMethod() {
+        throw new UnsupportedOperationException();
     }
 }

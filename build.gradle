@@ -43,12 +43,6 @@ repositories {
 configurations {
     include
     implementation.extendsFrom(include)
-
-    mixinImplementation
-    implementation.extendsFrom(mixinImplementation)
-
-    mixinInclude
-    implementation.extendsFrom(mixinInclude)
 }
 
 sourceSets {
