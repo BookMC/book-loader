@@ -8,19 +8,16 @@ import org.bookmc.loader.api.mod.state.ModState;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
-public class ZipModContainer implements ModContainer {
+public class ResourceModContainer implements ModContainer {
     private final ModMetadata metadata;
-    private final ZipFile zipFile;
+    private final AbstractBookURLClassLoader classLoader;
 
     private ModState modState = ModState.UNKNOWN;
-    private AbstractBookURLClassLoader classLoader;
 
-    public ZipModContainer(ModMetadata metadata, ZipFile zipFile) {
+    public ResourceModContainer(ModMetadata metadata, AbstractBookURLClassLoader classLoader) {
         this.metadata = metadata;
-        this.zipFile = zipFile;
+        this.classLoader = classLoader;
     }
 
     @Override
@@ -45,20 +42,18 @@ public class ZipModContainer implements ModContainer {
 
     @Override
     public void setClassLoader(AbstractBookURLClassLoader classLoader) {
-        this.classLoader = classLoader;
+        // Impossible
     }
 
     @Override
     public ModResource createModResource(String name) {
-        ZipEntry zipEntry = zipFile.getEntry(name);
-        if (zipEntry == null) return null;
-        return new ZipModResource(zipEntry, zipFile);
+        return () -> classLoader.getResourceAsStream(name);
     }
 
-    public static ModContainer[] create(ModMetadata[] metadata, ZipFile zipFile) {
+    public static ModContainer[] create(ModMetadata[] metadata, AbstractBookURLClassLoader classLoader) {
         List<ModContainer> modContainerList = new ArrayList<>();
         for (ModMetadata modMetadata : metadata) {
-            modContainerList.add(new ZipModContainer(modMetadata, zipFile));
+            modContainerList.add(new ResourceModContainer(modMetadata, classLoader));
         }
         return modContainerList.toArray(new ModContainer[0]);
     }

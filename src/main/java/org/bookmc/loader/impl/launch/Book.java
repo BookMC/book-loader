@@ -2,19 +2,21 @@ package org.bookmc.loader.impl.launch;
 
 import com.google.common.collect.Lists;
 import org.bookmc.loader.api.classloader.AbstractBookURLClassLoader;
+import org.bookmc.loader.api.config.LoaderConfig;
 import org.bookmc.loader.api.environment.GameEnvironment;
+import org.bookmc.loader.api.exception.LoaderException;
 import org.bookmc.loader.api.loader.BookLoaderBase;
 import org.bookmc.loader.api.mod.ModContainer;
 import org.bookmc.loader.api.mod.metadata.EntrypointType;
 import org.bookmc.loader.api.mod.metadata.ModEntrypoint;
 import org.bookmc.loader.api.service.GameDataService;
 import org.bookmc.loader.api.service.PrelaunchService;
+import org.bookmc.loader.impl.config.JVMLoaderConfig;
 import org.bookmc.loader.impl.loader.BookLoaderImpl;
 import org.bookmc.loader.impl.loader.BookParentClassLoader;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,16 +36,18 @@ public class Book {
     public static void launch(String[] args, GameEnvironment environment) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, InstantiationException {
         checkLoaded();
         validateEnvironment(environment);
+        LoaderConfig config = new JVMLoaderConfig();
         Map<String, String> arguments = createArgumentsMap(args);
         GameDataService service = findGameDataService();
 
-        classLoader = new BookParentClassLoader(new URL[0]);
+
+        classLoader = new BookParentClassLoader();
 
         BookLoaderBase.INSTANCE = new BookLoaderImpl(service.getWorkingDirectory(arguments), environment, classLoader);
-        BookLoaderBase.INSTANCE.preload();
+        BookLoaderBase.INSTANCE.preload(config);
         loadPrelaunchServices(arguments, environment);
 
-        if (!arguments.containsKey("skipEntrypoint")) {
+        if (!config.hasOption("book.loader.skipEntrypoint")) {
             loadGame(service, args);
         }
 
@@ -85,11 +89,13 @@ public class Book {
         Map<String, String> argumentMap = new HashMap<>();
         int index = 0;
         for (String arg : args) {
-            argumentMap.put(
-                arg.startsWith("--") ? arg.substring(2) : arg,
-                args.length < index ? null : args[index + 1]
-            );
-            index++;
+            if (args.length > index + 1) {
+                argumentMap.put(
+                    arg.startsWith("--") ? arg.substring(2) : arg,
+                    args.length < index ? null : args[index + 1]
+                );
+                index++;
+            }
         }
 
         return argumentMap;
@@ -98,7 +104,7 @@ public class Book {
     private static GameDataService findGameDataService() {
         return ServiceLoader.load(GameDataService.class)
             .findFirst()
-            .orElseThrow();
+            .orElseThrow(() -> new LoaderException("No game data service located, cannot launch!"));
     }
 
     private static void loadPrelaunchServices(Map<String, String> arguments, GameEnvironment environment) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
@@ -111,9 +117,8 @@ public class Book {
         List<PrelaunchService> serviceList = Lists.newArrayList(ServiceLoader.load(PrelaunchService.class).iterator());
         for (ModContainer container : BookLoaderBase.INSTANCE.getContainers().values()) {
             for (ModEntrypoint entrypoint : container.getMetadata().getEntrypoints()) {
-
-                if (entrypoint.getEntryPhase() == EntrypointType.PRELAUNCH) {
-                    Class<?> clazz = Class.forName(entrypoint.getEntryClass());
+                if (entrypoint.getEntrypointType() == EntrypointType.PRELAUNCH) {
+                    Class<?> clazz = Class.forName(entrypoint.getEntryClass(), false, container.getClassLoader());
                     if (PrelaunchService.class.isAssignableFrom(clazz)) {
                         serviceList.add((PrelaunchService) clazz.getConstructor().newInstance());
                     }

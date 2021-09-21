@@ -1,22 +1,36 @@
 package org.bookmc.loader.impl.loader.candidate;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.bookmc.loader.api.classloader.AbstractBookURLClassLoader;
 import org.bookmc.loader.api.mod.ModCandidate;
 import org.bookmc.loader.api.mod.ModContainer;
+import org.bookmc.loader.impl.loader.JsonMetadataParserV0;
 import org.bookmc.loader.impl.loader.container.ZipModContainer;
 import org.bookmc.loader.shared.Constants;
-import org.bookmc.loader.shared.metadata.JsonMetadataParserV0;
 import org.bookmc.loader.shared.zip.BetterZipFile;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
+import java.nio.file.Path;
 
-public record ZipModCandidate(BetterZipFile zipFile) implements ModCandidate {
+public class ZipModCandidate implements ModCandidate {
+    private final BetterZipFile zipFile;
+
+    public ZipModCandidate(Path path) {
+        try {
+            this.zipFile = new BetterZipFile(path);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    public ZipModCandidate(BetterZipFile zipFile) {
+        this.zipFile = zipFile;
+    }
+
     private static final JsonParser parser = new JsonParser();
 
     @Override
@@ -26,7 +40,7 @@ public record ZipModCandidate(BetterZipFile zipFile) implements ModCandidate {
     }
 
     @Override
-    public void loadContainers(AbstractBookURLClassLoader classLoader) {
+    public void loadContainers0(AbstractBookURLClassLoader classLoader) {
         try {
             classLoader.addURL(zipFile.getFile().toURI().toURL());
         } catch (MalformedURLException e) {
