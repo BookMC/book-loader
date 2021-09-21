@@ -37,4 +37,5 @@ public class ModSemverVersion implements ModVersion {
         if (!(version instanceof ModSemverVersion)) return 0;
         return semverVersion.compareTo(((ModSemverVersion) version).getSemverVersion());
     }
+
 }
