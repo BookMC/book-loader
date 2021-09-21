@@ -32,7 +32,28 @@ public record JsonMetadataV0(JsonObject obj) implements ModMetadata {
     @Nonnull
     @Override
     public ModAuthor[] getModAuthors() {
-        return new ModAuthor[0];
+        List<ModAuthor> authorList = new ArrayList<>();
+        if (obj.has("authors")) {
+            JsonObject authors = obj.getAsJsonObject("authors");
+            for (Map.Entry<String, JsonElement> entry : authors.entrySet()) {
+                if (entry.getValue().isJsonObject()) {
+                    String key = entry.getKey();
+                    JsonObject obj = entry.getValue().getAsJsonObject();
+                    authorList.add(new ModAuthor() {
+                        @Override
+                        public String getName() {
+                            return key;
+                        }
+
+                        @Override
+                        public String getGithub() {
+                            return obj.has("github") ? obj.get("github").getAsString() : null;
+                        }
+                    });
+                }
+            }
+        }
+        return authorList.toArray(new ModAuthor[0]);
     }
 
     @Nonnull

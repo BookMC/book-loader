@@ -3,6 +3,7 @@ package org.bookmc.test.entrypoint;
 import net.minecraft.client.MinecraftClient;
 
 public class EntrypointTest {
+    @SuppressWarnings({"ConstantConditions", "JavaReflectionMemberAccess"})
     public static void main() {
         Class<?> clazz = MinecraftClient.class;
         try {
