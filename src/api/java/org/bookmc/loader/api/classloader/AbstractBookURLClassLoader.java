@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.security.CodeSigner;
+import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -82,7 +84,8 @@ public abstract class AbstractBookURLClassLoader extends URLClassLoader {
             throw new ClassNotFoundException(name);
         }
 
-        return defineClass(name, clazz, 0, clazz.length);
+        // TODO: Implement CodeSigner
+        return defineClass(name, clazz, 0, clazz.length, new CodeSource(getClass(name), new CodeSigner[0]));
     }
 
     public byte[] transformClass(String name, byte[] clazz) {
@@ -95,6 +98,10 @@ public abstract class AbstractBookURLClassLoader extends URLClassLoader {
 
     public InputStream getClassAsInputStream(String name) {
         return getResourceAsStream(name.replace(".", "/").concat(".class"));
+    }
+
+    public URL getClass(String name) {
+        return getResource(name.replace(".", "/").concat(".class"));
     }
 
     public byte[] getClassAsBytes(String name) {

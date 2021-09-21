@@ -22,7 +22,7 @@ java {
 }
 
 group "org.bookmc"
-version "0.20.0${branch != "main" && !branch.isEmpty() ? "-$branch" : ""}+${buildNumber ? "build.$buildNumber" : "local"}"
+version "1.0.0${branch != "main" && !branch.isEmpty() ? "-$branch" : ""}+${buildNumber ? "build.$buildNumber" : "local"}"
 
 repositories {
     mavenCentral()
