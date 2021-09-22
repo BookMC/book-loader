@@ -3,8 +3,6 @@ package org.bookmc.loader.api.classloader;
 import org.bookmc.loader.api.classloader.transformers.BookTransformer;
 
 import java.net.URL;
-import java.security.CodeSigner;
-import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,25 +15,8 @@ public abstract class TransformableURLClassLoader extends AbstractBookURLClassLo
     }
 
     @Override
-    protected Class<?> findClass(String name) throws ClassNotFoundException {
-        for (String exclusion : classLoaderExclusions) {
-            if (name.startsWith(exclusion)) {
-                return getParent().loadClass(name);
-            }
-        }
-
-        byte[] clazz = getClassAsBytes(name);
-
-        if (!transformationExclusions.contains(name)) {
-            clazz = transformClass(name, clazz);
-        }
-
-        if (clazz == null) {
-            throw new ClassNotFoundException(name);
-        }
-
-        // TODO: Implement CodeSigner
-        return defineClass(name, clazz, 0, clazz.length, new CodeSource(getClass(name), new CodeSigner[0]));
+    public byte[] modifyResolvedBytes(String name, byte[] bytes) {
+        return !transformationExclusions.contains(name) ? transformClass(name, bytes) : bytes;
     }
 
     public byte[] transformClass(String name, byte[] clazz) {

@@ -18,6 +18,10 @@ public abstract class BaseURLClassLoader extends URLClassLoader {
         return getResourceAsStream(name.replace(".", "/").concat(".class"));
     }
 
+    public byte[] modifyResolvedBytes(String name, byte[] bytes) {
+        return bytes;
+    }
+
     public URL getClass(String name) {
         return getResource(name.replace(".", "/").concat(".class"));
     }

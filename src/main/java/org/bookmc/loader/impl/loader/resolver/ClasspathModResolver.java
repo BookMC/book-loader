@@ -6,7 +6,6 @@ import org.bookmc.loader.impl.launch.Book;
 import org.bookmc.loader.impl.loader.BookLoaderImpl;
 import org.bookmc.loader.impl.loader.candidate.ResourceModCandidate;
 import org.bookmc.loader.impl.loader.candidate.ZipModCandidate;
-import org.bookmc.loader.shared.Constants;
 import org.bookmc.loader.shared.zip.ZipUtils;
 import sun.misc.Unsafe;
 
@@ -20,7 +19,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.zip.ZipFile;
 
 public class ClasspathModResolver implements ModResolver {
     @SuppressWarnings({"restriction", "unchecked"})

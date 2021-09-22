@@ -5,7 +5,6 @@ import org.bookmc.loader.api.loader.BookLoaderBase;
 import org.bookmc.loader.api.mod.ModContainer;
 import org.bookmc.loader.impl.config.JVMLoaderConfig;
 import org.bookmc.loader.impl.loader.BookLoaderImpl;
-import org.bookmc.loader.impl.loader.classloader.ModClassLoader;
 import org.bookmc.test.runner.ClassLoaderUnitRunner;
 import org.junit.Assert;
 import org.junit.Test;

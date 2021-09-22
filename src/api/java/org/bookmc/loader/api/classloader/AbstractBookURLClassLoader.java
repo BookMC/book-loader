@@ -3,12 +3,8 @@ package org.bookmc.loader.api.classloader;
 import java.net.URL;
 import java.security.CodeSigner;
 import java.security.CodeSource;
-import java.util.HashMap;
-import java.util.Map;
 
 public abstract class AbstractBookURLClassLoader extends AppendableURLClassLoader {
-    private final Map<String, byte[]> classCache = new HashMap<>();
-
     public AbstractBookURLClassLoader(URL[] urls, ClassLoader parent) {
         super(urls, parent);
         // JDK internals, we don't like this stuff!
@@ -58,6 +54,7 @@ public abstract class AbstractBookURLClassLoader extends AppendableURLClassLoade
         }
 
         byte[] clazz = getClassAsBytes(name);
+        modifyResolvedBytes(name, clazz);
 
         if (clazz == null) {
             throw new ClassNotFoundException(name);
@@ -72,11 +69,5 @@ public abstract class AbstractBookURLClassLoader extends AppendableURLClassLoade
     public URL getResource(String name) {
         URL res = super.getResource(name);
         return res == null ? getParent().getResource(name) : res;
-    }
-
-    private static class TransformableClassLoader$0 extends TransformableURLClassLoader {
-        public TransformableClassLoader$0(URL[] urls, ClassLoader parent) {
-            super(urls, parent);
-        }
     }
 }
