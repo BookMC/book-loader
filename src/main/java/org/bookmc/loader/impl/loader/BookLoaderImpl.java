@@ -89,14 +89,6 @@ public class BookLoaderImpl extends BookLoaderBase {
                     throw new LoaderException("Failed to load " + container.getMetadata().getId() + " (" + entrypoint.getEntryClass() + ")", e);
                 }
             }
-            if (entrypoint.getEntrypointType() == EntrypointType.TRANSFORMER) {
-                try {
-                    Class<?> clazz = Class.forName(entrypoint.getEntryClass(), false, container.getClassLoader());
-                    globalClassLoader.registerTransformer((BookTransformer) clazz.getConstructor().newInstance());
-                } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
-                    throw new LoaderException("Failed to load " + container.getMetadata().getId() + " (" + entrypoint.getEntryClass() + ")", e);
-                }
-            }
         }
     }
 
