@@ -5,7 +5,7 @@ import org.bookmc.loader.api.config.LoaderConfig;
 public class JVMLoaderConfig implements LoaderConfig {
     @Override
     public boolean getOption(String option, boolean def) {
-        return Boolean.parseBoolean(System.getProperty(option));
+        return Boolean.parseBoolean(System.getProperty(option, Boolean.toString(def)));
     }
 
     @Override

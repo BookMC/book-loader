@@ -13,7 +13,6 @@ import org.spongepowered.asm.service.*;
 import org.spongepowered.asm.service.modlauncher.LoggerAdapterLog4j2;
 import org.spongepowered.asm.util.ReEntranceLock;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;

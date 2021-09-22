@@ -2,7 +2,7 @@ package org.bookmc.loader.impl.loader.candidate;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import org.bookmc.loader.api.classloader.AbstractBookURLClassLoader;
+import org.bookmc.loader.api.classloader.AppendableURLClassLoader;
 import org.bookmc.loader.api.mod.ModCandidate;
 import org.bookmc.loader.api.mod.ModContainer;
 import org.bookmc.loader.impl.loader.JsonMetadataParserV0;
@@ -16,9 +16,9 @@ import java.io.InputStreamReader;
 public class ResourceModCandidate implements ModCandidate {
     private final JsonParser parser = new JsonParser();
 
-    private final AbstractBookURLClassLoader classLoader;
+    private final AppendableURLClassLoader classLoader;
 
-    public ResourceModCandidate(AbstractBookURLClassLoader classLoader) {
+    public ResourceModCandidate(AppendableURLClassLoader classLoader) {
         this.classLoader = classLoader;
     }
 
@@ -28,7 +28,7 @@ public class ResourceModCandidate implements ModCandidate {
     }
 
     @Override
-    public void loadContainers0(AbstractBookURLClassLoader classLoader) {
+    public void loadContainers0(AppendableURLClassLoader classLoader) {
 
     }
 

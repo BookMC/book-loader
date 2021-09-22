@@ -2,13 +2,15 @@ package org.bookmc.loader.impl.loader.candidate;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import org.bookmc.loader.api.classloader.AbstractBookURLClassLoader;
+import org.bookmc.loader.api.classloader.AppendableURLClassLoader;
+import org.bookmc.loader.api.exception.LoaderException;
 import org.bookmc.loader.api.mod.ModCandidate;
 import org.bookmc.loader.api.mod.ModContainer;
 import org.bookmc.loader.impl.loader.JsonMetadataParserV0;
 import org.bookmc.loader.impl.loader.container.ZipModContainer;
 import org.bookmc.loader.shared.Constants;
 import org.bookmc.loader.shared.zip.BetterZipFile;
+import org.bookmc.loader.shared.zip.ZipUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,6 +23,9 @@ public class ZipModCandidate implements ModCandidate {
 
     public ZipModCandidate(Path path) {
         try {
+            if (!ZipUtils.isZipFile(path)) {
+                throw new LoaderException("This candidate type is reserved for zip files!");
+            }
             this.zipFile = new BetterZipFile(path);
         } catch (IOException e) {
             throw new IllegalStateException(e);
@@ -40,7 +45,7 @@ public class ZipModCandidate implements ModCandidate {
     }
 
     @Override
-    public void loadContainers0(AbstractBookURLClassLoader classLoader) {
+    public void loadContainers0(AppendableURLClassLoader classLoader) {
         try {
             classLoader.addURL(zipFile.getFile().toURI().toURL());
         } catch (MalformedURLException e) {

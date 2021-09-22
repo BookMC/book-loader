@@ -1,6 +1,6 @@
 package org.bookmc.loader.impl.loader.container;
 
-import org.bookmc.loader.api.classloader.AbstractBookURLClassLoader;
+import org.bookmc.loader.api.classloader.AppendableURLClassLoader;
 import org.bookmc.loader.api.mod.ModContainer;
 import org.bookmc.loader.api.mod.metadata.ModMetadata;
 import org.bookmc.loader.api.mod.metadata.ModResource;
@@ -11,11 +11,11 @@ import java.util.List;
 
 public class ResourceModContainer implements ModContainer {
     private final ModMetadata metadata;
-    private final AbstractBookURLClassLoader classLoader;
+    private final AppendableURLClassLoader classLoader;
 
     private ModState modState = ModState.UNKNOWN;
 
-    public ResourceModContainer(ModMetadata metadata, AbstractBookURLClassLoader classLoader) {
+    public ResourceModContainer(ModMetadata metadata, AppendableURLClassLoader classLoader) {
         this.metadata = metadata;
         this.classLoader = classLoader;
     }
@@ -36,12 +36,12 @@ public class ResourceModContainer implements ModContainer {
     }
 
     @Override
-    public AbstractBookURLClassLoader getClassLoader() {
+    public AppendableURLClassLoader getClassLoader() {
         return classLoader;
     }
 
     @Override
-    public void setClassLoader(AbstractBookURLClassLoader classLoader) {
+    public void setClassLoader(AppendableURLClassLoader classLoader) {
         // Impossible
     }
 
@@ -50,7 +50,7 @@ public class ResourceModContainer implements ModContainer {
         return () -> classLoader.getResourceAsStream(name);
     }
 
-    public static ModContainer[] create(ModMetadata[] metadata, AbstractBookURLClassLoader classLoader) {
+    public static ModContainer[] create(ModMetadata[] metadata, AppendableURLClassLoader classLoader) {
         List<ModContainer> modContainerList = new ArrayList<>();
         for (ModMetadata modMetadata : metadata) {
             modContainerList.add(new ResourceModContainer(modMetadata, classLoader));

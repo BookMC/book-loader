@@ -6,6 +6,7 @@ import org.bookmc.loader.impl.launch.Book;
 import org.bookmc.loader.impl.loader.BookLoaderImpl;
 import org.bookmc.loader.impl.loader.candidate.ResourceModCandidate;
 import org.bookmc.loader.impl.loader.candidate.ZipModCandidate;
+import org.bookmc.loader.shared.Constants;
 import org.bookmc.loader.shared.zip.ZipUtils;
 import sun.misc.Unsafe;
 
@@ -19,6 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.zip.ZipFile;
 
 public class ClasspathModResolver implements ModResolver {
     @SuppressWarnings({"restriction", "unchecked"})
@@ -61,7 +63,7 @@ public class ClasspathModResolver implements ModResolver {
 
     @Override
     public ModCandidate[] resolveMods() {
-        List<ModCandidate> candidates = Arrays.stream(getSystemClassPathURLs())
+        List<Path> classpath = Arrays.stream(getSystemClassPathURLs())
             .map(u -> {
                 try {
                     return Path.of(u.toURI());
@@ -71,9 +73,15 @@ public class ClasspathModResolver implements ModResolver {
                 return null;
             })
             .filter(Objects::nonNull)
-            .filter(ZipUtils::isZipFile)
-            .map(ZipModCandidate::new)
             .collect(Collectors.toList());
+
+        List<ModCandidate> candidates = new ArrayList<>();
+
+        for (Path item : classpath) {
+            if (ZipUtils.isZipFile(item)) {
+                candidates.add(new ZipModCandidate(item));
+            }
+        }
 
         candidates.add(new ResourceModCandidate(BookLoaderImpl.INSTANCE.getGlobalClassLoader()));
         return candidates.toArray(new ModCandidate[0]);

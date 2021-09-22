@@ -73,8 +73,9 @@ public class LoaderInternal {
         }
 
         if (runTransformers) {
-            bytes = BookLoaderBase.INSTANCE.getGlobalClassLoader().transformClass(name, bytes);
+            bytes = BookLoaderBase.INSTANCE.getTransformClassLoader().transformClass(name, bytes);
         }
+
         ClassNode classNode = new ClassNode();
         ClassReader classReader = new ClassReader(bytes);
         classReader.accept(classNode, 0);

@@ -176,9 +176,10 @@ public record JsonMetadataV0(JsonObject obj) implements ModMetadata {
     }
 
     private GameEnvironment fromString(String environment) {
-        if (environment.equals("*")) return GameEnvironment.ANY;
-        if (environment.toLowerCase(Locale.ROOT).equals("client")) return GameEnvironment.CLIENT;
-        if (environment.toLowerCase(Locale.ROOT).endsWith("server")) return GameEnvironment.SERVER;
-        throw new IllegalStateException("An unknwon environment was given (" + environment + ")");
+        GameEnvironment env = GameEnvironment.fromString(environment);
+        if (env != null) {
+            return env;
+        }
+        throw new IllegalStateException("An unknown environment was given (" + environment + ")");
     }
 }

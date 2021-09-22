@@ -1,7 +1,9 @@
 package org.bookmc.loader.impl.loader;
 
-import org.bookmc.loader.api.classloader.AbstractBookURLClassLoader;
-import org.bookmc.loader.api.classloader.transformers.BookTransformer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.bookmc.loader.api.classloader.AppendableURLClassLoader;
+import org.bookmc.loader.api.classloader.TransformableURLClassLoader;
 import org.bookmc.loader.api.config.LoaderConfig;
 import org.bookmc.loader.api.environment.GameEnvironment;
 import org.bookmc.loader.api.exception.LoaderException;
@@ -24,20 +26,17 @@ import java.util.ServiceLoader;
 public class BookLoaderImpl extends BookLoaderBase {
     private final Path workingDirectory;
     private final GameEnvironment globalEnvironment;
-    private final AbstractBookURLClassLoader globalClassLoader;
+    private final AppendableURLClassLoader globalClassLoader;
 
     private boolean separateClassLoader;
 
-    public BookLoaderImpl(Path workingDirectory, GameEnvironment globalEnvironment, AbstractBookURLClassLoader parentClassLoader) {
-        super(workingDirectory.resolve("mods"), workingDirectory.resolve("config"));
+    private final Logger LOGGER = LogManager.getLogger();
+
+    public BookLoaderImpl(Path workingDirectory, GameEnvironment globalEnvironment, AppendableURLClassLoader parentClassLoader) {
+        super(workingDirectory, workingDirectory.resolve("mods"), workingDirectory.resolve("config"));
         this.workingDirectory = workingDirectory;
         this.globalEnvironment = globalEnvironment;
         this.globalClassLoader = parentClassLoader;
-    }
-
-    @Override
-    public Path getWorkingDirectory() {
-        return workingDirectory;
     }
 
     @Override
@@ -46,16 +45,26 @@ public class BookLoaderImpl extends BookLoaderBase {
     }
 
     @Override
-    public AbstractBookURLClassLoader getGlobalClassLoader() {
+    public AppendableURLClassLoader getGlobalClassLoader() {
         return globalClassLoader;
+    }
+
+    @Override
+    public TransformableURLClassLoader getTransformClassLoader() {
+        if (globalEnvironment == GameEnvironment.UNIT_TEST) {
+            throw new LoaderException("Transformers are not support in unit tests!");
+        }
+        return super.getTransformClassLoader();
     }
 
     @Override
     public void preload(LoaderConfig config) {
         separateClassLoader = config.getOption("separateClassLoader", true);
+        LOGGER.info("Loading with options ({}:{})", "separateClassLoader", separateClassLoader);
         for (ResolverService service : ServiceLoader.load(ResolverService.class)) {
             for (ModResolver resolver : service.getModResolvers()) {
                 addResolver(resolver);
+                LOGGER.info("Loading resolver ({})", resolver.getClass().getName());
             }
         }
 
@@ -83,6 +92,9 @@ public class BookLoaderImpl extends BookLoaderBase {
             if (entrypoint.getEntrypointType() == EntrypointType.MAIN) {
                 try {
                     Class<?> clazz = Class.forName(entrypoint.getEntryClass(), false, container.getClassLoader());
+                    if (isDeclaredMethodAvailable(clazz, entrypoint.getEntryMethod(), String[].class)) {
+                        throw new LoaderException("Please remove all parameters from (" + entrypoint.getEntryMethod() + ")! Offender: " + entrypoint.getEntryClass());
+                    }
                     Method entryMethod = clazz.getDeclaredMethod(entrypoint.getEntryMethod());
                     entryMethod.invoke(null);
                 } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
@@ -97,7 +109,7 @@ public class BookLoaderImpl extends BookLoaderBase {
             ModCandidate[] candidates = resolver.resolveMods();
             for (ModCandidate candidate : candidates) {
                 if (candidate.validate()) {
-                    AbstractBookURLClassLoader classLoader = separateClassLoader ? new ModClassLoader(globalClassLoader) : globalClassLoader;
+                    AppendableURLClassLoader classLoader = separateClassLoader ? new ModClassLoader(globalClassLoader) : globalClassLoader;
                     candidate.loadContainers(classLoader);
                     for (ModContainer container : candidate.getContainers()) {
                         String key = container.getMetadata().getId();
@@ -105,6 +117,7 @@ public class BookLoaderImpl extends BookLoaderBase {
                             throw new IllegalStateException(key + " has already been registered as a container!");
                         }
                         containers.put(key, container);
+                        LOGGER.info("Registered {} as a container", key);
                     }
                 }
             }
@@ -170,5 +183,14 @@ public class BookLoaderImpl extends BookLoaderBase {
         String presentRelianceVersion = presentReliance.getMetadata().getVersion().getVersion();
 
         throw new RuntimeException("Failed to start book-loader! " + id + " requested for " + relianceId + "(" + version + ") and it must be " + reliance.getVersionIndicator().name() + " but received " + presentRelianceId + " (" + presentRelianceVersion + ") with " + VersionIndicator.fromInt(compareTo));
+    }
+
+    private boolean isDeclaredMethodAvailable(Class<?> clazz, String name, Class<?>... parameterMethods) {
+        try {
+            clazz.getDeclaredMethod(name, parameterMethods);
+            return true;
+        } catch (NoSuchMethodException e) {
+            return false;
+        }
     }
 }

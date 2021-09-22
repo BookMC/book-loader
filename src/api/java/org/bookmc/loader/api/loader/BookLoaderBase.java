@@ -1,6 +1,7 @@
 package org.bookmc.loader.api.loader;
 
-import org.bookmc.loader.api.classloader.AbstractBookURLClassLoader;
+import org.bookmc.loader.api.classloader.AppendableURLClassLoader;
+import org.bookmc.loader.api.classloader.TransformableURLClassLoader;
 import org.bookmc.loader.api.config.LoaderConfig;
 import org.bookmc.loader.api.environment.GameEnvironment;
 import org.bookmc.loader.api.exception.LoaderException;
@@ -16,13 +17,19 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class BookLoaderBase {
+    private final Path workingDirectory;
     private final Path modsPath;
     private final Path configPath;
 
-    public BookLoaderBase(Path modsPath, Path configPath) {
+
+    public BookLoaderBase(Path workingDirectory, Path modsPath, Path configPath) {
+        this.workingDirectory = workingDirectory;
         this.modsPath = modsPath;
         this.configPath = configPath;
         try {
+            if (!Files.exists(workingDirectory)) {
+                Files.createDirectory(workingDirectory);
+            }
             if (!Files.exists(modsPath)) {
                 Files.createDirectory(modsPath);
             }
@@ -44,11 +51,21 @@ public abstract class BookLoaderBase {
 
     public abstract void load() throws LoaderException;
 
-    public abstract Path getWorkingDirectory();
+    public Path getWorkingDirectory() {
+        return workingDirectory;
+    }
 
     public abstract GameEnvironment getGlobalEnvironment();
 
-    public abstract AbstractBookURLClassLoader getGlobalClassLoader();
+    public abstract AppendableURLClassLoader getGlobalClassLoader();
+
+    public TransformableURLClassLoader getTransformClassLoader() {
+        ClassLoader classLoader = getGlobalClassLoader();
+        if (classLoader instanceof TransformableURLClassLoader) {
+            return (TransformableURLClassLoader) classLoader;
+        }
+        throw new LoaderException("Provided classloader does not support transformation!");
+    }
 
     public Path getModsPath() {
         return modsPath;

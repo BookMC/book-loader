@@ -1,6 +1,6 @@
 package org.bookmc.loader.impl.loader.resolver;
 
-import org.bookmc.loader.api.classloader.AbstractBookURLClassLoader;
+import org.bookmc.loader.api.classloader.AppendableURLClassLoader;
 import org.bookmc.loader.api.environment.GameEnvironment;
 import org.bookmc.loader.api.mod.ModCandidate;
 import org.bookmc.loader.api.mod.ModContainer;
@@ -26,7 +26,7 @@ public class FakeContainerResolver implements ModResolver {
         }
 
         @Override
-        public void loadContainers0(AbstractBookURLClassLoader classLoader) {
+        public void loadContainers0(AppendableURLClassLoader classLoader) {
 
         }
 
@@ -116,12 +116,12 @@ public class FakeContainerResolver implements ModResolver {
             }
 
             @Override
-            public AbstractBookURLClassLoader getClassLoader() {
+            public AppendableURLClassLoader getClassLoader() {
                 return BookLoaderImpl.INSTANCE.getGlobalClassLoader();
             }
 
             @Override
-            public void setClassLoader(AbstractBookURLClassLoader classLoader) {
+            public void setClassLoader(AppendableURLClassLoader classLoader) {
 
             }
 

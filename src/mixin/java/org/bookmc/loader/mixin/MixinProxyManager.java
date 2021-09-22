@@ -13,7 +13,7 @@ public class MixinProxyManager {
     private final List<MixinProxy> proxies = new ArrayList<>();
 
     public void registerProxy(MixinProxy proxy) {
-        BookLoaderBase.INSTANCE.getGlobalClassLoader().registerTransformer(proxy);
+        BookLoaderBase.INSTANCE.getTransformClassLoader().registerTransformer(proxy);
 
         // Disable all current proxies
         for (MixinProxy mixinProxy : proxies) {

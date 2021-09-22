@@ -1,31 +1,16 @@
 package org.bookmc.loader.api.classloader;
 
-import org.bookmc.loader.api.classloader.transformers.BookTransformer;
-
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.security.CodeSigner;
 import java.security.CodeSource;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-public abstract class AbstractBookURLClassLoader extends URLClassLoader {
-    protected final List<String> classLoaderExclusions = new ArrayList<>();
-    protected final List<String> transformationExclusions = new ArrayList<>();
-    protected final List<BookTransformer> transformers = new ArrayList<>();
-
-    private final boolean transformable;
-
+public abstract class AbstractBookURLClassLoader extends AppendableURLClassLoader {
     private final Map<String, byte[]> classCache = new HashMap<>();
 
-    public AbstractBookURLClassLoader(URL[] urls, ClassLoader parent, boolean transformable) {
+    public AbstractBookURLClassLoader(URL[] urls, ClassLoader parent) {
         super(urls, parent);
-        this.transformable = transformable;
-
         // JDK internals, we don't like this stuff!
         addClassLoaderExclusion("sun.");
         addClassLoaderExclusion("java.");
@@ -74,12 +59,6 @@ public abstract class AbstractBookURLClassLoader extends URLClassLoader {
 
         byte[] clazz = getClassAsBytes(name);
 
-        if (transformable) {
-            if (!transformationExclusions.contains(name)) {
-                clazz = transformClass(name, clazz);
-            }
-        }
-
         if (clazz == null) {
             throw new ClassNotFoundException(name);
         }
@@ -88,44 +67,6 @@ public abstract class AbstractBookURLClassLoader extends URLClassLoader {
         return defineClass(name, clazz, 0, clazz.length, new CodeSource(getClass(name), new CodeSigner[0]));
     }
 
-    public byte[] transformClass(String name, byte[] clazz) {
-        for (BookTransformer transformer : transformers) {
-            clazz = transformer.transform(name, clazz);
-        }
-        return clazz;
-    }
-
-
-    public InputStream getClassAsInputStream(String name) {
-        return getResourceAsStream(name.replace(".", "/").concat(".class"));
-    }
-
-    public URL getClass(String name) {
-        return getResource(name.replace(".", "/").concat(".class"));
-    }
-
-    public byte[] getClassAsBytes(String name) {
-        if (classCache.containsKey(name)) {
-            return classCache.get(name);
-        }
-
-        try (InputStream stream = getClassAsInputStream(name)) {
-            if (stream != null) {
-                byte[] clazz = stream.readAllBytes();
-                classCache.put(name, clazz);
-                return clazz;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public boolean isClassLoaded(String name) {
-        synchronized (getClassLoadingLock(name)) {
-            return findLoadedClass(name) != null;
-        }
-    }
 
     @Override
     public URL getResource(String name) {
@@ -133,20 +74,9 @@ public abstract class AbstractBookURLClassLoader extends URLClassLoader {
         return res == null ? getParent().getResource(name) : res;
     }
 
-    @Override
-    public void addURL(URL url) {
-        super.addURL(url);
-    }
-
-    public void addClassLoaderExclusion(String toExclude) {
-        classLoaderExclusions.add(toExclude);
-    }
-
-    public void addTransformationExclusion(String toExclude) {
-        transformationExclusions.add(toExclude);
-    }
-
-    public void registerTransformer(BookTransformer transformer) {
-        transformers.add(transformer);
+    private static class TransformableClassLoader$0 extends TransformableURLClassLoader {
+        public TransformableClassLoader$0(URL[] urls, ClassLoader parent) {
+            super(urls, parent);
+        }
     }
 }

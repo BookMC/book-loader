@@ -31,7 +31,7 @@ public class TransformerPrelaunchService implements PrelaunchService {
     private void registerContainer(ModContainer container, ModEntrypoint entrypoint) {
         try {
             Class<?> clazz = Class.forName(entrypoint.getEntryClass(), false, container.getClassLoader());
-            BookLoaderBase.INSTANCE.getGlobalClassLoader().registerTransformer((BookTransformer) clazz.getConstructor().newInstance());
+            BookLoaderBase.INSTANCE.getTransformClassLoader().registerTransformer((BookTransformer) clazz.getConstructor().newInstance());
         } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
             throw new LoaderException("Failed to load " + container.getMetadata().getId() + " (" + entrypoint.getEntryClass() + ")", e);
         }

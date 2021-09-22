@@ -6,7 +6,7 @@ import java.net.URL;
 
 public class ModClassLoader extends AbstractBookURLClassLoader {
     public ModClassLoader(ClassLoader parent) {
-        super(new URL[0], parent, true);
+        super(new URL[0], parent);
     }
 
     /**

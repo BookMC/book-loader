@@ -1,17 +1,11 @@
 package org.bookmc.loader.impl.loader;
 
-import org.bookmc.loader.api.classloader.AbstractBookURLClassLoader;
+import org.bookmc.loader.api.classloader.TransformableURLClassLoader;
 
 import java.net.URL;
 
-public class BookParentClassLoader extends AbstractBookURLClassLoader {
+public class BookParentClassLoader extends TransformableURLClassLoader {
     public BookParentClassLoader() {
-        super(new URL[0], BookParentClassLoader.class.getClassLoader(), true);
-    }
-
-    @Override
-    public URL findResource(String name) {
-        URL resource = super.findResource(name);
-        return resource != null ? resource : getParent().getResource(name);
+        super(new URL[0], BookParentClassLoader.class.getClassLoader());
     }
 }

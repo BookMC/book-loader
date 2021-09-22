@@ -1,6 +1,6 @@
 package org.bookmc.loader.impl.loader.container;
 
-import org.bookmc.loader.api.classloader.AbstractBookURLClassLoader;
+import org.bookmc.loader.api.classloader.AppendableURLClassLoader;
 import org.bookmc.loader.api.mod.ModContainer;
 import org.bookmc.loader.api.mod.metadata.ModMetadata;
 import org.bookmc.loader.api.mod.metadata.ModResource;
@@ -16,7 +16,7 @@ public class ZipModContainer implements ModContainer {
     private final ZipFile zipFile;
 
     private ModState modState = ModState.UNKNOWN;
-    private AbstractBookURLClassLoader classLoader;
+    private AppendableURLClassLoader classLoader;
 
     public ZipModContainer(ModMetadata metadata, ZipFile zipFile) {
         this.metadata = metadata;
@@ -39,12 +39,12 @@ public class ZipModContainer implements ModContainer {
     }
 
     @Override
-    public AbstractBookURLClassLoader getClassLoader() {
+    public AppendableURLClassLoader getClassLoader() {
         return classLoader;
     }
 
     @Override
-    public void setClassLoader(AbstractBookURLClassLoader classLoader) {
+    public void setClassLoader(AppendableURLClassLoader classLoader) {
         this.classLoader = classLoader;
     }
 
