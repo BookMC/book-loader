@@ -18,14 +18,18 @@ import java.nio.file.Paths;
 @OrderWith(Alphanumeric.class)
 public class LoaderTest {
     @Test
-    public void $$0$$testPreload() {
+    public void $0testPreload() {
         BookLoaderBase.INSTANCE = new BookLoaderImpl(Paths.get(System.getProperty("user.dir"), "test-data"), GameEnvironment.UNIT_TEST, ClassLoaderUnitRunner.classLoader);
         BookLoaderBase.INSTANCE.preload(new JVMLoaderConfig());
     }
 
     @Test
-    public void $$1$$testLoad() {
+    public void $1testLoad() {
         BookLoaderBase.INSTANCE.load();
+    }
+
+    @Test
+    public void verifyLoad() {
         Assert.assertNotNull(BookLoaderBase.INSTANCE.getContainers().get("book-loader"));
         ModContainer container = BookLoaderBase.INSTANCE.getContainers().get("test");
 
