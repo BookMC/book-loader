@@ -2,7 +2,7 @@ name: Publish
 
 on: [workflow_dispatch]
 jobs:
-  build_test_and_publish_jdk16:
+  build_test_and_publish_jdk17:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
