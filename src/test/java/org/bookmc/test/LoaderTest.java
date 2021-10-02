@@ -19,8 +19,8 @@ import java.nio.file.Paths;
 public class LoaderTest {
     @Test
     public void $0testPreload() {
-        BookLoaderBase.INSTANCE = new BookLoaderImpl(Paths.get(System.getProperty("user.dir"), "test-data"), GameEnvironment.UNIT_TEST, ClassLoaderUnitRunner.classLoader);
-        BookLoaderBase.INSTANCE.preload(new JVMLoaderConfig());
+        BookLoaderBase.INSTANCE = new BookLoaderImpl(Paths.get(System.getProperty("user.dir"), "test-data"), GameEnvironment.UNIT_TEST, ClassLoaderUnitRunner.classLoader, new JVMLoaderConfig());
+        BookLoaderBase.INSTANCE.preload();
     }
 
     @Test

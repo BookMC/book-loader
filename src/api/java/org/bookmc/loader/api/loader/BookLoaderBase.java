@@ -47,7 +47,7 @@ public abstract class BookLoaderBase {
 
     public static BookLoaderBase INSTANCE;
 
-    public abstract void preload(LoaderConfig config);
+    public abstract void preload();
 
     public abstract void load() throws LoaderException;
 
@@ -58,6 +58,8 @@ public abstract class BookLoaderBase {
     public abstract GameEnvironment getGlobalEnvironment();
 
     public abstract AppendableURLClassLoader getGlobalClassLoader();
+
+    public abstract LoaderConfig getLoaderConfig();
 
     public TransformableURLClassLoader getTransformClassLoader() {
         ClassLoader classLoader = getGlobalClassLoader();

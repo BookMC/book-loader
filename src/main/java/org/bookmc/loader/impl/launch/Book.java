@@ -43,8 +43,8 @@ public class Book {
 
         classLoader = new BookParentClassLoader();
 
-        BookLoaderBase.INSTANCE = new BookLoaderImpl(service.getWorkingDirectory(arguments), environment, classLoader);
-        BookLoaderBase.INSTANCE.preload(config);
+        BookLoaderBase.INSTANCE = new BookLoaderImpl(service.getWorkingDirectory(arguments), environment, classLoader, config);
+        BookLoaderBase.INSTANCE.preload();
         loadPrelaunchServices(arguments, environment);
 
         if (!config.hasOption("book.loader.skipEntrypoint")) {

@@ -1,5 +1,6 @@
 package org.bookmc.loader.impl.loader.resolver;
 
+import org.bookmc.loader.api.loader.BookLoaderBase;
 import org.bookmc.loader.api.mod.ModCandidate;
 import org.bookmc.loader.api.mod.resolution.ModResolver;
 import org.bookmc.loader.impl.launch.Book;
@@ -81,7 +82,7 @@ public class ClasspathModResolver implements ModResolver {
             }
         }
 
-        candidates.add(new ResourceModCandidate(BookLoaderImpl.INSTANCE.getGlobalClassLoader()));
+        candidates.add(new ResourceModCandidate(BookLoaderBase.INSTANCE.getGlobalClassLoader(), BookLoaderBase.INSTANCE.getLoaderConfig()));
         return candidates.toArray(new ModCandidate[0]);
     }
 }

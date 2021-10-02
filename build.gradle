@@ -9,9 +9,6 @@ plugins {
 }
 
 ext {
-    def env = System.getenv()
-    buildNumber = env.BUILD_NUMBER
-    local = buildNumber == null
     branch = "git rev-parse --abbrev-ref HEAD".execute().text.trim()
 }
 
@@ -22,7 +19,7 @@ java {
 }
 
 group "org.bookmc"
-version "1.0.0${branch != "main" && !branch.isEmpty() ? "-$branch" : ""}+${buildNumber ? "build.$buildNumber" : "local"}"
+version "1.0.0${branch != "main" && !branch.isEmpty() ? "-$branch" : ""}"
 
 repositories {
     mavenCentral()
@@ -87,7 +84,6 @@ dependencies {
 
     apiImplementation "com.google.code.findbugs:jsr305:3.0.2"
 
-
     // Shaded libraries
     include("net.fabricmc:sponge-mixin:0.10.2+mixin.0.8.4") {
         exclude module: "log4j-api"
@@ -151,16 +147,16 @@ publishing {
         maven {
             def env = System.getenv()
 
-            boolean isEnvVarsAvailable = env.containsKey("MAVEN_USER") && env.containsKey("MAVEN_PASSWORD")
+            boolean login = env.containsKey("MAVEN_USER") && env.containsKey("MAVEN_PASSWORD")
 
-            if (isEnvVarsAvailable) {
+            if (login) {
                 credentials {
                     username env.get("MAVEN_USER")
                     password env.get("MAVEN_PASSWORD")
                 }
             }
 
-            url = local || !isEnvVarsAvailable ? "$buildDir/repository" : "https://maven.bookmc.org/releases/"
+            url = !login ? "$buildDir/repository" : "https://maven.bookmc.org/releases/"
         }
     }
 
@@ -170,7 +166,7 @@ publishing {
             from components.java
             pom {
                 name = "book-loader"
-                url = "https://github.com/BookMC/loader"
+                url = "https://github.com/BookMC/book-loader"
 
                 developers {
                     developer {

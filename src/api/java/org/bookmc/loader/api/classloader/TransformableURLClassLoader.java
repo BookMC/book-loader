@@ -21,7 +21,7 @@ public abstract class TransformableURLClassLoader extends AbstractBookURLClassLo
 
     public byte[] transformClass(String name, byte[] clazz) {
         for (BookTransformer transformer : transformers) {
-            clazz = transformer.transform(name, clazz);
+            clazz = transformer.proposeTransformation(name, clazz);
         }
         return clazz;
     }

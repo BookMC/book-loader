@@ -3,6 +3,7 @@ package org.bookmc.loader.impl.loader.candidate;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import org.bookmc.loader.api.classloader.AppendableURLClassLoader;
+import org.bookmc.loader.api.config.LoaderConfig;
 import org.bookmc.loader.api.mod.ModCandidate;
 import org.bookmc.loader.api.mod.ModContainer;
 import org.bookmc.loader.impl.loader.JsonMetadataParserV0;
@@ -17,14 +18,16 @@ public class ResourceModCandidate implements ModCandidate {
     private final JsonParser parser = new JsonParser();
 
     private final AppendableURLClassLoader classLoader;
+    private final LoaderConfig config;
 
-    public ResourceModCandidate(AppendableURLClassLoader classLoader) {
+    public ResourceModCandidate(AppendableURLClassLoader classLoader, LoaderConfig config) {
         this.classLoader = classLoader;
+        this.config = config;
     }
 
     @Override
     public boolean validate() {
-        return classLoader.getResourceAsStream(Constants.METADATA_FILE) != null;
+        return classLoader.getResourceAsStream(Constants.METADATA_FILE) != null && !config.getOption("book.candidate.disableResourceSearching", true);
     }
 
     @Override

@@ -27,16 +27,18 @@ public class BookLoaderImpl extends BookLoaderBase {
     private final Path workingDirectory;
     private final GameEnvironment globalEnvironment;
     private final AppendableURLClassLoader globalClassLoader;
+    private final LoaderConfig config;
 
     private boolean separateClassLoader;
 
     private final Logger LOGGER = LogManager.getLogger();
 
-    public BookLoaderImpl(Path workingDirectory, GameEnvironment globalEnvironment, AppendableURLClassLoader parentClassLoader) {
+    public BookLoaderImpl(Path workingDirectory, GameEnvironment globalEnvironment, AppendableURLClassLoader parentClassLoader, LoaderConfig config) {
         super(workingDirectory, workingDirectory.resolve("mods"), workingDirectory.resolve("config"));
         this.workingDirectory = workingDirectory;
         this.globalEnvironment = globalEnvironment;
         this.globalClassLoader = parentClassLoader;
+        this.config = config;
     }
 
     @Override
@@ -50,6 +52,11 @@ public class BookLoaderImpl extends BookLoaderBase {
     }
 
     @Override
+    public LoaderConfig getLoaderConfig() {
+        return config;
+    }
+
+    @Override
     public TransformableURLClassLoader getTransformClassLoader() {
         if (globalEnvironment == GameEnvironment.UNIT_TEST) {
             throw new LoaderException("Transformers are not support in unit tests!");
@@ -58,7 +65,7 @@ public class BookLoaderImpl extends BookLoaderBase {
     }
 
     @Override
-    public void preload(LoaderConfig config) {
+    public void preload() {
         separateClassLoader = config.getOption("separateClassLoader", true);
         LOGGER.info("Loading with options ({}:{})", "separateClassLoader", separateClassLoader);
         for (ResolverService service : ServiceLoader.load(ResolverService.class)) {
