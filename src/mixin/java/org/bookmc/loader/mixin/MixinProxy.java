@@ -12,7 +12,7 @@ public final class MixinProxy implements BookTransformer, ILegacyClassTransforme
     }
 
     @Override
-    public byte[] transform(String name, byte[] basicClass) {
+    public byte[] proposeTransformation(String name, byte[] basicClass) {
         return active ? manager.getTransformer().transformClassBytes(name, name, basicClass) : basicClass;
     }
 
