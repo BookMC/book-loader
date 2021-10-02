@@ -54,7 +54,7 @@ public abstract class AbstractBookURLClassLoader extends AppendableURLClassLoade
         }
 
         byte[] clazz = getClassAsBytes(name);
-        modifyResolvedBytes(name, clazz);
+        clazz = modifyResolvedBytes(name, clazz);
 
         if (clazz == null) {
             throw new ClassNotFoundException(name);
