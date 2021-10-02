@@ -1,0 +1,2 @@
+org.bookmc.loader.mixin.MixinPrelaunchService
+org.bookmc.loader.impl.transformer.TransformerPrelaunchService

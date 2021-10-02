@@ -2,8 +2,13 @@ pluginManagement {
     repositories {
         gradlePluginPortal()
         maven {
-            url "https://maven.bookmc.org"
+            url "https://maven.bookmc.org/releases/"
+        }
+        maven {
+            url "https://maven.fabricmc.net"
         }
     }
 }
 rootProject.name = "book-loader"
+
+include ":test"
