@@ -20,6 +20,7 @@ public class LoaderTest {
     @Test
     public void $0testPreload() {
         BookLoaderBase.INSTANCE = new BookLoaderImpl(Paths.get(System.getProperty("user.dir"), "test-data"), GameEnvironment.UNIT_TEST, ClassLoaderUnitRunner.classLoader, new JVMLoaderConfig());
+        BookLoaderBase.INSTANCE.getLoaderConfig().setOption("book.candidate.disableResourceSearching", "false");
         BookLoaderBase.INSTANCE.preload();
     }
 
