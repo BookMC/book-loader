@@ -21,7 +21,8 @@ public class TransformerPrelaunchService implements PrelaunchService {
             .forEach(container -> Arrays.stream(container.getMetadata()
                 .getEntrypoints())
                 .filter(this::checkEntrypoint)
-                .forEach(entrypoint -> registerContainer(container, entrypoint)));
+                .forEach(entrypoint -> registerContainer(container, entrypoint))
+            );
     }
 
     private boolean checkEntrypoint(ModEntrypoint entrypoint) {
@@ -30,6 +31,9 @@ public class TransformerPrelaunchService implements PrelaunchService {
 
     private void registerContainer(ModContainer container, ModEntrypoint entrypoint) {
         try {
+            if (container.getClassLoader() == null) {
+                throw new IllegalStateException("Transformer classloader could not be found (This is most likely a loader issue or someone is messing with the loader)");
+            }
             Class<?> clazz = Class.forName(entrypoint.getEntryClass(), false, container.getClassLoader());
             BookLoaderBase.INSTANCE.getTransformClassLoader().registerTransformer((BookTransformer) clazz.getConstructor().newInstance());
         } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {

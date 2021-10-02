@@ -119,6 +119,7 @@ public class BookLoaderImpl extends BookLoaderBase {
                     AppendableURLClassLoader classLoader = separateClassLoader ? new ModClassLoader(globalClassLoader) : globalClassLoader;
                     candidate.loadContainers(classLoader);
                     for (ModContainer container : candidate.getContainers()) {
+                        container.setClassLoader(classLoader);
                         String key = container.getMetadata().getId();
                         if (containers.containsKey(key)) {
                             throw new IllegalStateException(key + " has already been registered as a container!");
