@@ -126,7 +126,7 @@ public class BookLoaderImpl extends BookLoaderBase {
                             LOGGER.warn("{} has already been registered as a container, it will NOT be re-registered. Name of already registered container: {}, Name of container requesting to be registered: {}", key, registeredName, container.getMetadata().getName());
                         } else {
                             containers.put(key, container);
-                            LOGGER.info("{} - {} has been registered as a container", key, container.getMetadata().getVersion());
+                            LOGGER.info("{} - {} has been registered as a container", key, container.getMetadata().getVersion().getVersion());
                         }
                     }
                 }
