@@ -122,10 +122,12 @@ public class BookLoaderImpl extends BookLoaderBase {
                         container.setClassLoader(classLoader);
                         String key = container.getMetadata().getId();
                         if (containers.containsKey(key)) {
-                            throw new IllegalStateException(key + " has already been registered as a container!");
+                            String registeredName = containers.get(key).getMetadata().getName();
+                            LOGGER.warn("{} has already been registered as a container, it will NOT be re-registered. Name of already registered container: {}, Name of container requesting to be registered: {}", key, registeredName, container.getMetadata().getName());
+                        } else {
+                            containers.put(key, container);
+                            LOGGER.info("{} - {} has been registered as a container", key, container.getMetadata().getVersion());
                         }
-                        containers.put(key, container);
-                        LOGGER.info("Registered {} as a container", key);
                     }
                 }
             }
