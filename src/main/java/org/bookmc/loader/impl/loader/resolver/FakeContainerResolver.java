@@ -51,6 +51,11 @@ public class FakeContainerResolver implements ModResolver {
                         return "book-loader";
                     }
 
+                    @Override
+                    public String getDescription() {
+                        return "A core component by BooKMC to load mods ontop most environments";
+                    }
+
                     @Nonnull
                     @Override
                     public String getId() {

@@ -12,6 +12,9 @@ public interface ModMetadata {
     @Nonnull
     String getName();
 
+    @Nullable
+    String getDescription();
+
     @Nonnull
     String getId();
 

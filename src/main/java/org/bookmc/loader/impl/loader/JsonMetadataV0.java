@@ -9,6 +9,7 @@ import org.bookmc.loader.api.mod.metadata.*;
 import org.bookmc.loader.impl.loader.version.ModSemverVersion;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
 
 public record JsonMetadataV0(JsonObject obj) implements ModMetadata {
@@ -21,6 +22,12 @@ public record JsonMetadataV0(JsonObject obj) implements ModMetadata {
     @Override
     public String getName() {
         return obj.get("name").getAsString();
+    }
+
+    @Nullable
+    @Override
+    public String getDescription() {
+        return obj.has("description") ? obj.get("description").getAsString() : null;
     }
 
     @Nonnull
