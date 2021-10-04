@@ -19,7 +19,7 @@ java {
 }
 
 group "org.bookmc"
-version "1.0.2${branch != "main" && !branch.isEmpty() ? "-$branch" : ""}"
+version "1.0.4${branch != "main" && !branch.isEmpty() ? "-$branch" : ""}"
 
 repositories {
     mavenCentral()
@@ -61,9 +61,10 @@ sourceSets {
 }
 
 dependencies {
+    apiCompileOnly "org.apache.logging.log4j:log4j-api:2.0-beta9"
+
     // Directly in Minecraft
     compileOnly "org.apache.logging.log4j:log4j-api:2.0-beta9"
-    compileOnly "org.apache.logging.log4j:log4j-core:2.0-beta9"
 
     sharedCompileOnly "com.google.code.gson:gson:2.2.4"
     compileOnly "com.google.code.gson:gson:2.2.4"
