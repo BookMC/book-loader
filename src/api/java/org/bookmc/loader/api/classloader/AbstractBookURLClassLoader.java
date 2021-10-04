@@ -54,11 +54,12 @@ public abstract class AbstractBookURLClassLoader extends AppendableURLClassLoade
         }
 
         byte[] clazz = getClassAsBytes(name);
-        clazz = modifyResolvedBytes(name, clazz);
 
         if (clazz == null) {
             throw new ClassNotFoundException(name);
         }
+
+        clazz = modifyResolvedBytes(name, clazz);
 
         // TODO: Implement CodeSigner
         return defineClass(name, clazz, 0, clazz.length, new CodeSource(getClass(name), new CodeSigner[0]));
