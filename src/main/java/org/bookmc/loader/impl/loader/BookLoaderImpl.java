@@ -13,6 +13,8 @@ import org.bookmc.loader.api.mod.ModContainer;
 import org.bookmc.loader.api.mod.metadata.*;
 import org.bookmc.loader.api.mod.resolution.ModResolver;
 import org.bookmc.loader.api.mod.resolution.ResolverService;
+import org.bookmc.loader.api.mod.state.ModState;
+import org.bookmc.loader.impl.loader.candidate.ZipModCandidate;
 import org.bookmc.loader.impl.loader.classloader.ModClassLoader;
 
 import java.lang.reflect.InvocationTargetException;
@@ -95,6 +97,7 @@ public class BookLoaderImpl extends BookLoaderBase {
             ModContainer relianceContainer = containers.get(reliance.getId());
             load0(relianceContainer);
         }
+
         for (ModEntrypoint entrypoint : container.getMetadata().getEntrypoints()) {
             if (entrypoint.getEntrypointType() == EntrypointType.MAIN) {
                 try {
@@ -104,6 +107,7 @@ public class BookLoaderImpl extends BookLoaderBase {
                     }
                     Method entryMethod = clazz.getDeclaredMethod(entrypoint.getEntryMethod());
                     entryMethod.invoke(null);
+                    container.setModState(ModState.STARTED);
                 } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
                     throw new LoaderException("Failed to load " + container.getMetadata().getId() + " (" + entrypoint.getEntryClass() + ")", e);
                 }
@@ -115,20 +119,33 @@ public class BookLoaderImpl extends BookLoaderBase {
         for (ModResolver resolver : resolvers) {
             ModCandidate[] candidates = resolver.resolveMods();
             for (ModCandidate candidate : candidates) {
-                if (candidate.validate()) {
-                    AppendableURLClassLoader classLoader = separateClassLoader ? new ModClassLoader(globalClassLoader) : globalClassLoader;
-                    candidate.loadContainers(classLoader);
-                    for (ModContainer container : candidate.getContainers()) {
-                        container.setClassLoader(classLoader);
-                        String key = container.getMetadata().getId();
-                        if (containers.containsKey(key)) {
-                            String registeredName = containers.get(key).getMetadata().getName();
-                            LOGGER.warn("{} has already been registered as a container, it will NOT be re-registered. Name of already registered container: {}, Name of container requesting to be registered: {}", key, registeredName, container.getMetadata().getName());
-                        } else {
-                            containers.put(key, container);
-                            LOGGER.info("{} - {} has been registered as a container", key, container.getMetadata().getVersion().getVersion());
-                        }
-                    }
+                loadCandidate(candidate, separateClassLoader ? new ModClassLoader(globalClassLoader) : globalClassLoader);
+            }
+        }
+    }
+
+    private void loadCandidate(ModCandidate candidate, AppendableURLClassLoader classLoader) {
+        if (candidate.validate()) {
+            candidate.loadContainers(classLoader);
+            for (ModContainer container : candidate.getContainers()) {
+                ModMetadata metadata = container.getMetadata();
+
+                container.setClassLoader(classLoader);
+                String key = metadata.getId();
+
+                ModResource[] jars = metadata.getJars(container);
+
+                for (ModResource resource : jars) {
+                    ModCandidate jarInJarCandidate = new ZipModCandidate(resource.getResourceAsStream());
+                    loadCandidate(jarInJarCandidate, classLoader); // Use the exact same classloader if separate classloaders are enabled
+                }
+
+                if (containers.containsKey(key)) {
+                    String registeredName = metadata.getName();
+                    LOGGER.warn("{} has already been registered as a container, it will NOT be re-registered. Name of already registered container: {}, Name of container requesting to be registered: {}", key, registeredName, container.getMetadata().getName());
+                } else {
+                    containers.put(key, container);
+                    LOGGER.info("{} - {} has been registered as a container", key, metadata.getVersion().getRawVersion());
                 }
             }
         }
@@ -182,7 +199,7 @@ public class BookLoaderImpl extends BookLoaderBase {
         if (!id.equals(name)) {
             id = id + " (" + name + ")";
         }
-        String version = reliance.getRequestedVersion().getVersion();
+        String version = reliance.getRequestedVersion().getRawVersion();
         version = version == null ? "*" : version;
 
         String presentRelianceId = presentReliance.getMetadata().getId();
@@ -190,7 +207,7 @@ public class BookLoaderImpl extends BookLoaderBase {
         if (!presentRelianceId.equals(presentRelianceName)) {
             presentRelianceId = presentRelianceId + " (" + presentRelianceName + ")";
         }
-        String presentRelianceVersion = presentReliance.getMetadata().getVersion().getVersion();
+        String presentRelianceVersion = presentReliance.getMetadata().getVersion().getRawVersion();
 
         throw new RuntimeException("Failed to start book-loader! " + id + " requested for " + relianceId + "(" + version + ") and it must be " + reliance.getVersionIndicator().name() + " but received " + presentRelianceId + " (" + presentRelianceVersion + ") with " + VersionIndicator.fromInt(compareTo));
     }

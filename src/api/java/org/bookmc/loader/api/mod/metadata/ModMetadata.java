@@ -41,4 +41,7 @@ public interface ModMetadata {
 
     @Nonnull
     ModEntrypoint[] getEntrypoints();
+
+    @Nonnull
+    ModResource[] getJars(ModContainer container);
 }

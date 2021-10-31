@@ -182,6 +182,24 @@ public record JsonMetadataV0(JsonObject obj) implements ModMetadata {
         return entrypointList.toArray(new ModEntrypoint[0]);
     }
 
+    @Nonnull
+    @Override
+    public ModResource[] getJars(ModContainer container) {
+        List<ModResource> jarArray = new ArrayList<>();
+
+        if (obj.has("jars")) {
+
+            JsonArray jars = obj.getAsJsonArray("jars");
+            for (JsonElement jar : jars) {
+                if (jar.isJsonPrimitive()) {
+                    jarArray.add(container.createModResource(jar.getAsString()));
+                }
+            }
+        }
+
+        return jarArray.toArray(new ModResource[0]);
+    }
+
     private GameEnvironment fromString(String environment) {
         GameEnvironment env = GameEnvironment.fromString(environment);
         if (env != null) {

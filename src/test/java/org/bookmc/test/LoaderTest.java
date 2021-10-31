@@ -3,6 +3,7 @@ package org.bookmc.test;
 import org.bookmc.loader.api.environment.GameEnvironment;
 import org.bookmc.loader.api.loader.BookLoaderBase;
 import org.bookmc.loader.api.mod.ModContainer;
+import org.bookmc.loader.api.mod.metadata.ModResource;
 import org.bookmc.loader.impl.config.JVMLoaderConfig;
 import org.bookmc.loader.impl.loader.BookLoaderImpl;
 import org.bookmc.test.runner.ClassLoaderUnitRunner;
@@ -40,7 +41,14 @@ public class LoaderTest {
         // Metadata tests
         Assert.assertEquals("test", container.getMetadata().getId());
         Assert.assertEquals("test", container.getMetadata().getName());
-        Assert.assertEquals("0.0.0", container.getMetadata().getVersion().getVersion());
+        Assert.assertEquals("0.0.0", container.getMetadata().getVersion().getRawVersion());
         Assert.assertEquals(GameEnvironment.UNIT_TEST, container.getMetadata().getEnvironment());
+    }
+
+    @Test
+    public void $2testJarInJar() {
+        ModContainer container = BookLoaderBase.INSTANCE.getContainers().get("test");
+        ModResource[] jars = container.getMetadata().getJars(container);
+        Assert.assertEquals(1, jars.length);
     }
 }

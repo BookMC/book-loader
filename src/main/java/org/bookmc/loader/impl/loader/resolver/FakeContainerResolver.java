@@ -39,76 +39,7 @@ public class FakeContainerResolver implements ModResolver {
         private static class BookLoaderContainer implements ModContainer {
             @Override
             public ModMetadata getMetadata() {
-                return new ModMetadata() {
-                    @Override
-                    public int getSchemaVersion() {
-                        return 0;
-                    }
-
-                    @Nonnull
-                    @Override
-                    public String getName() {
-                        return "book-loader";
-                    }
-
-                    @Override
-                    public String getDescription() {
-                        return "A core component by BooKMC to load mods ontop most environments";
-                    }
-
-                    @Nonnull
-                    @Override
-                    public String getId() {
-                        return "book-loader";
-                    }
-
-                    @Nonnull
-                    @Override
-                    public ModAuthor[] getModAuthors() {
-                        return new ModAuthor[0];
-                    }
-
-                    @Nonnull
-                    @Override
-                    public ModVersion getVersion() {
-                        return new ModSemverVersion("%LOADER_VERSION%");
-                    }
-
-                    @Nullable
-                    @Override
-                    public ModResource getIcon(ModContainer container) {
-                        return container.createModResource("/assets/book-loader/logo_64.png");
-                    }
-
-                    @Override
-                    public String getLicense() {
-                        return "%LICENSE%";
-                    }
-
-                    @Nonnull
-                    @Override
-                    public GameEnvironment getEnvironment() {
-                        return GameEnvironment.ANY;
-                    }
-
-                    @Nonnull
-                    @Override
-                    public ModReliance[] getDependencies() {
-                        return new ModReliance[0];
-                    }
-
-                    @Nonnull
-                    @Override
-                    public ModReliance[] getSuggestions() {
-                        return new ModReliance[0];
-                    }
-
-                    @Nonnull
-                    @Override
-                    public ModEntrypoint[] getEntrypoints() {
-                        return new ModEntrypoint[0];
-                    }
-                };
+                return new Metadata();
             }
 
             @Override
@@ -134,6 +65,83 @@ public class FakeContainerResolver implements ModResolver {
             @Override
             public ModResource createModResource(String name) {
                 return () -> BookLoaderBase.INSTANCE.getGlobalClassLoader().getResourceAsStream(name);
+            }
+        }
+
+        private static class Metadata implements ModMetadata {
+            @Override
+            public int getSchemaVersion() {
+                return 0;
+            }
+
+            @Nonnull
+            @Override
+            public String getName() {
+                return "book-loader";
+            }
+
+            @Override
+            public String getDescription() {
+                return "A core component by BooKMC to load mods ontop most environments";
+            }
+
+            @Nonnull
+            @Override
+            public String getId() {
+                return "book-loader";
+            }
+
+            @Nonnull
+            @Override
+            public ModAuthor[] getModAuthors() {
+                return new ModAuthor[0];
+            }
+
+            @Nonnull
+            @Override
+            public ModVersion getVersion() {
+                return new ModSemverVersion("%LOADER_VERSION%");
+            }
+
+            @Nullable
+            @Override
+            public ModResource getIcon(ModContainer container) {
+                return container.createModResource("/assets/book-loader/logo_64.png");
+            }
+
+            @Override
+            public String getLicense() {
+                return "%LICENSE%";
+            }
+
+            @Nonnull
+            @Override
+            public GameEnvironment getEnvironment() {
+                return GameEnvironment.ANY;
+            }
+
+            @Nonnull
+            @Override
+            public ModReliance[] getDependencies() {
+                return new ModReliance[0];
+            }
+
+            @Nonnull
+            @Override
+            public ModReliance[] getSuggestions() {
+                return new ModReliance[0];
+            }
+
+            @Nonnull
+            @Override
+            public ModEntrypoint[] getEntrypoints() {
+                return new ModEntrypoint[0];
+            }
+
+            @Nonnull
+            @Override
+            public ModResource[] getJars(ModContainer container) {
+                return new ModResource[0];
             }
         }
     }

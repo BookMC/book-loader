@@ -12,11 +12,12 @@ import org.bookmc.loader.shared.Constants;
 import org.bookmc.loader.shared.zip.BetterZipFile;
 import org.bookmc.loader.shared.zip.ZipUtils;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.MalformedURLException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.zip.ZipFile;
 
 public class ZipModCandidate implements ModCandidate {
     private final BetterZipFile zipFile;
@@ -29,6 +30,34 @@ public class ZipModCandidate implements ModCandidate {
             this.zipFile = new BetterZipFile(path);
         } catch (IOException e) {
             throw new IllegalStateException(e);
+        }
+    }
+
+    public ZipModCandidate(InputStream stream) {
+        try {
+            Path tempPath = Files.createTempFile("jar-in-jar", "book-loader");
+
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                try {
+                    Files.deleteIfExists(tempPath);
+                } catch (IOException e) {
+                    throw new LoaderException(e);
+                }
+            }, "Temporary file deletion"));
+
+            try (OutputStream fos = Files.newOutputStream(tempPath)) {
+                try (InputStream s = stream) {
+                    byte[] buffer = new byte[1024];
+
+                    int read;
+                    while ((read = s.read(buffer, 0, buffer.length)) != -1) {
+                        fos.write(buffer, 0, read);
+                    }
+                }
+            }
+            this.zipFile = new BetterZipFile(tempPath);
+        } catch (IOException e) {
+            throw new LoaderException(e);
         }
     }
 

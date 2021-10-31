@@ -20,7 +20,7 @@ public class ModSemverVersion implements ModVersion {
     }
 
     @Override
-    public String getVersion() {
+    public String getRawVersion() {
         return version;
     }
 
